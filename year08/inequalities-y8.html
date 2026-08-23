@@ -1,0 +1,493 @@
+<!-- REVIEW STATUS: NEW — split + built to full 10-checkpoint depth with sound, 22 Aug 2026, needs staff review -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const _lc = createClient(
+    'https://lnwinoghbefmjpvmixzo.supabase.co',
+    'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxud2lub2doYmVmbWpwdm1peHpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODIxNzQsImV4cCI6MjA5Nzk1ODE3NH0.ubKHVLrxlxQd-w3n5pS3O6YMAI7I--ndEkI2xWM9qCo'
+  );
+  const { data: { session } } = await _lc.auth.getSession();
+  if (!session) window.location.href = '../login.html';
+</script>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Inequalities · Year 8 · Maths Walkthroughs</title>
+<style>
+:root{--red:#C0272D;--dark:#7A1418;--cream:#FBF6F1;--ink:#241A17;--line:#E4D6CE;--gold:#C8922A;}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{background:var(--cream);color:var(--ink);font-family:'Helvetica Neue',Arial,sans-serif;}
+header{background:var(--red);color:#fff;height:56px;display:flex;align-items:center;justify-content:space-between;padding:0 20px;position:sticky;top:0;z-index:100;}
+.back{font-size:13px;font-weight:600;color:#fff;background:rgba(255,255,255,.2);border:1px solid rgba(255,255,255,.35);padding:5px 12px;border-radius:3px;text-decoration:none;}
+.ht{font-size:15px;font-weight:700;}
+.layout{display:flex;max-width:1100px;margin:0 auto;padding:28px 20px 60px;gap:28px;}
+.sb{width:210px;flex-shrink:0;display:flex;flex-direction:column;gap:6px;}
+.sb-lbl{font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#888;font-weight:700;margin-bottom:4px;}
+.qb{text-align:left;background:#fff;border:1px solid var(--line);border-radius:4px;padding:9px 12px;cursor:pointer;font-size:12px;transition:.15s;color:var(--ink);}
+.qb:hover{border-color:var(--red);color:var(--red);}
+.qb.on{background:var(--red);color:#fff;border-color:var(--red);}
+.qn{font-weight:700;font-size:10px;display:block;opacity:.7;}
+.main{flex:1;min-width:0;}
+.hdr{width:100%;max-width:760px;border-bottom:3px solid var(--red);padding-bottom:12px;margin-bottom:20px;}
+.eyebrow{font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--red);font-weight:700;}
+.hdr h1{font-family:Georgia,serif;font-size:24px;margin:6px 0 4px;line-height:1.2;}
+.sub{font-size:14px;color:#6b5750;}
+.stage{background:#fff;border:1px solid var(--line);border-radius:4px;overflow:hidden;width:100%;max-width:760px;}
+.cvs{background:linear-gradient(#fff,#fdf7f4);padding:14px 0 4px;display:flex;justify-content:center;}
+.cvs svg{width:100%;max-width:520px;height:auto;}
+.pnl{padding:20px 24px 24px;border-top:1px solid var(--line);min-height:160px;}
+.sl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:6px;}
+.pnl p{font-size:16px;line-height:1.55;margin:0 0 8px;}
+.fm{font-family:'Cambria Math',Georgia,serif;font-size:17px;background:var(--cream);border-left:4px solid var(--red);padding:9px 13px;margin:8px 0;display:block;}
+.ctrl{width:100%;max-width:760px;display:flex;justify-content:space-between;align-items:center;margin-top:16px;}
+.btn{font-size:14px;font-weight:600;padding:9px 18px;border-radius:3px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;transition:.15s;font-family:inherit;}
+.btn.p{background:var(--red);color:#fff;}
+.btn:disabled{opacity:.3;cursor:default;}
+.btn:not(:disabled):hover{background:var(--dark);color:#fff;border-color:var(--dark);}
+.dots{display:flex;gap:6px;}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--line);}
+.dot.on{background:var(--red);}.dot.dn{background:var(--gold);}
+.fi{animation:fi .4s ease;}
+@keyframes fi{from{opacity:0;transform:translateY(5px);}to{opacity:1;transform:translateY(0);}}
+.try{background:#fff;border:2px solid var(--gold);border-radius:6px;padding:18px 20px;margin-top:4px;}
+.try-t{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:10px;}
+.hl{font-size:14px;color:#3a2a24;margin:8px 0 12px;padding-left:4px;list-style:none;}
+.hl li{margin-bottom:5px;padding-left:18px;position:relative;}
+.hl li::before{content:"›";position:absolute;left:0;color:var(--gold);font-weight:700;}
+.ar{display:flex;gap:8px;margin-top:6px;}
+.ar input{flex:1;font-size:15px;padding:8px 12px;border:1px solid var(--line);border-radius:3px;outline:none;font-family:inherit;}
+.ar input:focus{border-color:var(--gold);}
+.ck{font-size:14px;font-weight:600;padding:8px 16px;background:var(--gold);color:#fff;border:none;border-radius:3px;cursor:pointer;white-space:nowrap;}
+.ck:hover{background:#a07018;}
+.fb{margin-top:10px;font-size:14px;padding:9px 12px;border-radius:3px;display:none;}
+.fb.ok{background:#e8f8ee;color:#1a7a3a;border:1px solid #a8dbb8;display:block;}
+.fb.er{background:#fde8e8;color:#a01820;border:1px solid #f0b8b8;display:block;}
+.wk summary{cursor:pointer;color:var(--red);font-weight:600;font-size:14px;}
+.wk-b{margin-top:8px;font-size:14px;line-height:1.6;color:#3a2a24;}
+.try-fb{margin-top:10px;font-size:14px;padding:9px 12px;border-radius:3px;}
+.try-q{font-size:15px;margin:8px 0 10px;}
+.badge{display:inline-block;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;margin-left:6px;vertical-align:middle;}
+.f{background:#1a5a8a;color:#fff;}.e{background:#C0272D;color:#fff;}
+.click-stage{display:flex;justify-content:center;margin:10px 0 4px;}
+.click-svg{width:100%;max-width:460px;height:auto;background:#fff;border:1px solid var(--line);border-radius:6px;touch-action:manipulation;}
+.hit,.tphit{transition:fill .1s;}
+.hit:hover,.tphit:hover{fill:rgba(200,146,42,.18);}
+.hit:active{fill:rgba(192,39,45,.25);}
+.click-hint{font-size:13px;color:#6b5750;margin-top:2px;}
+@media(max-width:640px){.layout{flex-direction:column;}.sb{width:100%;flex-direction:row;flex-wrap:wrap;}.qb{flex:1;min-width:80px;}}
+.reader-row{width:100%;max-width:760px;display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.reader-btn{font-size:12.5px;font-weight:700;padding:7px 14px;border-radius:5px;border:1.5px solid var(--gold);background:#fff;color:var(--gold);cursor:pointer;font-family:inherit;}
+.reader-btn.active{background:var(--gold);color:#fff;}
+.reader-btn:disabled{opacity:.4;cursor:default;}
+.reader-status{font-size:11.5px;color:#6b5750;}
+.reader-voice{font-size:12px;padding:6px 8px;border:1.5px solid var(--line);border-radius:5px;background:#fff;font-family:inherit;}
+</style>
+</head>
+<body>
+<header>
+  <a href="../index.html" class="back">&larr; All Topics</a>
+  <div class="ht">Inequalities &mdash; Year 8</div>
+  <div style="width:80px"></div>
+</header>
+<div class="layout">
+  <div class="sb" id="sb"><div class="sb-lbl">Questions</div></div>
+  <div class="main">
+    <div class="hdr">
+      <div class="eyebrow" id="ey"></div>
+      <h1 id="ti"></h1>
+      <div class="sub" id="su"></div>
+    </div>
+    <div class="stage">
+      <div class="cvs"><svg id="dg" viewBox="0 0 480 260"></svg></div>
+      <div class="pnl fi" id="pn"></div>
+    </div>
+    <div class="reader-row">
+      <button class="reader-btn" id="readBtn">🔊 Read this step</button>
+      <button class="reader-btn" id="autoBtn">▶ Auto-play question</button>
+      <button class="reader-btn" id="stopReadBtn" style="display:none">■ Stop</button>
+      <select class="reader-voice" id="voiceSel"></select>
+      <span class="reader-status" id="readerStatus"></span>
+    </div>
+    <div class="ctrl">
+      <button class="btn" id="pb">&larr; Back</button>
+      <div class="dots" id="dt"></div>
+      <button class="btn p" id="nb">Next &rarr;</button>
+    </div>
+  </div>
+</div>
+<script>
+
+var ST={};
+function rInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function rPick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
+
+function parseLinearExpr(str,vars){
+  if(!str)return null;
+  str=str.replace(/\s+/g,'').toLowerCase();
+  if(str==='')return null;
+  var coeffs={};vars.forEach(function(v){coeffs[v]=0;});
+  var constant=0;
+  var re=/([+-]?\d*)([a-z])|([+-]?\d+)(?![a-z])/g;var m;var matchedAny=false;var idx=0;
+  while((m=re.exec(str))){
+    if(m.index!==idx)return null;
+    idx=re.lastIndex;matchedAny=true;
+    if(m[2]){
+      var c=m[1],v=m[2];
+      if(vars.indexOf(v)===-1)return null;
+      if(c===''||c==='+')c='1';else if(c==='-')c='-1';
+      coeffs[v]+=parseInt(c,10);
+    } else if(m[3]!==undefined){
+      constant+=parseInt(m[3],10);
+    }
+  }
+  if(!matchedAny||idx!==str.length)return null;
+  coeffs._const=constant;
+  return coeffs;
+}
+
+function tryIt(genFn){
+  if(typeof genFn==='object'){var _o=genFn;genFn=function(){return _o;};}
+  var id='t'+Math.random().toString(36).slice(2);
+  var o=genFn();
+  ST[id]={o:o,genFn:genFn};
+  return buildTry(id,o);
+}
+
+function buildTry(id,o){
+  var h=(o.hints||[]).map(function(x){return '<li>'+x+'</li>';}).join('');
+  var wk=(h?'<ul class="hl">'+h+'</ul>':'')+'<div class="wk-b">'+o.working+'</div>';
+  var ex=o.extraHTML||'';
+  var ph='Answer'+(o.unit?' ('+o.unit+')':'');
+  var ansBox=o.frac
+    ? '<div class="ar"><div class="fracbox"><input type="number" step="any" placeholder="num" class="try-num" data-tryid="'+id+'"/><div class="fracline"></div><input type="number" step="any" placeholder="den" class="try-den" data-tryid="'+id+'"/></div><button class="ck try-ck" data-tryid="'+id+'">Check</button></div>'
+    : o.vars
+    ? '<div class="ar"><input type="text" placeholder="'+(o.placeholder||'e.g. 5x + 3')+'" class="try-inp" data-tryid="'+id+'"/><button class="ck try-ck" data-tryid="'+id+'">Check</button></div>'
+    : '<div class="ar"><input type="number" step="any" placeholder="'+ph+'" class="try-inp" data-tryid="'+id+'"/><button class="ck try-ck" data-tryid="'+id+'">Check</button></div>';
+  return '<div class="try" data-tryid="'+id+'">'
+    +'<div class="try-t">✔ Your Turn'
+    +' <button class="newq-btn" data-tryid="'+id+'">↻ New</button></div>'
+    +'<div class="try-q">'+o.question+'</div>'+ex
+    +ansBox
+    +'<div class="try-fb" data-tryid="'+id+'"></div>'
+    +'<details class="wk"><summary>Show working</summary>'+wk+'</details>'
+    +'</div>';
+}
+
+function newQ(id){
+  var e=ST[id]; if(!e||!e.genFn)return;
+  var o=e.genFn(); e.o=o;
+  var box=document.querySelector('.try[data-tryid="'+id+'"]');
+  if(!box)return;
+  var tmp=document.createElement('div');
+  tmp.innerHTML=buildTry(id,o);
+  box.parentNode.replaceChild(tmp.firstChild,box);
+  ST[id]={o:o,genFn:e.genFn};
+}
+
+function ckById(id){
+  var e=ST[id]; if(!e)return;
+  var o=e.o;
+  var fb=document.querySelector('.try-fb[data-tryid="'+id+'"]');
+  if(!fb)return;
+  if(o.frac){
+    var ni=document.querySelector('.try-num[data-tryid="'+id+'"]');
+    var di=document.querySelector('.try-den[data-tryid="'+id+'"]');
+    if(!ni||!di)return;
+    var nv=parseFloat(ni.value),dv=parseFloat(di.value);
+    if(isNaN(nv)||isNaN(dv)||dv===0){fb.className='try-fb fb er';fb.textContent='Enter a valid fraction (numerator and denominator).';return;}
+    var ok=o.fracExact?(nv===o.ansN&&dv===o.ansD):(Math.abs(nv/dv-o.ansN/o.ansD)<1e-6);
+    if(ok){
+      fb.className='try-fb fb ok';fb.innerHTML='✓ Correct! '+o.working;
+    }else if(o.fracExact&&Math.abs(nv/dv-o.ansN/o.ansD)<1e-6){
+      fb.className='try-fb fb er';fb.textContent='That’s an equivalent fraction, but not fully simplified — try again.';
+    }else{
+      fb.className='try-fb fb er';fb.textContent='Not quite — try again.';
+    }
+    return;
+  }
+  var inp=document.querySelector('.try-inp[data-tryid="'+id+'"]');
+  if(!inp)return;
+  if(o.vars){
+    var parsed=parseLinearExpr(inp.value,o.vars);
+    if(!parsed){fb.className='try-fb fb er';fb.textContent='Enter an expression, e.g. '+(o.placeholder||'5x + 3').replace('e.g. ','');return;}
+    var ok2=true;
+    for(var i=0;i<o.vars.length;i++){var vv=o.vars[i];if(parsed[vv]!==o.coeffs[vv])ok2=false;}
+    var expectedConst=(o.constant!=null)?o.constant:0;
+    if(parsed._const!==expectedConst)ok2=false;
+    if(ok2){fb.className='try-fb fb ok';fb.innerHTML='✓ Correct! '+o.working;}
+    else{fb.className='try-fb fb er';fb.textContent='Not quite — try again.';}
+    return;
+  }
+  var v=parseFloat(inp.value);
+  if(isNaN(v)){fb.className='try-fb fb er';fb.textContent='Enter a number.';return;}
+  if(o.range){
+    if(v>o.rangeMin && v<o.rangeMax){
+      fb.className='try-fb fb ok';fb.innerHTML='✓ Correct! '+o.working;
+    }else{
+      fb.className='try-fb fb er';fb.textContent='Not quite — that’s outside the range. Try again.';
+    }
+    return;
+  }
+  var tol = o.tol!=null ? o.tol : (o.exact!=null ? o.exact : 0.5);
+  if(Math.abs(v-o.ans)<=tol){
+    fb.className='try-fb fb ok';fb.innerHTML='✓ Correct! '+o.working;
+  }else{
+    fb.className='try-fb fb er';fb.textContent='Not quite — try again.';
+  }
+}
+
+document.addEventListener('click',function(e){
+  var btn=e.target;
+  if(btn.classList.contains('newq-btn')){
+    newQ(btn.getAttribute('data-tryid'));
+  } else if(btn.classList.contains('try-ck')){
+    ckById(btn.getAttribute('data-tryid'));
+  }
+});
+
+function g(){return document.getElementById('dg');}
+function T(x,y,t,c,sz,a,b){c=c||'#241A17';sz=sz||13;a=a||'middle';return '<text x="'+x+'" y="'+y+'" font-size="'+sz+'" font-family="Arial,sans-serif" fill="'+c+'" text-anchor="'+a+'" font-weight="'+(b?700:400)+'">'+t+'</text>';}
+function R(x,y,w,h,fill,stroke,sw){fill=fill||'#fff5f0';stroke=stroke||'#C0272D';sw=sw||2;return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'" rx="4"/>';}
+function L(x1,y1,x2,y2,c,w,d){return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+(c||'#C0272D')+'" stroke-width="'+(w||2)+'" '+(d?'stroke-dasharray="'+d+'"':'')+'/>';}
+function C(cx,cy,r,fill,stroke,sw){return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+(fill||'#fce8d8')+'" stroke="'+(stroke||'#C0272D')+'" stroke-width="'+(sw||2)+'"/>';}
+function dQ1(p){var s=g();s.setAttribute('viewBox','0 0 480 260');var o=[];
+  o.push(T(240,22,'Inequalities on a number line','#C0272D',14,'middle',true));
+  o.push(L(30,90,450,90,'#333',2));
+  [-2,-1,0,1,2,3,4,5].forEach(function(n,i){var x=30+i*60;o.push(L(x,83,x,97,'#333',1.5));o.push(T(x,112,n,'#888',11,'middle',false));});
+  if(p>=1){o.push('<circle cx="150" cy="90" r="7" fill="none" stroke="#C0272D" stroke-width="2.5"/>');
+    o.push(L(150,90,330,90,'#C0272D',3));
+    o.push('<circle cx="330" cy="90" r="7" fill="#C0272D"/>');
+    o.push(T(240,55,'\u22121 < x \u2264 3','#C0272D',18,'middle',true));}
+  if(p>=2){o.push(T(152,130,'open circle = NOT included','#888',10,'middle',false));
+    o.push(T(330,130,'filled = included','#888',10,'middle',false));}
+  if(p>=3){o.push(T(240,165,'Solve: 2x + 1 < 7  \u2192  x < 3','#1a7a3a',13,'middle',true));}
+  s.innerHTML=o.join('');}
+
+function dQ2(p){var s=g();s.setAttribute('viewBox','0 0 480 220');var o=[];o.push(R(14,8,452,32,'#fff5f0','#C0272D',1.5));o.push(T(240,29,'Solving a two-step inequality','#C0272D',13,'middle',true));if(p>=1){o.push(T(240,60,'Solve 3x \u2212 4 \u2264 11','#241A17',18,'middle',true));}if(p>=2){o.push(R(140,76,200,34,'#fff5f0','#C0272D',1.5));o.push(T(240,98,'3x \u2264 15','#C0272D',18,'middle',true));}if(p>=3){o.push(R(140,120,200,34,'#e8f8ee','#1a7a3a',1.5));o.push(T(240,142,'x \u2264 5','#1a7a3a',20,'middle',true));}s.innerHTML=o.join('');}
+
+function dQ3(p){var s=g();s.setAttribute('viewBox','0 0 480 220');var o=[];o.push(R(14,8,452,32,'#fff5f0','#C0272D',1.5));o.push(T(240,29,'Dividing by a negative flips the sign','#C0272D',12,'middle',true));if(p>=1){o.push(T(240,60,'Solve \u22122x > 8','#241A17',18,'middle',true));}if(p>=2){o.push(R(140,76,200,34,'#fde8e8','#C0272D',1.5));o.push(T(240,98,'Divide by \u22122... FLIP the sign!','#C0272D',13,'middle',true));}if(p>=3){o.push(R(140,120,200,34,'#e8f8ee','#1a7a3a',1.5));o.push(T(240,142,'x < \u22124','#1a7a3a',20,'middle',true));}if(p>=4){o.push(T(240,178,'Dividing (or multiplying) by a negative REVERSES the inequality sign','#888',10,'middle',false));}s.innerHTML=o.join('');}
+
+function dQ4(p){var s=g();s.setAttribute('viewBox','0 0 480 220');var o=[];o.push(R(14,8,452,32,'#fff5f0','#C0272D',1.5));o.push(T(240,29,'Finding integer solutions','#C0272D',13,'middle',true));if(p>=1){o.push(T(240,60,'Solve 2x < 9. What is the LARGEST integer solution?','#241A17',13,'middle'));}if(p>=2){o.push(R(140,76,200,34,'#fff5f0','#C0272D',1.5));o.push(T(240,98,'x < 4.5','#C0272D',18,'middle',true));}if(p>=3){o.push(R(140,120,200,34,'#e8f8ee','#1a7a3a',1.5));o.push(T(240,142,'Largest integer = 4','#1a7a3a',15,'middle',true));}s.innerHTML=o.join('');}
+
+function dQ5(p){var s=g();s.setAttribute('viewBox','0 0 480 220');var o=[];o.push(R(14,8,452,32,'#fff5f0','#C0272D',1.5));o.push(T(240,29,'A common mistake','#C0272D',13,'middle',true));if(p>=1){o.push(T(240,60,'Solve \u22123x \u2264 12','#241A17',18,'middle',true));}if(p>=2){o.push(R(140,76,200,34,'#fde8e8','#C0272D',1.5));o.push(T(240,98,'WRONG: x \u2264 \u22124 (forgot to flip!)','#C0272D',12,'middle',true));}if(p>=3){o.push(R(140,120,200,34,'#e8f8ee','#1a7a3a',1.5));o.push(T(240,142,'RIGHT: x \u2265 \u22124','#1a7a3a',18,'middle',true));}if(p>=4){o.push(T(240,178,'Divided by NEGATIVE 3, so the sign MUST flip','#888',11,'middle',false));}s.innerHTML=o.join('');}
+
+function dQ6(p){var s=g();s.setAttribute('viewBox','0 0 480 220');var o=[];o.push(R(14,8,452,32,'#fff5f0','#C0272D',1.5));o.push(T(240,29,'Real life: a budget limit','#C0272D',13,'middle',true));if(p>=1){o.push(T(240,60,'Items cost \u20a6150 each. You have \u20a61,000. Max items you can buy?','#241A17',12,'middle'));}if(p>=2){o.push(R(140,76,200,34,'#fff5f0','#C0272D',1.5));o.push(T(240,98,'150x \u2264 1000','#C0272D',15,'middle',true));}if(p>=3){o.push(R(140,120,200,34,'#e8f8ee','#1a7a3a',1.5));o.push(T(240,142,'x \u2264 6.67, so max 6','#1a7a3a',14,'middle',true));}s.innerHTML=o.join('');}
+
+function dQ7(p){var s=g();s.setAttribute('viewBox','0 0 480 220');var o=[];o.push(R(14,8,452,32,'#fff5f0','#C0272D',1.5));o.push(T(240,29,'A combined inequality','#C0272D',13,'middle',true));if(p>=1){o.push(T(240,60,'Solve \u22122 \u2264 2x < 10. Find the range for x.','#241A17',14,'middle',true));}if(p>=2){o.push(R(140,76,200,34,'#fff5f0','#C0272D',1.5));o.push(T(240,98,'Divide all parts by 2','#C0272D',14,'middle',true));}if(p>=3){o.push(R(140,120,200,34,'#e8f8ee','#1a7a3a',1.5));o.push(T(240,142,'\u22121 \u2264 x < 5','#1a7a3a',18,'middle',true));}s.innerHTML=o.join('');}
+
+function dQ8(p){var s=g();s.setAttribute('viewBox','0 0 480 220');var o=[];o.push(R(14,8,452,32,'#fff5f0','#C0272D',1.5));o.push(T(240,29,'Reading strict vs non-strict inequalities','#C0272D',12,'middle',true));if(p>=1){o.push(T(240,60,'< and > are STRICT (not equal). \u2264 and \u2265 INCLUDE the boundary','#241A17',11,'middle'));}if(p>=2){o.push(T(240,86,'x<5 does NOT include 5. x\u22645 DOES include 5','#888',11,'middle'));}if(p>=3){o.push(R(80,102,320,34,'#e8f8ee','#1a7a3a',1.5));o.push(T(240,124,'Open circle for strict, filled for non-strict','#1a7a3a',12,'middle'));}s.innerHTML=o.join('');}
+
+function dQ9(p){var s=g();s.setAttribute('viewBox','0 0 480 220');var o=[];o.push(R(14,8,452,32,'#fff5f0','#C0272D',1.5));o.push(T(240,29,'Inequality with unknowns on both sides','#C0272D',12,'middle',true));if(p>=1){o.push(T(240,60,'Solve 4x + 3 > 2x + 11','#241A17',16,'middle',true));}if(p>=2){o.push(R(140,76,200,34,'#fff5f0','#C0272D',1.5));o.push(T(240,98,'2x > 8','#C0272D',18,'middle',true));}if(p>=3){o.push(R(140,120,200,34,'#e8f8ee','#1a7a3a',1.5));o.push(T(240,142,'x > 4','#1a7a3a',20,'middle',true));}s.innerHTML=o.join('');}
+
+function dQ10(p){var s=g();s.setAttribute('viewBox','0 0 480 220');var o=[];o.push(R(14,8,452,32,'#fff5f0','#C0272D',1.5));o.push(T(240,29,'Mixed inequalities practice','#C0272D',13,'middle',true));if(p>=1){o.push(T(240,60,'Step 1: solve like a normal equation','#241A17',12,'middle'));}if(p>=2){o.push(T(240,86,'Step 2: FLIP the sign if dividing/multiplying by a negative','#241A17',11,'middle'));}if(p>=3){o.push(R(80,106,320,40,'#e8f8ee','#1a7a3a',1.5));o.push(T(240,124,'Example: 3x+2\u226511','#1a7a3a',12,'middle'));o.push(T(240,140,'3x\u22649, x\u22643','#1a7a3a',13,'middle'));}s.innerHTML=o.join('');}
+
+
+var QS=[
+  {ey:'Q1 \u00b7 Year 8 \u00b7 Inequalities',ti:'Inequalities <span class="badge f">F</span>',su:'Show \u22121 < x \u2264 3 on a number line and solve 2x + 1 < 7.',steps:[
+    {lb:'Number line notation',dr:dQ1,ht:'<p>Open circle (\u25cb) = value NOT included. Filled circle (\u25cf) = value included.</p>',speak:'Open circle means the value is not included. Filled circle means the value is included.'},
+    {lb:'Show on number line',dr:dQ1,ht:'<p>\u22121 < x \u2264 3: open circle at \u22121, filled at 3, line between.</p>',speak:'Negative 1 less than x, less than or equal to 3: open circle at negative 1, filled at 3, with a line between.'},
+    {lb:'Solve the inequality',dr:dQ1,ht:'<div class="fm">2x + 1 < 7  \u2192  2x < 6  \u2192  x < 3</div>',speak:'2x plus 1 is less than 7. That gives 2x less than 6, so x is less than 3.'},
+    {lb:'Your turn',dr:dQ1,ht:tryIt(function(){var a=rnd(2,4),b=rnd(4,12),lim=Math.floor((b-1)/a);return{question:'Solve the inequality <b>'+a+'x + 1 < '+b+'</b>. What is the largest integer value of x?',hints:[a+'x < '+(b-1),'x < '+((b-1)/a).toFixed(2)],ans:lim,tol:0,unit:'',working:a+'x < '+(b-1)+', x < '+((b-1)/a).toFixed(2)+', largest integer = '+lim};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
+  ]},
+  {ey:'Q2 \u00b7 Year 8 \u00b7 Inequalities',ti:'Solving a Two-Step Inequality',su:'Solve 3x \u2212 4 \u2264 11.',steps:[
+    {lb:'The problem',dr:dQ2,ht:'<p>Solve 3x \u2212 4 \u2264 11.</p>',speak:'Solve 3x minus 4 is less than or equal to 11.'},
+    {lb:'Add 4',dr:dQ2,ht:'<div class="fm">3x \u2264 15</div>',speak:'3x is less than or equal to 15.'},
+    {lb:'Divide',dr:dQ2,ht:'<div class="fm">x \u2264 5</div>',speak:'x is less than or equal to 5.'},
+    {lb:'Your turn',dr:dQ2,ht:tryIt(function(){var a=rInt(2,6),b=rInt(1,10),x=rInt(3,10);var rhs=a*x-b;return{question:'Solve <b>'+a+'x \u2212 '+b+' \u2264 '+rhs+'</b>. What is the largest value of x?',hints:[a+'x \u2264 '+(rhs+b)],ans:x,tol:0,unit:'',working:'x \u2264 '+x};}),speak:'Now it\u2019s your turn \u2014 find the largest value of x.'},
+  ]},
+  {ey:'Q3 \u00b7 Year 8 \u00b7 Inequalities',ti:'Dividing by a Negative Flips the Sign',su:'Solve \u22122x > 8.',steps:[
+    {lb:'A negative coefficient',dr:dQ3,ht:'<p>Solve \u22122x > 8.</p>',speak:'Solve negative 2x is greater than 8.'},
+    {lb:'Watch the sign flip',dr:dQ3,ht:'<div class="fm">Divide by \u22122... FLIP the sign!</div>',speak:'Divide by negative 2, and flip the sign.'},
+    {lb:'Result',dr:dQ3,ht:'<div class="fm">x < \u22124</div>',speak:'x is less than negative 4.'},
+    {lb:'The essential rule',dr:dQ3,ht:'<p>Dividing (or multiplying) by a negative REVERSES the inequality sign.</p>',speak:'Dividing, or multiplying, by a negative reverses the inequality sign.'},
+    {lb:'Your turn',dr:dQ3,ht:tryIt(function(){var a=rInt(2,6),x=rInt(2,10);var rhs=-a*x;return{question:'Solve <b>\u2212'+a+'x > '+rhs+'</b>. Find x. (Remember to flip the sign!)',hints:['Divide by \u2212'+a+', flip the sign'],ans:x-1,tol:0,unit:'(largest integer below the boundary)',working:'x < '+x};}),speak:'Now it\u2019s your turn \u2014 remember to flip the sign.'},
+  ]},
+  {ey:'Q4 \u00b7 Year 8 \u00b7 Inequalities',ti:'Finding Integer Solutions',su:'Solve 2x < 9. What is the LARGEST integer solution?',steps:[
+    {lb:'The problem',dr:dQ4,ht:'<p>Solve 2x < 9. What is the LARGEST integer solution?</p>',speak:'Solve 2x is less than 9. What is the largest integer solution?'},
+    {lb:'Solve',dr:dQ4,ht:'<div class="fm">x < 4.5</div>',speak:'x is less than 4.5.'},
+    {lb:'Find the integer',dr:dQ4,ht:'<div class="fm">Largest integer = 4</div>',speak:'The largest integer is 4.'},
+    {lb:'Your turn',dr:dQ4,ht:tryIt(function(){var a=rInt(2,5),b=rInt(4,20);var lim=Math.floor((b-1)/a);return{question:'Solve '+a+'x < '+b+'. What is the LARGEST integer solution?',hints:['x < '+(b/a).toFixed(2)],ans:lim,tol:0,unit:'',working:'Largest integer = '+lim};}),speak:'Now it\u2019s your turn \u2014 find the largest integer solution.'},
+  ]},
+  {ey:'Q5 \u00b7 Year 8 \u00b7 Inequalities',ti:'A Common Mistake',su:'Solve \u22123x \u2264 12 \u2014 avoiding a classic error.',steps:[
+    {lb:'A sign-flip trap',dr:dQ5,ht:'<p>Solve \u22123x \u2264 12. It\u2019s easy to forget the sign flip.</p>',speak:'Solve negative 3x is less than or equal to 12. It\u2019s easy to forget the sign flip.'},
+    {lb:'The mistake',dr:dQ5,ht:'<div class="fm">WRONG: x \u2264 \u22124 (forgot to flip!)</div>',speak:'A common mistake: x less than or equal to negative 4, forgetting to flip the sign.'},
+    {lb:'The correct way',dr:dQ5,ht:'<div class="fm">RIGHT: x \u2265 \u22124</div>',speak:'The correct way: x is greater than or equal to negative 4.'},
+    {lb:'Why it flips',dr:dQ5,ht:'<p>Divided by NEGATIVE 3, so the sign MUST flip.</p>',speak:'Divided by negative 3, so the sign must flip.'},
+    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var a=rInt(2,6),x=rInt(2,10);var rhs=-a*x;return{question:'Solve <b>\u2212'+a+'x \u2264 '+rhs+'</b>. Find x (remember to flip!).',hints:['Divide by \u2212'+a+', flip the sign'],ans:x,tol:0,unit:'',working:'x \u2265 '+x};}),speak:'Now it\u2019s your turn \u2014 remember to flip the sign here too.'},
+  ]},
+  {ey:'Q6 \u00b7 Year 8 \u00b7 Inequalities',ti:'Real Life: A Budget Limit',su:'Items cost \u20a6150 each. You have \u20a61,000. Max items you can buy?',steps:[
+    {lb:'The scenario',dr:dQ6,ht:'<p>Items cost \u20a6150 each. You have \u20a61,000. What\u2019s the maximum number of items you can buy?</p>',speak:'Items cost 150 naira each. You have 1,000 naira. What\u2019s the maximum number of items you can buy?'},
+    {lb:'Set up the inequality',dr:dQ6,ht:'<div class="fm">150x \u2264 1000</div>',speak:'150x is less than or equal to 1,000.'},
+    {lb:'Solve',dr:dQ6,ht:'<div class="fm">x \u2264 6.67, so max 6</div>',speak:'x is less than or equal to 6.67, so the maximum is 6 whole items.'},
+    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var price=rInt(2,15)*50,budget=rInt(5,20)*100;var maxItems=Math.floor(budget/price);return{question:'Items cost \u20a6'+price+' each. You have \u20a6'+budget+'. What\u2019s the maximum number of items you can buy?',hints:[price+'x \u2264 '+budget],ans:maxItems,tol:0,unit:'items',working:'x \u2264 '+(budget/price).toFixed(2)+', max = '+maxItems};}),speak:'Now it\u2019s your turn \u2014 find the maximum number of items.'},
+  ]},
+  {ey:'Q7 \u00b7 Year 8 \u00b7 Inequalities',ti:'A Combined Inequality',su:'Solve \u22122 \u2264 2x < 10. Find the range for x.',steps:[
+    {lb:'Three parts at once',dr:dQ7,ht:'<p>Solve \u22122 \u2264 2x < 10. Find the range for x.</p>',speak:'Solve negative 2 is less than or equal to 2x, which is less than 10. Find the range for x.'},
+    {lb:'Divide all three parts',dr:dQ7,ht:'<div class="fm">Divide all parts by 2</div>',speak:'Divide all three parts by 2.'},
+    {lb:'The range',dr:dQ7,ht:'<div class="fm">\u22121 \u2264 x < 5</div>',speak:'Negative 1 is less than or equal to x, which is less than 5.'},
+    {lb:'Your turn',dr:dQ7,ht:tryIt(function(){var a=rInt(2,4);var lo=-a*rInt(1,3),hi=a*rInt(2,5);return{question:'Solve '+lo+' \u2264 '+a+'x < '+hi+'. What is the LOWER bound for x?',hints:['Divide all parts by '+a],ans:lo/a,tol:0,unit:'',working:'x \u2265 '+(lo/a)};}),speak:'Now it\u2019s your turn \u2014 find the lower bound.'},
+  ]},
+  {ey:'Q8 \u00b7 Year 8 \u00b7 Inequalities',ti:'Strict vs Non-Strict Inequalities',su:'< and > vs \u2264 and \u2265.',steps:[
+    {lb:'Two types of inequality',dr:dQ8,ht:'<p>< and > are STRICT (not equal). \u2264 and \u2265 INCLUDE the boundary.</p>',speak:'Less than and greater than are strict, meaning not equal. Less than or equal to, and greater than or equal to, include the boundary.'},
+    {lb:'An example',dr:dQ8,ht:'<p>x<5 does NOT include 5. x\u22645 DOES include 5.</p>',speak:'x less than 5 does not include 5. x less than or equal to 5 does include 5.'},
+    {lb:'On a number line',dr:dQ8,ht:'<div class="fm">Open circle for strict, filled for non-strict</div>',speak:'Open circle for strict, filled for non-strict.'},
+    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var n=rInt(2,10);var strict=rPick([true,false]);return{question:'Does x'+(strict?'<':'\u2264')+n+' include the value '+n+' itself? Enter 1 for YES, 2 for NO.',hints:['Strict (<) excludes; non-strict (\u2264) includes'],ans:strict?2:1,tol:0,unit:'',working:strict?'Strict inequality \u2014 does NOT include '+n:'Non-strict \u2014 DOES include '+n};}),speak:'Now it\u2019s your turn \u2014 does this inequality include the boundary?'},
+  ]},
+  {ey:'Q9 \u00b7 Year 8 \u00b7 Inequalities',ti:'Unknowns on Both Sides',su:'Solve 4x + 3 > 2x + 11.',steps:[
+    {lb:'The problem',dr:dQ9,ht:'<p>Solve 4x + 3 > 2x + 11.</p>',speak:'Solve 4x plus 3 is greater than 2x plus 11.'},
+    {lb:'Move x terms',dr:dQ9,ht:'<div class="fm">2x > 8</div>',speak:'2x is greater than 8.'},
+    {lb:'Solve',dr:dQ9,ht:'<div class="fm">x > 4</div>',speak:'x is greater than 4.'},
+    {lb:'Your turn',dr:dQ9,ht:tryIt(function(){var diff=rInt(1,3),x=rInt(2,8),a=diff+rInt(1,3),c=a-diff,b=rInt(1,10),d=b+diff*x;return{question:'Solve <b>'+a+'x + '+b+' > '+c+'x + '+d+'</b>. Find the smallest integer solution above the boundary.',hints:['Move x terms: '+diff+'x > '+(d-b)],ans:x+1,tol:0,unit:'',working:'x > '+x};}),speak:'Now it\u2019s your turn \u2014 solve this inequality.'},
+  ]},
+  {ey:'Q10 \u00b7 Year 8 \u00b7 Inequalities',ti:'Mixed Practice',su:'Combine everything you\u2019ve learned about inequalities.',steps:[
+    {lb:'Step 1: solve like a normal equation',dr:dQ10,ht:'<p>Solve like a normal equation, adding/subtracting and dividing/multiplying.</p>',speak:'Step 1: solve like a normal equation, adding or subtracting, then dividing or multiplying.'},
+    {lb:'Step 2: watch for the sign flip',dr:dQ10,ht:'<p>FLIP the sign if dividing/multiplying by a negative.</p>',speak:'Step 2: flip the sign if dividing or multiplying by a negative.'},
+    {lb:'Worked example',dr:dQ10,ht:'<div class="fm">3x+2\u226511: 3x\u22649, x\u22643</div>',speak:'For example: 3x plus 2 is less than or equal to 11. That gives 3x less than or equal to 9, so x is less than or equal to 3.'},
+    {lb:'Your turn',dr:dQ10,ht:tryIt(function(){var a=rInt(2,6),b=rInt(1,10),x=rInt(3,10);var rhs=a*x+b;return{question:'Solve <b>'+a+'x + '+b+' \u2264 '+rhs+'</b>. What is the largest value of x?',hints:[a+'x \u2264 '+(rhs-b)],ans:x,tol:0,unit:'',working:'x \u2264 '+x};}),speak:'Now it\u2019s your turn \u2014 one final inequality question.'},
+  ]},
+
+];
+
+var qi=0,si=0;
+function bSB(){var sb=document.getElementById('sb');var lbl=sb.querySelector('.sb-lbl');sb.innerHTML='';sb.appendChild(lbl);QS.forEach(function(q,i){var b=document.createElement('button');b.className='qb'+(i===qi?' on':'');b.innerHTML='<span class="qn">Q'+(i+1)+'</span>'+q.ti;b.onclick=function(){qi=i;si=0;render();};sb.appendChild(b);});}
+function bDT(){var w=document.getElementById('dt');w.innerHTML='';QS[qi].steps.forEach(function(_,i){var d=document.createElement('div');d.className='dot'+(i===si?' on':i<si?' dn':'');w.appendChild(d);});}
+function render(){if(typeof stopReading==='function')stopReading();bSB();var q=QS[qi],st=q.steps[si];document.getElementById('ey').innerHTML=q.ey;document.getElementById('ti').innerHTML=q.ti;document.getElementById('su').textContent=q.su;var p=document.getElementById('pn');p.classList.remove('fi');void p.offsetWidth;p.classList.add('fi');p.innerHTML='<div class="sl">'+st.lb+'</div>'+st.ht;st.dr(si);bDT();document.getElementById('pb').disabled=(si===0);document.getElementById('nb').textContent=(si===q.steps.length-1)?'Restart':'Next →';}
+document.getElementById('pb').addEventListener('click',function(){if(si>0){si--;render();}});
+document.getElementById('nb').addEventListener('click',function(){var q=QS[qi];si=(si===q.steps.length-1)?0:si+1;render();});
+
+// ── Auto-reader ───────────────────────────────────────────────────────
+var voiceSelEl = document.getElementById('voiceSel');
+var readerStatusEl = document.getElementById('readerStatus');
+var readBtnEl = document.getElementById('readBtn');
+var autoBtnEl = document.getElementById('autoBtn');
+var stopBtnEl = document.getElementById('stopReadBtn');
+var autoPlaying = false;
+var userPickedVoice = false;
+
+function populateVoices(){
+  var voices = (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter(function(v){return v.lang.indexOf('en')===0;});
+  voiceSelEl.innerHTML = '<option value="">Default voice</option>' + voices.map(function(v,i){return '<option value="'+i+'">'+v.name+' ('+v.lang+')</option>';}).join('');
+}
+if (window.speechSynthesis) {
+  populateVoices();
+  speechSynthesis.onvoiceschanged = populateVoices;
+}
+voiceSelEl.addEventListener('change', function(){ userPickedVoice = (voiceSelEl.value !== ''); });
+function currentVoice(){
+  if (!userPickedVoice) return null;
+  var voices = (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter(function(v){return v.lang.indexOf('en')===0;});
+  return voices[parseInt(voiceSelEl.value,10)] || null;
+}
+function hasInteractiveQuestion(st){ return st.ht.indexOf('data-tryid')>-1; }
+
+function stopReading(){
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  autoPlaying = false;
+  readBtnEl.disabled = false; autoBtnEl.disabled = false;
+  stopBtnEl.style.display = 'none';
+  readerStatusEl.textContent = '';
+  window.__activeUtterance = null;
+}
+
+function speakStep(st, onDone){
+  if (!window.speechSynthesis) { readerStatusEl.textContent = 'Speech isn’t supported on this browser.'; if(onDone) onDone(); return; }
+  if (!st.speak) { if(onDone) onDone(); return; }
+  var u = new SpeechSynthesisUtterance(st.speak);
+  var v = currentVoice();
+  if (v) u.voice = v;
+  u.rate = 0.95;
+  u.onend = function(){ window.__activeUtterance = null; if (onDone) onDone(); };
+  u.onerror = function(ev){
+    window.__activeUtterance = null;
+    readerStatusEl.textContent = 'Couldn’t play audio (' + (ev && ev.error ? ev.error : 'unknown error') + '). Check the device isn’t muted and try again.';
+    if (onDone) onDone();
+  };
+  window.__activeUtterance = u;
+  speechSynthesis.speak(u);
+  setTimeout(function(){
+    if (window.__activeUtterance === u && !speechSynthesis.speaking && !speechSynthesis.pending) {
+      readerStatusEl.textContent = 'No audio started — try tapping the button again, or check the device isn’t on silent/muted.';
+    }
+  }, 600);
+}
+
+readBtnEl.addEventListener('click', function(){
+  if (!window.speechSynthesis) { readerStatusEl.textContent = 'Speech not supported on this device.'; return; }
+  speechSynthesis.cancel();
+  readBtnEl.disabled = true; autoBtnEl.disabled = true; stopBtnEl.style.display = 'inline-block';
+  readerStatusEl.textContent = 'Reading…';
+  var st = QS[qi].steps[si];
+  speakStep(st, function(){
+    readBtnEl.disabled = false; autoBtnEl.disabled = false; stopBtnEl.style.display = 'none';
+  });
+});
+
+autoBtnEl.addEventListener('click', function(){
+  if (!window.speechSynthesis) { readerStatusEl.textContent = 'Speech not supported on this device.'; return; }
+  speechSynthesis.cancel();
+  autoPlaying = true;
+  readBtnEl.disabled = true; autoBtnEl.disabled = true; stopBtnEl.style.display = 'inline-block';
+  autoStep();
+});
+
+stopBtnEl.addEventListener('click', stopReading);
+
+function autoStep(){
+  if (!autoPlaying) return;
+  var q = QS[qi], st = q.steps[si];
+  readerStatusEl.textContent = 'Reading step '+(si+1)+' of '+q.steps.length+'…';
+  speakStep(st, function(){
+    if (!autoPlaying) return;
+    if (hasInteractiveQuestion(st)) {
+      autoPlaying = false;
+      readBtnEl.disabled = false; autoBtnEl.disabled = false; stopBtnEl.style.display = 'none';
+      readerStatusEl.textContent = 'Your turn — try the question below.';
+      return;
+    }
+    if (si < q.steps.length-1) {
+      si++;
+      var p=document.getElementById('pn'); var nst=q.steps[si];
+      p.innerHTML='<div class="sl">'+nst.lb+'</div>'+nst.ht; nst.dr(si);
+      p.classList.remove('fi');void p.offsetWidth;p.classList.add('fi');
+      bDT();
+      autoStep();
+    } else {
+      autoPlaying = false;
+      readBtnEl.disabled = false; autoBtnEl.disabled = false; stopBtnEl.style.display = 'none';
+      readerStatusEl.textContent = 'Question narrated.';
+    }
+  });
+}
+
+render();
+
+</script>
+
+
+<!-- ABC Supabase Progress Tracking -->
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+const _sb = createClient('https://lnwinoghbefmjpvmixzo.supabase.co', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxud2lub2doYmVmbWpwdm1peHpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODIxNzQsImV4cCI6MjA5Nzk1ODE3NH0.ubKHVLrxlxQd-w3n5pS3O6YMAI7I--ndEkI2xWM9qCo');
+window._supabase = _sb;
+window._abcTopicCode = 'Y8-ALG-31';
+window.markComplete = async function() {
+  const { data: { session } } = await _sb.auth.getSession();
+  if (!session) return;
+  const { data: topic } = await _sb.from('topics').select('id').eq('topic_code', window._abcTopicCode).maybeSingle();
+  if (!topic) return;
+  window._abcTopicId = topic.id;
+  const { data: __mySchoolProfile } = await _sb.from('profiles').select('school_id').eq('id', session.user.id).maybeSingle();
+  const __mySchoolId = __mySchoolProfile ? __mySchoolProfile.school_id : null;
+  await _sb.from('walkthrough_progress').upsert({
+    student_id: session.user.id, school_id: __mySchoolId, topic_id: topic.id,
+    status: 'completed', completed_at: new Date().toISOString(),
+    last_visited_at: new Date().toISOString(),
+  }, { onConflict: 'student_id,topic_id' });
+};
+</script>
+<script src="../abc_feedback_widget.js"></script>
+</body>
+</html>
