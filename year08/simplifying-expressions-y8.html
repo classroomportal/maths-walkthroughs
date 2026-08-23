@@ -131,6 +131,30 @@ function rPick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
+function parseLinearExpr(str,vars){
+  if(!str)return null;
+  str=str.replace(/\s+/g,'').toLowerCase();
+  if(str==='')return null;
+  var coeffs={};vars.forEach(function(v){coeffs[v]=0;});
+  var constant=0;
+  var re=/([+-]?\d*)([a-z])|([+-]?\d+)(?![a-z])/g;var m;var matchedAny=false;var idx=0;
+  while((m=re.exec(str))){
+    if(m.index!==idx)return null;
+    idx=re.lastIndex;matchedAny=true;
+    if(m[2]){
+      var c=m[1],v=m[2];
+      if(vars.indexOf(v)===-1)return null;
+      if(c===''||c==='+')c='1';else if(c==='-')c='-1';
+      coeffs[v]+=parseInt(c,10);
+    } else if(m[3]!==undefined){
+      constant+=parseInt(m[3],10);
+    }
+  }
+  if(!matchedAny||idx!==str.length)return null;
+  coeffs._const=constant;
+  return coeffs;
+}
+
 function tryIt(genFn){
   if(typeof genFn==='object'){var _o=genFn;genFn=function(){return _o;};}
   var id='t'+Math.random().toString(36).slice(2);
@@ -146,6 +170,8 @@ function buildTry(id,o){
   var ph='Answer'+(o.unit?' ('+o.unit+')':'');
   var ansBox=o.frac
     ? '<div class="ar"><div class="fracbox"><input type="number" step="any" placeholder="num" class="try-num" data-tryid="'+id+'"/><div class="fracline"></div><input type="number" step="any" placeholder="den" class="try-den" data-tryid="'+id+'"/></div><button class="ck try-ck" data-tryid="'+id+'">Check</button></div>'
+    : o.vars
+    ? '<div class="ar"><input type="text" placeholder="'+(o.placeholder||'e.g. 5x + 3')+'" class="try-inp" data-tryid="'+id+'"/><button class="ck try-ck" data-tryid="'+id+'">Check</button></div>'
     : '<div class="ar"><input type="number" step="any" placeholder="'+ph+'" class="try-inp" data-tryid="'+id+'"/><button class="ck try-ck" data-tryid="'+id+'">Check</button></div>';
   return '<div class="try" data-tryid="'+id+'">'
     +'<div class="try-t">✔ Your Turn'
@@ -191,6 +217,17 @@ function ckById(id){
   }
   var inp=document.querySelector('.try-inp[data-tryid="'+id+'"]');
   if(!inp)return;
+  if(o.vars){
+    var parsed=parseLinearExpr(inp.value,o.vars);
+    if(!parsed){fb.className='try-fb fb er';fb.textContent='Enter an expression, e.g. '+(o.placeholder||'5x + 3').replace('e.g. ','');return;}
+    var ok2=true;
+    for(var i=0;i<o.vars.length;i++){var vv=o.vars[i];if(parsed[vv]!==o.coeffs[vv])ok2=false;}
+    var expectedConst=(o.constant!=null)?o.constant:0;
+    if(parsed._const!==expectedConst)ok2=false;
+    if(ok2){fb.className='try-fb fb ok';fb.innerHTML='✓ Correct! '+o.working;}
+    else{fb.className='try-fb fb er';fb.textContent='Not quite — try again.';}
+    return;
+  }
   var v=parseFloat(inp.value);
   if(isNaN(v)){fb.className='try-fb fb er';fb.textContent='Enter a number.';return;}
   if(o.range){
@@ -263,14 +300,14 @@ var QS=[
     {lb:'Identify like terms',dr:dQ1,ht:'<p>Like terms share the <b>same letter and same power</b>. Only like terms can be added or subtracted.</p><p>Here: 3x, 4x, 2x are like terms. \u22125 is a constant (no letter).</p>',speak:'Like terms share the same letter and same power. Only like terms can be added or subtracted. Here, 3x, 4x, and 2x are like terms. Negative 5 is a constant, with no letter.'},
     {lb:'Collect x terms',dr:dQ1,ht:'<div class="fm"><div class="eqs"><div class="rw"><span class="l">3x + 4x + 2x</span><span class="o">=</span><span class="r">9x</span></div></div></div><p>The constant \u22125 stays as it is \u2014 there are no other constants to combine with.</p>',speak:'3x plus 4x plus 2x equals 9x. The constant negative 5 stays as it is \u2014 there are no other constants to combine with.'},
     {lb:'Final answer',dr:dQ1,ht:'<div class="fm"><div class="terms">9x \u2212 5</div></div>',speak:'The final answer is 9x minus 5.'},
-    {lb:'Your turn',dr:dQ1,ht:tryIt(function(){var a=rInt(2,5),b=rInt(2,5),c=rInt(1,4),k=rInt(1,7);var ans=a+b+c;return{question:'Simplify <b>'+a+'x + '+b+'x \u2212 '+k+' + '+c+'x</b>. Enter the coefficient of x.',hints:['Collect all x terms','The constant \u2212'+k+' stays separate'],ans:ans,tol:0,unit:'(coefficient of x)',working:ans+'x \u2212 '+k+'. Coefficient = '+ans};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
+    {lb:'Your turn',dr:dQ1,ht:tryIt(function(){var a=rInt(2,5),b=rInt(2,5),c=rInt(1,4),k=rInt(1,7);var ans=a+b+c;return{question:'Simplify <b>'+a+'x + '+b+'x \u2212 '+k+' + '+c+'x</b>. Enter the fully simplified expression.',hints:['Collect all x terms: '+a+'+'+b+'+'+c,'The constant \u2212'+k+' stays separate'],vars:['x'],coeffs:{x:ans},constant:-k,placeholder:'e.g. '+ans+'x \u2212 '+k,working:ans+'x \u2212 '+k};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
   ]},
   {ey:'Q2 \u00b7 Year 8 \u00b7 Simplifying Expressions',ti:'Simplifying with More Terms',su:'Simplify 5x + 2y \u2212 3x + 7y.',steps:[
     {lb:'Two letters this time',dr:dQ2,ht:'<p>Simplify 5x + 2y \u2212 3x + 7y \u2014 group the x terms and y terms separately.</p>',speak:'Simplify 5x plus 2y minus 3x plus 7y \u2014 group the x terms and y terms separately.'},
     {lb:'Collect each group',dr:dQ2,ht:'<div class="fm">x: 5\u22123=2. y: 2+7=9</div>',speak:'x terms: 5 minus 3 equals 2. y terms: 2 plus 7 equals 9.'},
     {lb:'Combine',dr:dQ2,ht:'<div class="fm">= 2x + 9y</div>',speak:'Combined: 2x plus 9y.'},
     {lb:'Keep letters separate',dr:dQ2,ht:'<p>x terms and y terms can never combine \u2014 keep them as two separate groups.</p>',speak:'x terms and y terms can never combine \u2014 keep them as two separate groups.'},
-    {lb:'Your turn',dr:dQ2,ht:tryIt(function(){var a=rInt(2,9),b=rInt(2,9),c=rInt(1,8),d=rInt(1,8);var coeffX=a-c,coeffY=b+d;return{question:'Simplify <b>'+a+'x + '+b+'y \u2212 '+c+'x + '+d+'y</b>. What is the coefficient of x?',hints:['x: '+a+'\u2212'+c],ans:coeffX,tol:0,unit:'(coefficient of x)',working:'x: '+a+'\u2212'+c+'='+coeffX+'. y: '+b+'+'+d+'='+coeffY};}),speak:'Now it\u2019s your turn \u2014 collect the x and y terms separately.'},
+    {lb:'Your turn',dr:dQ2,ht:tryIt(function(){var a=rInt(2,9),b=rInt(2,9),c=rInt(1,8),d=rInt(1,8);var coeffX=a-c,coeffY=b+d;while(coeffX===0){c=rInt(1,8);coeffX=a-c;}return{question:'Simplify <b>'+a+'x + '+b+'y \u2212 '+c+'x + '+d+'y</b>. Enter the fully simplified expression.',hints:['x: '+a+'\u2212'+c,'y: '+b+'+'+d],vars:['x','y'],coeffs:{x:coeffX,y:coeffY},placeholder:'e.g. 2x + 9y',working:coeffX+'x + '+coeffY+'y'};}),speak:'Now it\u2019s your turn \u2014 collect the x and y terms separately.'},
   ]},
   {ey:'Q3 \u00b7 Year 8 \u00b7 Simplifying Expressions',ti:'Simplifying with Squared Terms',su:'Simplify 4x\u00b2 + 3x + 2x\u00b2 \u2212 x.',steps:[
     {lb:'x and x\u00b2 are different',dr:dQ3,ht:'<p>Simplify 4x\u00b2 + 3x + 2x\u00b2 \u2212 x \u2014 x\u00b2 terms and x terms are different kinds of term.</p>',speak:'Simplify 4x squared plus 3x plus 2x squared minus x \u2014 x squared terms and x terms are different kinds of term.'},
@@ -290,14 +327,14 @@ var QS=[
     {lb:'A special case',dr:dQ5,ht:'<p>Simplify 5x \u2212 5x + 3y \u2014 what happens when identical terms cancel?</p>',speak:'Simplify 5x minus 5x plus 3y \u2014 what happens when identical terms cancel?'},
     {lb:'The x terms cancel',dr:dQ5,ht:'<div class="fm">5x\u22125x = 0</div>',speak:'5x minus 5x equals 0.'},
     {lb:'The result',dr:dQ5,ht:'<div class="fm">= 3y</div>',speak:'The result is 3y \u2014 no x term left at all.'},
-    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var a=rInt(2,9),b=rInt(1,8);var letter=rPick(['x','y','a']);var other=rPick(['y','n','b']);return{question:'Simplify <b>'+a+letter+' \u2212 '+a+letter+' + '+b+other+'</b>.',hints:[a+letter+' \u2212 '+a+letter+' = 0'],ans:b,tol:0,unit:'(coefficient of '+other+')',working:'The '+letter+' terms cancel, leaving '+b+other};}),speak:'Now it\u2019s your turn \u2014 notice which terms cancel completely.'},
+    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var a=rInt(2,9),b=rInt(1,8);var pair=rPick([['x','y'],['a','b'],['m','n']]);var letter=pair[0],other=pair[1];return{question:'Simplify <b>'+a+letter+' \u2212 '+a+letter+' + '+b+other+'</b>. Enter the fully simplified expression.',hints:[a+letter+' \u2212 '+a+letter+' = 0'],vars:[other],coeffs:(function(){var o={};o[other]=b;return o;})(),placeholder:'e.g. '+b+other,working:'The '+letter+' terms cancel, leaving '+b+other};}),speak:'Now it\u2019s your turn \u2014 notice which terms cancel completely.'},
   ]},
   {ey:'Q6 \u00b7 Year 8 \u00b7 Simplifying Expressions',ti:'Real Life: Total Quantity',su:'You have 3x apples, buy 5x more, eat 2x. Simplify the total.',steps:[
     {lb:'The scenario',dr:dQ6,ht:'<p>You have 3x apples, buy 5x more, then eat 2x. Simplify the remaining total.</p>',speak:'You have 3x apples, buy 5x more, then eat 2x. Simplify the remaining total.'},
     {lb:'Write the expression',dr:dQ6,ht:'<div class="fm">3x+5x\u22122x</div>',speak:'3x plus 5x, minus 2x.'},
     {lb:'Simplify',dr:dQ6,ht:'<div class="fm">= 6x apples</div>',speak:'That simplifies to 6x apples.'},
     {lb:'Real quantities use algebra too',dr:dQ6,ht:'<p>Tracking a changing quantity over several steps is a natural real-life use of simplifying expressions.</p>',speak:'Tracking a changing quantity over several steps is a natural real-life use of simplifying expressions.'},
-    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var a=rInt(2,8),b=rInt(2,8),c=rInt(1,6);var ans=a+b-c;return{question:'You have '+a+'x oranges, buy '+b+'x more, then eat '+c+'x. Simplify the remaining total.',hints:[a+'x+'+b+'x\u2212'+c+'x'],ans:ans,tol:0,unit:'(coefficient of x)',working:a+'+'+b+'\u2212'+c+' = '+ans};}),speak:'Now it\u2019s your turn \u2014 track this changing quantity.'},
+    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var a=rInt(2,8),b=rInt(2,8),c=rInt(1,6);var ans=a+b-c;while(ans<=0){c=rInt(1,6);ans=a+b-c;}return{question:'You have '+a+'x oranges, buy '+b+'x more, then eat '+c+'x. Simplify the remaining total.',hints:[a+'x+'+b+'x\u2212'+c+'x'],vars:['x'],coeffs:{x:ans},placeholder:'e.g. '+ans+'x',working:ans+'x'};}),speak:'Now it\u2019s your turn \u2014 track this changing quantity.'},
   ]},
   {ey:'Q7 \u00b7 Year 8 \u00b7 Simplifying Expressions',ti:'Simplify, Then Substitute',su:'Simplify 4x+3x, then evaluate when x=5.',steps:[
     {lb:'Two skills combined',dr:dQ7,ht:'<p>Simplify 4x+3x, then evaluate when x=5 \u2014 always simplify first, it\u2019s much easier.</p>',speak:'Simplify 4x plus 3x, then evaluate when x equals 5 \u2014 always simplify first, it\u2019s much easier.'},
@@ -310,19 +347,19 @@ var QS=[
     {lb:'Three letters to track',dr:dQ8,ht:'<p>Simplify 2a+3b+c\u2212a+2b \u2014 three different letters, each with its own group.</p>',speak:'Simplify 2a plus 3b plus c minus a plus 2b \u2014 three different letters, each with its own group.'},
     {lb:'Group each letter',dr:dQ8,ht:'<p>a: 2\u22121=1. b: 3+2=5. c: just c.</p>',speak:'For a: 2 minus 1 equals 1. For b: 3 plus 2 equals 5. For c: only one term, so it stays as c.'},
     {lb:'Combine',dr:dQ8,ht:'<div class="fm">= a + 5b + c</div>',speak:'Combined: a plus 5b plus c.'},
-    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var a1=rInt(1,5),a2=rInt(1,5),b1=rInt(1,5),b2=rInt(1,5),c1=rInt(1,4);var coeffA=a1-a2,coeffB=b1+b2;return{question:'Simplify <b>'+a1+'x + '+b1+'y + '+c1+'z \u2212 '+a2+'x + '+b2+'y</b>. What is the coefficient of x?',hints:['x: '+a1+'\u2212'+a2],ans:coeffA,tol:0,unit:'(coefficient of x)',working:'x: '+a1+'\u2212'+a2+'='+coeffA};}),speak:'Now it\u2019s your turn \u2014 track all three letters.'},
+    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var a1=rInt(2,5),a2=rInt(1,4),b1=rInt(1,5),b2=rInt(1,5),c1=rInt(1,4);var coeffA=a1-a2,coeffB=b1+b2;while(coeffA===0){a1=rInt(2,5);a2=rInt(1,4);coeffA=a1-a2;}return{question:'Simplify <b>'+a1+'x + '+b1+'y + '+c1+'z \u2212 '+a2+'x + '+b2+'y</b>. Enter the fully simplified expression.',hints:['x: '+a1+'\u2212'+a2,'y: '+b1+'+'+b2],vars:['x','y','z'],coeffs:{x:coeffA,y:coeffB,z:c1},placeholder:'e.g. x + 5y + z',working:coeffA+'x + '+coeffB+'y + '+c1+'z'};}),speak:'Now it\u2019s your turn \u2014 track all three letters.'},
   ]},
   {ey:'Q9 \u00b7 Year 8 \u00b7 Simplifying Expressions',ti:'Negative Coefficients Throughout',su:'Simplify \u22123x \u2212 2x + 5x.',steps:[
     {lb:'All negative or mixed',dr:dQ9,ht:'<p>Simplify \u22123x \u2212 2x + 5x \u2014 careful adding these signed coefficients.</p>',speak:'Simplify negative 3x minus 2x plus 5x \u2014 careful adding these signed coefficients.'},
     {lb:'Add with signs',dr:dQ9,ht:'<div class="fm">\u22123\u22122+5 = 0</div>',speak:'Negative 3 minus 2 plus 5 equals 0.'},
     {lb:'The result',dr:dQ9,ht:'<div class="fm">= 0</div>',speak:'The result is 0.'},
-    {lb:'Your turn',dr:dQ9,ht:tryIt(function(){var a=rInt(1,8),b=rInt(1,8),c=rInt(1,8);var ans=-a-b+c;var letter=rPick(['x','y','n']);return{question:'Simplify <b>\u2212'+a+letter+' \u2212 '+b+letter+' + '+c+letter+'</b>.',hints:['\u2212'+a+'\u2212'+b+'+'+c],ans:ans,tol:0,unit:'(coefficient of '+letter+')',working:'\u2212'+a+'\u2212'+b+'+'+c+' = '+ans};}),speak:'Now it\u2019s your turn \u2014 add these signed coefficients.'},
+    {lb:'Your turn',dr:dQ9,ht:tryIt(function(){var a=rInt(1,8),b=rInt(1,8),c=rInt(1,8);var ans=-a-b+c;while(ans===0){c=rInt(1,8);ans=-a-b+c;}var letter=rPick(['x','y','n']);return{question:'Simplify <b>\u2212'+a+letter+' \u2212 '+b+letter+' + '+c+letter+'</b>. Enter the fully simplified expression.',hints:['\u2212'+a+'\u2212'+b+'+'+c],vars:[letter],coeffs:(function(){var o={};o[letter]=ans;return o;})(),placeholder:'e.g. '+ans+letter,working:ans+letter};}),speak:'Now it\u2019s your turn \u2014 add these signed coefficients.'},
   ]},
   {ey:'Q10 \u00b7 Year 8 \u00b7 Simplifying Expressions',ti:'Mixed Practice',su:'Combine everything you\u2019ve learned about simplifying expressions.',steps:[
     {lb:'Step 1: identify like terms',dr:dQ10,ht:'<p>Identify like terms \u2014 same letter, same power.</p>',speak:'Step 1: identify like terms \u2014 same letter, same power.'},
     {lb:'Step 2: combine coefficients',dr:dQ10,ht:'<p>Add or subtract the coefficients of each group.</p>',speak:'Step 2: add or subtract the coefficients of each group.'},
     {lb:'Worked example',dr:dQ10,ht:'<div class="fm">5a+3\u22122a+7 = 3a + 10</div>',speak:'For example: 5a plus 3, minus 2a, plus 7, equals 3a plus 10.'},
-    {lb:'Your turn',dr:dQ10,ht:tryIt(function(){var a=rInt(2,8),b=rInt(1,10),c=rInt(1,6),d=rInt(1,10);var coeff=a-c;var constant=b+d;return{question:'Simplify <b>'+a+'x + '+b+' \u2212 '+c+'x + '+d+'</b>. What is the coefficient of x?',hints:['x: '+a+'\u2212'+c],ans:coeff,tol:0,unit:'(coefficient of x)',working:'x: '+a+'\u2212'+c+'='+coeff+'. Constants: '+b+'+'+d+'='+constant};}),speak:'Now it\u2019s your turn \u2014 one final mixed simplifying question.'},
+    {lb:'Your turn',dr:dQ10,ht:tryIt(function(){var a=rInt(2,8),b=rInt(1,10),c=rInt(1,6),d=rInt(1,10);var coeff=a-c;var constant=b+d;while(coeff===0){c=rInt(1,6);coeff=a-c;}return{question:'Simplify <b>'+a+'x + '+b+' \u2212 '+c+'x + '+d+'</b>. Enter the fully simplified expression.',hints:['x: '+a+'\u2212'+c,'Constants: '+b+'+'+d],vars:['x'],coeffs:{x:coeff},constant:constant,placeholder:'e.g. 3x + 10',working:coeff+'x + '+constant};}),speak:'Now it\u2019s your turn \u2014 one final mixed simplifying question.'},
   ]},
 
 ];
