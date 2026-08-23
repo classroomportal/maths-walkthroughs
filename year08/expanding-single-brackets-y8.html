@@ -131,6 +131,30 @@ function rPick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 
+function parseLinearExpr(str,vars){
+  if(!str)return null;
+  str=str.replace(/\s+/g,'').toLowerCase();
+  if(str==='')return null;
+  var coeffs={};vars.forEach(function(v){coeffs[v]=0;});
+  var constant=0;
+  var re=/([+-]?\d*)([a-z])|([+-]?\d+)(?![a-z])/g;var m;var matchedAny=false;var idx=0;
+  while((m=re.exec(str))){
+    if(m.index!==idx)return null;
+    idx=re.lastIndex;matchedAny=true;
+    if(m[2]){
+      var c=m[1],v=m[2];
+      if(vars.indexOf(v)===-1)return null;
+      if(c===''||c==='+')c='1';else if(c==='-')c='-1';
+      coeffs[v]+=parseInt(c,10);
+    } else if(m[3]!==undefined){
+      constant+=parseInt(m[3],10);
+    }
+  }
+  if(!matchedAny||idx!==str.length)return null;
+  coeffs._const=constant;
+  return coeffs;
+}
+
 function tryIt(genFn){
   if(typeof genFn==='object'){var _o=genFn;genFn=function(){return _o;};}
   var id='t'+Math.random().toString(36).slice(2);
@@ -146,6 +170,8 @@ function buildTry(id,o){
   var ph='Answer'+(o.unit?' ('+o.unit+')':'');
   var ansBox=o.frac
     ? '<div class="ar"><div class="fracbox"><input type="number" step="any" placeholder="num" class="try-num" data-tryid="'+id+'"/><div class="fracline"></div><input type="number" step="any" placeholder="den" class="try-den" data-tryid="'+id+'"/></div><button class="ck try-ck" data-tryid="'+id+'">Check</button></div>'
+    : o.vars
+    ? '<div class="ar"><input type="text" placeholder="'+(o.placeholder||'e.g. 5x + 3')+'" class="try-inp" data-tryid="'+id+'"/><button class="ck try-ck" data-tryid="'+id+'">Check</button></div>'
     : '<div class="ar"><input type="number" step="any" placeholder="'+ph+'" class="try-inp" data-tryid="'+id+'"/><button class="ck try-ck" data-tryid="'+id+'">Check</button></div>';
   return '<div class="try" data-tryid="'+id+'">'
     +'<div class="try-t">✔ Your Turn'
@@ -191,6 +217,17 @@ function ckById(id){
   }
   var inp=document.querySelector('.try-inp[data-tryid="'+id+'"]');
   if(!inp)return;
+  if(o.vars){
+    var parsed=parseLinearExpr(inp.value,o.vars);
+    if(!parsed){fb.className='try-fb fb er';fb.textContent='Enter an expression, e.g. '+(o.placeholder||'5x + 3').replace('e.g. ','');return;}
+    var ok2=true;
+    for(var i=0;i<o.vars.length;i++){var vv=o.vars[i];if(parsed[vv]!==o.coeffs[vv])ok2=false;}
+    var expectedConst=(o.constant!=null)?o.constant:0;
+    if(parsed._const!==expectedConst)ok2=false;
+    if(ok2){fb.className='try-fb fb ok';fb.innerHTML='✓ Correct! '+o.working;}
+    else{fb.className='try-fb fb er';fb.textContent='Not quite — try again.';}
+    return;
+  }
   var v=parseFloat(inp.value);
   if(isNaN(v)){fb.className='try-fb fb er';fb.textContent='Enter a number.';return;}
   if(o.range){
@@ -263,38 +300,38 @@ var QS=[
     {lb:'The rule',dr:dQ1,ht:'<p>Multiply the factor <b>outside</b> the bracket by <b>every term inside</b>. Think of it as the factor being distributed across all terms.</p>',speak:'Multiply the factor outside the bracket by every term inside. Think of it as the factor being distributed across all terms.'},
     {lb:'Multiply each term',dr:dQ1,ht:'<div class="fm"><div class="eqs"><div class="rw"><span class="l">3 \u00d7 x</span><span class="o">=</span><span class="r">3x</span></div></div></div><div class="fm"><div class="eqs"><div class="rw"><span class="l">3 \u00d7 4</span><span class="o">=</span><span class="r">12</span></div></div></div>',speak:'3 times x equals 3x. 3 times 4 equals 12.'},
     {lb:'Write expanded form',dr:dQ1,ht:'<div class="fm"><div class="eqs"><div class="rw"><span class="l">3(x + 4)</span><span class="o">=</span><span class="r">3x + 12</span></div></div></div>',speak:'3 times the bracket x plus 4 equals 3x plus 12.'},
-    {lb:'Your turn',dr:dQ1,ht:tryIt(function(){var f=rInt(2,7),t=rInt(2,9),c=rInt(1,8);var ans=f*c;return{question:'Expand <b>'+f+'('+t+'x + '+c+')</b>. Enter the constant term.',hints:[f+' \u00d7 '+t+'x = '+(f*t)+'x',f+' \u00d7 '+c+' = '+(f*c)],ans:ans,tol:0,unit:'(constant term)',working:(f*t)+'x + '+(f*c)+'. Constant = '+(f*c)};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
+    {lb:'Your turn',dr:dQ1,ht:tryIt(function(){var f=rInt(2,7),t=rInt(2,9),c=rInt(1,8);return{question:'Expand <b>'+f+'('+t+'x + '+c+')</b>. Enter the fully expanded expression.',hints:[f+' \u00d7 '+t+'x = '+(f*t)+'x',f+' \u00d7 '+c+' = '+(f*c)],vars:['x'],coeffs:{x:f*t},constant:f*c,placeholder:'e.g. '+(f*t)+'x + '+(f*c),working:(f*t)+'x + '+(f*c)};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
   ]},
   {ey:'Q2 \u00b7 Year 8 \u00b7 Expanding Single Brackets',ti:'A Negative Multiplier',su:'Expand \u22124(x + 2).',steps:[
     {lb:'A negative outside',dr:dQ2,ht:'<p>Expand \u22124(x + 2) \u2014 the negative flips both signs inside.</p>',speak:'Expand negative 4 times the bracket x plus 2 \u2014 the negative flips both signs inside.'},
     {lb:'Multiply each term',dr:dQ2,ht:'<div class="fm">\u22124\u00d7x=\u22124x, \u22124\u00d72=\u22128</div>',speak:'Negative 4 times x is negative 4x. Negative 4 times 2 is negative 8.'},
     {lb:'Result',dr:dQ2,ht:'<div class="fm">= \u22124x \u2212 8</div>',speak:'That gives negative 4x minus 8.'},
-    {lb:'Your turn',dr:dQ2,ht:tryIt(function(){var f=rInt(2,7),c=rInt(1,9);var ans=-f*c;return{question:'Expand <b>\u2212'+f+'(x + '+c+')</b>. What is the constant term?',hints:['\u2212'+f+'\u00d7'+c],ans:ans,tol:0,unit:'(constant term)',working:'\u2212'+f+'x '+(ans<0?'\u2212 '+Math.abs(ans):'+ '+ans)};}),speak:'Now it\u2019s your turn \u2014 expand with the negative multiplier.'},
+    {lb:'Your turn',dr:dQ2,ht:tryIt(function(){var f=rInt(2,7),c=rInt(1,9);var con=-f*c;return{question:'Expand <b>\u2212'+f+'(x + '+c+')</b>. Enter the fully expanded expression.',hints:['\u2212'+f+'\u00d7'+c],vars:['x'],coeffs:{x:-f},constant:con,placeholder:'e.g. \u2212'+f+'x '+(con<0?'\u2212 '+Math.abs(con):'+ '+con),working:'\u2212'+f+'x '+(con<0?'\u2212 '+Math.abs(con):'+ '+con)};}),speak:'Now it\u2019s your turn \u2014 expand with the negative multiplier.'},
   ]},
   {ey:'Q3 \u00b7 Year 8 \u00b7 Expanding Single Brackets',ti:'Expanding with Subtraction',su:'Expand 5(x \u2212 3).',steps:[
     {lb:'A minus inside',dr:dQ3,ht:'<p>Expand 5(x \u2212 3) \u2014 the same method works with subtraction.</p>',speak:'Expand 5 times the bracket x minus 3 \u2014 the same method works with subtraction.'},
     {lb:'Multiply each term',dr:dQ3,ht:'<div class="fm">5\u00d7x=5x, 5\u00d7(\u22123)=\u221215</div>',speak:'5 times x is 5x. 5 times negative 3 is negative 15.'},
     {lb:'Result',dr:dQ3,ht:'<div class="fm">= 5x \u2212 15</div>',speak:'That gives 5x minus 15.'},
-    {lb:'Your turn',dr:dQ3,ht:tryIt(function(){var f=rInt(2,8),c=rInt(1,9);var ans=-f*c;return{question:'Expand <b>'+f+'(x \u2212 '+c+')</b>. What is the constant term?',hints:[f+'\u00d7(\u2212'+c+')'],ans:ans,tol:0,unit:'(constant term)',working:f+'x '+(ans<0?'\u2212 '+Math.abs(ans):'+ '+ans)};}),speak:'Now it\u2019s your turn \u2014 expand this bracket with subtraction.'},
+    {lb:'Your turn',dr:dQ3,ht:tryIt(function(){var f=rInt(2,8),c=rInt(1,9);var con=-f*c;return{question:'Expand <b>'+f+'(x \u2212 '+c+')</b>. Enter the fully expanded expression.',hints:[f+'\u00d7(\u2212'+c+')'],vars:['x'],coeffs:{x:f},constant:con,placeholder:'e.g. '+f+'x '+(con<0?'\u2212 '+Math.abs(con):'+ '+con),working:f+'x '+(con<0?'\u2212 '+Math.abs(con):'+ '+con)};}),speak:'Now it\u2019s your turn \u2014 expand this bracket with subtraction.'},
   ]},
   {ey:'Q4 \u00b7 Year 8 \u00b7 Expanding Single Brackets',ti:'A Coefficient Already Inside',su:'Expand 4(3x + 2).',steps:[
     {lb:'x already has a coefficient',dr:dQ4,ht:'<p>Expand 4(3x + 2) \u2014 multiply the outside number by the existing coefficient too.</p>',speak:'Expand 4 times the bracket 3x plus 2 \u2014 multiply the outside number by the existing coefficient too.'},
     {lb:'Multiply each term',dr:dQ4,ht:'<div class="fm">4\u00d73x=12x, 4\u00d72=8</div>',speak:'4 times 3x is 12x. 4 times 2 is 8.'},
     {lb:'Result',dr:dQ4,ht:'<div class="fm">= 12x + 8</div>',speak:'That gives 12x plus 8.'},
-    {lb:'Your turn',dr:dQ4,ht:tryIt(function(){var f=rInt(2,6),m=rInt(2,5),c=rInt(1,8);var ans=f*c;return{question:'Expand <b>'+f+'('+m+'x + '+c+')</b>. What is the constant term?',hints:[f+'\u00d7'+c],ans:ans,tol:0,unit:'(constant term)',working:(f*m)+'x + '+ans};}),speak:'Now it\u2019s your turn \u2014 multiply the coefficients together.'},
+    {lb:'Your turn',dr:dQ4,ht:tryIt(function(){var f=rInt(2,6),m=rInt(2,5),c=rInt(1,8);var con=f*c;return{question:'Expand <b>'+f+'('+m+'x + '+c+')</b>. Enter the fully expanded expression.',hints:[f+'\u00d7'+c],vars:['x'],coeffs:{x:f*m},constant:con,placeholder:'e.g. '+(f*m)+'x + '+con,working:(f*m)+'x + '+con};}),speak:'Now it\u2019s your turn \u2014 multiply the coefficients together.'},
   ]},
   {ey:'Q5 \u00b7 Year 8 \u00b7 Expanding Single Brackets',ti:'A Common Mistake',su:'Expand 6(x + 3) \u2014 avoiding a classic error.',steps:[
     {lb:'A partial-multiplication trap',dr:dQ5,ht:'<p>Expand 6(x + 3). It\u2019s tempting to only multiply the first term.</p>',speak:'Expand 6 times the bracket x plus 3. It\u2019s tempting to only multiply the first term.'},
     {lb:'The mistake',dr:dQ5,ht:'<div class="fm">WRONG: 6x + 3</div>',speak:'A common mistake: 6x plus 3 \u2014 this only multiplied the x, not the 3.'},
     {lb:'The correct way',dr:dQ5,ht:'<div class="fm">RIGHT: 6x + 18</div>',speak:'The correct way: 6x plus 18.'},
     {lb:'Every term must be multiplied',dr:dQ5,ht:'<p>The outside number must multiply EVERY term, not just the first.</p>',speak:'The outside number must multiply every term, not just the first.'},
-    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var f=rInt(2,8),c=rInt(1,9);var ans=f*c;return{question:'Expand <b>'+f+'(x + '+c+')</b> correctly. What is the constant term? (Multiply BOTH terms!)',hints:[f+'\u00d7'+c],ans:ans,tol:0,unit:'(constant term)',working:f+'x + '+ans};}),speak:'Now it\u2019s your turn \u2014 remember to multiply every term.'},
+    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var f=rInt(2,8),c=rInt(1,9);var con=f*c;return{question:'Expand <b>'+f+'(x + '+c+')</b> correctly (multiply BOTH terms!). Enter the fully expanded expression.',hints:[f+'\u00d7'+c],vars:['x'],coeffs:{x:f},constant:con,placeholder:'e.g. '+f+'x + '+con,working:f+'x + '+con};}),speak:'Now it\u2019s your turn \u2014 remember to multiply every term.'},
   ]},
   {ey:'Q6 \u00b7 Year 8 \u00b7 Expanding Single Brackets',ti:'Real Life: Area Model',su:'A rectangle is 5 wide and (x+2) long. Find its area.',steps:[
     {lb:'The scenario',dr:dQ6,ht:'<p>A rectangle is 5 units wide and (x+2) units long. Find its area.</p>',speak:'A rectangle is 5 units wide and x plus 2 units long. Find its area.'},
     {lb:'Set up',dr:dQ6,ht:'<div class="fm">5\u00d7(x+2)</div>',speak:'5 times the bracket x plus 2.'},
     {lb:'Expand',dr:dQ6,ht:'<div class="fm">= 5x + 10</div>',speak:'That expands to 5x plus 10.'},
-    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var w=rInt(2,9),c=rInt(1,9);var ans=w*c;return{question:'A rectangle is '+w+' wide and (x+'+c+') long. Find the constant term of its area expression.',hints:['Area = '+w+'\u00d7(x+'+c+')'],ans:ans,tol:0,unit:'(constant term)',working:w+'x + '+ans};}),speak:'Now it\u2019s your turn \u2014 find the area of this rectangle.'},
+    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var w=rInt(2,9),c=rInt(1,9);var con=w*c;return{question:'A rectangle is '+w+' wide and (x+'+c+') long. Enter the fully expanded area expression.',hints:['Area = '+w+'\u00d7(x+'+c+')'],vars:['x'],coeffs:{x:w},constant:con,placeholder:'e.g. '+w+'x + '+con,working:w+'x + '+con};}),speak:'Now it\u2019s your turn \u2014 find the area of this rectangle.'},
   ]},
   {ey:'Q7 \u00b7 Year 8 \u00b7 Expanding Single Brackets',ti:'Expand, Then Solve',su:'Solve 3(x+2)=21.',steps:[
     {lb:'An equation with a bracket',dr:dQ7,ht:'<p>Solve 3(x+2)=21 \u2014 expand first, then solve as normal.</p>',speak:'Solve 3 times the bracket x plus 2, equals 21 \u2014 expand first, then solve as normal.'},
@@ -307,19 +344,19 @@ var QS=[
     {lb:'Multiply each term',dr:dQ8,ht:'<div class="fm">\u22122\u00d7x=\u22122x, \u22122\u00d7(\u22125)=+10</div>',speak:'Negative 2 times x is negative 2x. Negative 2 times negative 5 is positive 10.'},
     {lb:'Result',dr:dQ8,ht:'<div class="fm">= \u22122x + 10</div>',speak:'That gives negative 2x plus 10.'},
     {lb:'Negative times negative',dr:dQ8,ht:'<p>Negative times negative gives a POSITIVE result \u2014 don\u2019t forget this sign rule.</p>',speak:'Negative times negative gives a positive result \u2014 don\u2019t forget this sign rule.'},
-    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var f=rInt(2,7),c=rInt(1,9);var ans=f*c;return{question:'Expand <b>\u2212'+f+'(x \u2212 '+c+')</b>. What is the constant term?',hints:['\u2212'+f+'\u00d7(\u2212'+c+')'],ans:ans,tol:0,unit:'(constant term)',working:'\u2212'+f+'x + '+ans};}),speak:'Now it\u2019s your turn \u2014 watch both negative signs.'},
+    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var f=rInt(2,7),c=rInt(1,9);var con=f*c;return{question:'Expand <b>\u2212'+f+'(x \u2212 '+c+')</b>. Enter the fully expanded expression.',hints:['\u2212'+f+'\u00d7(\u2212'+c+')'],vars:['x'],coeffs:{x:-f},constant:con,placeholder:'e.g. \u2212'+f+'x + '+con,working:'\u2212'+f+'x + '+con};}),speak:'Now it\u2019s your turn \u2014 watch both negative signs.'},
   ]},
   {ey:'Q9 \u00b7 Year 8 \u00b7 Expanding Single Brackets',ti:'Expand and Simplify Together',su:'Expand and simplify 2(x+3)+5.',steps:[
     {lb:'Two steps in one',dr:dQ9,ht:'<p>Expand and simplify 2(x+3)+5 \u2014 expand first, then add the extra term.</p>',speak:'Expand and simplify 2 times the bracket x plus 3, plus 5 \u2014 expand first, then add the extra term.'},
     {lb:'Expand',dr:dQ9,ht:'<div class="fm">2x+6+5</div>',speak:'2x plus 6, plus 5.'},
     {lb:'Simplify',dr:dQ9,ht:'<div class="fm">= 2x + 11</div>',speak:'That simplifies to 2x plus 11.'},
-    {lb:'Your turn',dr:dQ9,ht:tryIt(function(){var f=rInt(2,6),c=rInt(1,8),extra=rInt(1,10);var ans=f*c+extra;return{question:'Expand and simplify <b>'+f+'(x + '+c+') + '+extra+'</b>. What is the constant term?',hints:['Expand: '+f+'x + '+(f*c),'Then add '+extra],ans:ans,tol:0,unit:'(constant term)',working:(f*c)+'+'+extra+' = '+ans};}),speak:'Now it\u2019s your turn \u2014 expand first, then simplify.'},
+    {lb:'Your turn',dr:dQ9,ht:tryIt(function(){var f=rInt(2,6),c=rInt(1,8),extra=rInt(1,10);var con=f*c+extra;return{question:'Expand and simplify <b>'+f+'(x + '+c+') + '+extra+'</b>. Enter the fully simplified expression.',hints:['Expand: '+f+'x + '+(f*c),'Then add '+extra],vars:['x'],coeffs:{x:f},constant:con,placeholder:'e.g. '+f+'x + '+con,working:f+'x + '+con};}),speak:'Now it\u2019s your turn \u2014 expand first, then simplify.'},
   ]},
   {ey:'Q10 \u00b7 Year 8 \u00b7 Expanding Single Brackets',ti:'Mixed Practice',su:'Combine everything you\u2019ve learned about expanding brackets.',steps:[
     {lb:'Step 1: identify the parts',dr:dQ10,ht:'<p>Identify the number outside, and each term inside the bracket.</p>',speak:'Step 1: identify the number outside, and each term inside the bracket.'},
     {lb:'Step 2: multiply every term',dr:dQ10,ht:'<p>Multiply the outside number by EACH term inside, keeping the correct sign.</p>',speak:'Step 2: multiply the outside number by each term inside, keeping the correct sign.'},
     {lb:'Worked example',dr:dQ10,ht:'<div class="fm">7(x\u22122) = 7x \u2212 14</div>',speak:'For example: 7 times the bracket x minus 2, equals 7x minus 14.'},
-    {lb:'Your turn',dr:dQ10,ht:tryIt(function(){var f=rInt(2,8),c=rInt(1,9);var neg=rPick([true,false]);var ans=neg?-f*c:f*c;return{question:'Expand <b>'+f+'(x '+(neg?'\u2212':'+')+' '+c+')</b>. What is the constant term?',hints:[f+'\u00d7'+(neg?'\u2212':'')+c],ans:ans,tol:0,unit:'(constant term)',working:f+'x '+(ans<0?'\u2212 '+Math.abs(ans):'+ '+ans)};}),speak:'Now it\u2019s your turn \u2014 one final expanding question.'},
+    {lb:'Your turn',dr:dQ10,ht:tryIt(function(){var f=rInt(2,8),c=rInt(1,9);var neg=rPick([true,false]);var con=neg?-f*c:f*c;return{question:'Expand <b>'+f+'(x '+(neg?'\u2212':'+')+' '+c+')</b>. Enter the fully expanded expression.',hints:[f+'\u00d7'+(neg?'\u2212':'')+c],vars:['x'],coeffs:{x:f},constant:con,placeholder:'e.g. '+f+'x '+(con<0?'\u2212 '+Math.abs(con):'+ '+con),working:f+'x '+(con<0?'\u2212 '+Math.abs(con):'+ '+con)};}),speak:'Now it\u2019s your turn \u2014 one final expanding question.'},
   ]},
 
 ];
