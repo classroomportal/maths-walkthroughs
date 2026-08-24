@@ -65,6 +65,8 @@ header{background:var(--red);color:#fff;height:56px;display:flex;align-items:cen
 .fb.er{background:#fde8e8;color:#a01820;border:1px solid #f0b8b8;display:block;}
 .wk summary{cursor:pointer;color:var(--red);font-weight:600;font-size:14px;}
 .wk-b{margin-top:8px;font-size:14px;line-height:1.6;color:#3a2a24;}
+.wk-line{padding:6px 0 6px 12px;border-left:3px solid var(--line);margin-bottom:6px;}
+.wk-line:last-child{margin-bottom:0;font-weight:700;border-left-color:var(--gold);}
 .newq-btn{float:right;font-size:11px;font-weight:600;padding:3px 9px;border-radius:3px;border:1px solid var(--gold);background:#fff;color:var(--gold);cursor:pointer;font-family:inherit;}
 .newq-btn:hover{background:var(--gold);color:#fff;}
 .try-fb{margin-top:10px;font-size:14px;padding:9px 12px;border-radius:3px;}
@@ -129,6 +131,28 @@ header{background:var(--red);color:#fff;height:56px;display:flex;align-items:cen
 <script>
 
 var ST={};
+function playTone(correct){
+  try{
+    var ctx=window._abcAudioCtx||(window._abcAudioCtx=new (window.AudioContext||window.webkitAudioContext)());
+    if(ctx.state==='suspended')ctx.resume();
+    var o=ctx.createOscillator(),g=ctx.createGain();
+    o.connect(g);g.connect(ctx.destination);
+    o.type='sine';
+    o.frequency.value=correct?880:220;
+    g.gain.setValueAtTime(0.001,ctx.currentTime);
+    g.gain.exponentialRampToValueAtTime(0.16,ctx.currentTime+0.02);
+    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.32);
+    o.start();o.stop(ctx.currentTime+0.34);
+    if(correct){
+      var o2=ctx.createOscillator(),g2=ctx.createGain();
+      o2.connect(g2);g2.connect(ctx.destination);o2.type='sine';o2.frequency.value=1320;
+      g2.gain.setValueAtTime(0.001,ctx.currentTime+0.14);
+      g2.gain.exponentialRampToValueAtTime(0.13,ctx.currentTime+0.16);
+      g2.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
+      o2.start(ctx.currentTime+0.14);o2.stop(ctx.currentTime+0.42);
+    }
+  }catch(e){}
+}
 function rInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function rPick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 function tryIt(genFn){
@@ -137,9 +161,12 @@ function tryIt(genFn){
   var o=genFn();ST[id]={o:o,genFn:genFn};
   return buildTry(id,o);
 }
+function wkLines(working){
+  return working.split('\n').map(function(line){return '<div class="wk-line">'+line+'</div>';}).join('');
+}
 function buildTry(id,o){
   var h=(o.hints||[]).map(function(x){return '<li>'+x+'</li>';}).join('');
-  var wk=(h?'<ul class="hl">'+h+'</ul>':'')+'<div class="wk-b">'+o.working+'</div>';
+  var wk=(h?'<ul class="hl">'+h+'</ul>':'')+'<div class="wk-b">'+wkLines(o.working)+'</div>';
   var ex=o.extraHTML||'';var ph='Answer'+(o.unit?' ('+o.unit+')':'');
   return '<div class="try" data-tryid="'+id+'">'
     +'<div class="try-t">\u2714 Your Turn <button class="newq-btn" data-tryid="'+id+'">\u21bb New</button></div>'
@@ -163,8 +190,8 @@ function ckById(id){
   var fb=document.querySelector('.try-fb[data-tryid="'+id+'"]');
   if(!inp||!fb)return;var v=parseFloat(inp.value);
   if(isNaN(v)){fb.className='try-fb fb er';fb.textContent='Enter a number.';return;}
-  if(Math.abs(v-o.ans)<=(o.tol!=null?o.tol:0.5)){fb.className='try-fb fb ok';fb.innerHTML='\u2713 Correct! '+o.working;}
-  else{fb.className='try-fb fb er';fb.textContent='Not quite \u2014 try again.';}
+  if(Math.abs(v-o.ans)<=(o.tol!=null?o.tol:0.5)){fb.className='try-fb fb ok';fb.innerHTML='\u2713 Correct!<div class="wk-b">'+wkLines(o.working)+'</div>';playTone(true);}
+  else{fb.className='try-fb fb er';fb.textContent='Not quite \u2014 try again.';playTone(false);}
 }
 var CST={},MST={};
 
@@ -184,11 +211,11 @@ function clickGridSVG(ox,oy,unit,n,id){
   return o.join('');
 }
 function buildClick(id,o){
-  var n=o.n||6,unit=o.unit||28,ox=210,oy=130;
+  var n=o.n||5,unit=o.unit||26,ox=210,oy=160;
   return '<div class="try" data-clickid="'+id+'">'
     +'<div class="try-t">\u2714 Your Turn <button class="newq-btn" data-clickid="'+id+'">\u21bb New</button></div>'
     +'<div class="try-q">'+o.question+'</div>'
-    +'<div class="click-stage"><svg class="click-svg" viewBox="0 0 420 260">'+clickGridSVG(ox,oy,unit,n,id)+'</svg></div>'
+    +'<div class="click-stage"><svg class="click-svg" viewBox="0 0 420 320">'+clickGridSVG(ox,oy,unit,n,id)+'</svg></div>'
     +'<div class="click-hint">Tap a grid point to plot it, then press Check.</div>'
     +'<div class="ar" style="justify-content:flex-end;"><button class="ck click-ck" data-clickid="'+id+'">Check</button></div>'
     +'<div class="try-fb" data-clickid="'+id+'"></div>'
@@ -204,8 +231,8 @@ function ckClick(id){
   var e=CST[id];if(!e)return;var o=e.o;
   var fb=document.querySelector('.try-fb[data-clickid="'+id+'"]');if(!fb)return;
   if(!e.picked){fb.className='try-fb fb er';fb.textContent='Tap a point on the grid first.';return;}
-  if(e.picked.x===o.tx&&e.picked.y===o.ty){fb.className='try-fb fb ok';fb.innerHTML='\u2713 Correct! ('+o.tx+', '+o.ty+') is plotted correctly.';}
-  else{fb.className='try-fb fb er';fb.innerHTML='Not quite \u2014 you plotted ('+e.picked.x+', '+e.picked.y+'). The correct point is ('+o.tx+', '+o.ty+'). Try again.';}
+  if(e.picked.x===o.tx&&e.picked.y===o.ty){fb.className='try-fb fb ok';fb.innerHTML='\u2713 Correct! ('+o.tx+', '+o.ty+') is plotted correctly.';playTone(true);}
+  else{fb.className='try-fb fb er';fb.innerHTML='Not quite \u2014 you plotted ('+e.picked.x+', '+e.picked.y+'). The correct point is ('+o.tx+', '+o.ty+'). Try again.';playTone(false);}
 }
 
 // ---- Tap-the-point multiple choice widget ----
@@ -216,7 +243,7 @@ function tryItTapMC(genFn){
   return buildTapMC(id,o);
 }
 function buildTapMC(id,o){
-  var n=o.n||6,unit=o.unit||28,ox=210,oy=130;
+  var n=o.n||5,unit=o.unit||26,ox=210,oy=160;
   var s=[];s.push.apply(s,grid(ox,oy,unit,n));
   o.points.forEach(function(pt){
     var px=ox+pt.x*unit,py=oy-pt.y*unit;
@@ -227,7 +254,7 @@ function buildTapMC(id,o){
   return '<div class="try" data-mcid="'+id+'">'
     +'<div class="try-t">\u2714 Your Turn <button class="newq-btn" data-mcid="'+id+'">\u21bb New</button></div>'
     +'<div class="try-q">'+o.question+'</div>'
-    +'<div class="click-stage"><svg class="click-svg" viewBox="0 0 420 260">'+s.join('')+'</svg></div>'
+    +'<div class="click-stage"><svg class="click-svg" viewBox="0 0 420 320">'+s.join('')+'</svg></div>'
     +'<div class="click-hint">Tap the correct point on the grid.</div>'
     +'<div class="try-fb" data-mcid="'+id+'"></div>'
     +'</div>';
@@ -257,8 +284,8 @@ document.addEventListener('click',function(e){
     var mid=btn.getAttribute('data-mcid'),lbl=btn.getAttribute('data-lbl');
     var e2=MST[mid];if(!e2)return;var o2=e2.o;
     var fb2=document.querySelector('.try-fb[data-mcid="'+mid+'"]');if(!fb2)return;
-    if(lbl===o2.correctLbl){fb2.className='try-fb fb ok';fb2.innerHTML='\u2713 Correct! Point '+lbl+' is at ('+o2.correctCoord+').';}
-    else{fb2.className='try-fb fb er';fb2.innerHTML='Not quite \u2014 that\u2019s point '+lbl+'. Look for the point at ('+o2.correctCoord+').';}
+    if(lbl===o2.correctLbl){fb2.className='try-fb fb ok';fb2.innerHTML='\u2713 Correct! Point '+lbl+' is at ('+o2.correctCoord+').';playTone(true);}
+    else{fb2.className='try-fb fb er';fb2.innerHTML='Not quite \u2014 that\u2019s point '+lbl+'. Look for the point at ('+o2.correctCoord+').';playTone(false);}
     return;
   }
   if(btn.classList.contains('click-ck')){ckClick(btn.getAttribute('data-clickid'));return;}
@@ -409,7 +436,7 @@ var QS=[
     {lb:'Your turn',dr:dQ1,ht:tryItClick(function(){
       var x=rInt(-5,5),y=rInt(-5,5);
       while(x===0||y===0){x=rInt(-5,5);y=rInt(-5,5);}
-      return{question:'Plot the point ('+x+', '+y+') on the grid below.',tx:x,ty:y,n:6,unit:28};
+      return{question:'Plot the point ('+x+', '+y+') on the grid below.',tx:x,ty:y,n:5,unit:26};
     })},
   ]},
   {ey:'Q2 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Reading Coordinates from a Grid',su:'Read off the coordinates of a plotted point.',steps:[
@@ -425,7 +452,7 @@ var QS=[
         used[key]=true;pts.push({x:x,y:y,lbl:lbl,col:cols[i]});
       });
       var target=rPick(pts);
-      return{question:'Which point is at ('+target.x+', '+target.y+')?',points:pts,correctLbl:target.lbl,correctCoord:target.x+', '+target.y,n:6,unit:28};
+      return{question:'Which point is at ('+target.x+', '+target.y+')?',points:pts,correctLbl:target.lbl,correctCoord:target.x+', '+target.y,n:5,unit:26};
     })},
   ]},
   {ey:'Q3 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Function Machines (Input \u2192 Output)',su:'Put x = 5 through the rule "\u00d7 2, then + 1".',steps:[
@@ -433,42 +460,42 @@ var QS=[
     {lb:'Step 1',dr:dQ3,ht:'<div class="fm">5 \u00d7 2 = 10</div>'},
     {lb:'Step 2',dr:dQ3,ht:'<div class="fm">10 + 1 = 11</div>'},
     {lb:'Output',dr:dQ3,ht:'<div class="fm">Output = 11</div>'},
-    {lb:'Your turn',dr:dQ3,ht:tryIt(function(){var m=rInt(2,5),a=rInt(1,8),x=rInt(2,9),ans=m*x+a;return{question:'A function machine does "\u00d7 '+m+', then + '+a+'". What is the output when the input is <b>'+x+'</b>?',hints:['Step 1: '+x+' \u00d7 '+m+' = '+(m*x),'Step 2: add '+a],ans:ans,tol:0,unit:'',working:x+' \u00d7 '+m+' = '+(m*x)+', then + '+a+' = '+ans};})},
+    {lb:'Your turn',dr:dQ3,ht:tryIt(function(){var m=rInt(2,5),a=rInt(1,8),x=rInt(2,9),ans=m*x+a;return{question:'A function machine does "\u00d7 '+m+', then + '+a+'". What is the output when the input is <b>'+x+'</b>?',hints:['Step 1: '+x+' \u00d7 '+m+' = '+(m*x),'Step 2: add '+a],ans:ans,tol:0,unit:'',working:'Step 1: '+x+' \u00d7 '+m+' = '+(m*x)+'\nStep 2: '+(m*x)+' + '+a+' = '+ans};})},
   ]},
   {ey:'Q4 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Finding the Rule from a Function Machine',su:'Input 1,2,3 give output 4,6,8 \u2014 find the rule.',steps:[
     {lb:'Look at the pattern',dr:dQ4,ht:'<p>Compare inputs and outputs to spot what operation links them.</p>'},
     {lb:'Check \u00d7 2',dr:dQ4,ht:'<div class="fm">1\u00d72=2, 2\u00d72=4, 3\u00d72=6</div><p>Outputs are 4,6,8 \u2014 always 2 more than \u00d72.</p>'},
     {lb:'Add the adjustment',dr:dQ4,ht:'<div class="fm">y = 2x + 2</div>'},
     {lb:'Check it',dr:dQ4,ht:'<p>x=1: 2(1)+2=4 \u2713 &nbsp; x=2: 2(2)+2=6 \u2713 &nbsp; x=3: 2(3)+2=8 \u2713</p>'},
-    {lb:'Your turn',dr:dQ4,ht:tryIt(function(){var m=rPick([2,3,4]),c=rInt(1,5),x=rInt(4,8),ans=m*x+c;return{question:'A rule gives: x=1\u2192'+(m+c)+', x=2\u2192'+(2*m+c)+', x=3\u2192'+(3*m+c)+'. Using the rule y = '+m+'x + '+c+', what is y when x = '+x+'?',hints:['Multiply x by '+m,'Then add '+c],ans:ans,tol:0,unit:'',working:m+'('+x+') + '+c+' = '+(m*x)+' + '+c+' = '+ans};})},
+    {lb:'Your turn',dr:dQ4,ht:tryIt(function(){var m=rPick([2,3,4]),c=rInt(1,5),x=rInt(4,8),ans=m*x+c;return{question:'A rule gives: x=1\u2192'+(m+c)+', x=2\u2192'+(2*m+c)+', x=3\u2192'+(3*m+c)+'. Using the rule y = '+m+'x + '+c+', what is y when x = '+x+'?',hints:['Multiply x by '+m,'Then add '+c],ans:ans,tol:0,unit:'',working:'Step 1: '+m+' \u00d7 '+x+' = '+(m*x)+'\nStep 2: '+(m*x)+' + '+c+' = '+ans};})},
   ]},
   {ey:'Q5 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Plotting a Simple Linear Function (y = x + c)',su:'Plot y = x + 1 for x from \u22122 to 2.',steps:[
     {lb:'Make a table',dr:dQ5,ht:'<p>Choose x-values, then calculate y = x + 1 for each.</p>'},
     {lb:'Plot the points',dr:dQ5,ht:'<div class="fm">(\u22122,\u22121) (\u22121,0) (0,1) (1,2) (2,3)</div>'},
     {lb:'Join with a straight line',dr:dQ5,ht:'<p>All points from y = x + 1 lie on a straight line.</p>'},
     {lb:'Read the pattern',dr:dQ5,ht:'<p>The line crosses the y-axis at <b>(0, 1)</b> \u2014 this matches the "+1" in the rule.</p>'},
-    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var c=rInt(-4,4),x=rInt(-3,3);return{question:'For the line y = x + '+c+', what is y when x = '+x+'?',hints:['Substitute x = '+x,'y = '+x+' + '+c],ans:x+c,tol:0,unit:'',working:'y = '+x+' + '+c+' = '+(x+c)};})},
+    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var c=rInt(-4,4),x=rInt(-3,3);return{question:'For the line y = x + '+c+', what is y when x = '+x+'?',hints:['Substitute x = '+x,'y = '+x+' + '+c],ans:x+c,tol:0,unit:'',working:'Substitute x = '+x+'\ny = '+x+' + '+c+' = '+(x+c)};})},
   ]},
   {ey:'Q6 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Plotting y = mx (through the origin)',su:'Plot y = 2x.',steps:[
     {lb:'Notice no constant term',dr:dQ6,ht:'<p>y = 2x has no "+ number", so the line always passes through the <b>origin (0,0)</b>.</p>'},
     {lb:'Make a table',dr:dQ6,ht:'<div class="fm">x: \u22122,\u22121,0,1,2 \u2192 y: \u22124,\u22122,0,2,4</div>'},
     {lb:'Plot and join',dr:dQ6,ht:'<p>Every point doubles its x-value to get y.</p>'},
     {lb:'Steepness',dr:dQ6,ht:'<p>The 2 in y = 2x controls how <b>steep</b> the line is \u2014 larger numbers make steeper lines.</p>'},
-    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var m=rPick([2,3,4,5]),x=rInt(-4,4);return{question:'For the line y = '+m+'x, what is y when x = '+x+'?',hints:['y = '+m+' \u00d7 x','Substitute x = '+x],ans:m*x,tol:0,unit:'',working:'y = '+m+' \u00d7 '+x+' = '+(m*x)};})},
+    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var m=rPick([2,3,4,5]),x=rInt(-4,4);return{question:'For the line y = '+m+'x, what is y when x = '+x+'?',hints:['y = '+m+' \u00d7 x','Substitute x = '+x],ans:m*x,tol:0,unit:'',working:'Substitute x = '+x+'\ny = '+m+' \u00d7 '+x+' = '+(m*x)};})},
   ]},
   {ey:'Q7 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Tables of Values for a Linear Function',su:'Complete a table of values for y = 3x \u2212 1.',steps:[
     {lb:'Set up the table',dr:dQ7,ht:'<p>List x-values across the top row, then work out 3x for each.</p>'},
     {lb:'Calculate 3x',dr:dQ7,ht:'<div class="fm">x=0\u21920, x=1\u21923, x=2\u21926, x=3\u21929</div>'},
     {lb:'Subtract 1',dr:dQ7,ht:'<div class="fm">y = 3x \u2212 1: \u22121, 2, 5, 8</div>'},
     {lb:'Check with substitution',dr:dQ7,ht:'<p>x=2: 3(2)\u22121 = 5 \u2713</p>'},
-    {lb:'Your turn',dr:dQ7,ht:tryIt(function(){var m=rInt(2,5),c=rInt(1,6),x=rInt(2,6);return{question:'For y = '+m+'x \u2212 '+c+', complete the table: what is y when x = '+x+'?',hints:['Calculate '+m+' \u00d7 '+x,'Then subtract '+c],ans:m*x-c,tol:0,unit:'',working:m+'('+x+') \u2212 '+c+' = '+(m*x)+' \u2212 '+c+' = '+(m*x-c)};})},
+    {lb:'Your turn',dr:dQ7,ht:tryIt(function(){var m=rInt(2,5),c=rInt(1,6),x=rInt(2,6);return{question:'For y = '+m+'x \u2212 '+c+', complete the table: what is y when x = '+x+'?',hints:['Calculate '+m+' \u00d7 '+x,'Then subtract '+c],ans:m*x-c,tol:0,unit:'',working:'Step 1: '+m+' \u00d7 '+x+' = '+(m*x)+'\nStep 2: '+(m*x)+' \u2212 '+c+' = '+(m*x-c)};})},
   ]},
   {ey:'Q8 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Midpoint of a Line Segment (visual)',su:'Find the midpoint of A(2,3) and B(6,3).',steps:[
     {lb:'What is a midpoint?',dr:dQ8,ht:'<p>The <b>midpoint</b> is exactly halfway between two points.</p>'},
     {lb:'Look along the line',dr:dQ8,ht:'<p>A and B have the same y-value (3), so the midpoint sits on the same horizontal line.</p>'},
     {lb:'Average the x-values',dr:dQ8,ht:'<div class="fm">(2 + 6) \u00f7 2 = 4</div>'},
     {lb:'Midpoint',dr:dQ8,ht:'<div class="fm">Midpoint = (4, 3)</div>'},
-    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var y=rInt(-3,3),x1=rInt(-5,3),x2=x1+rInt(2,8);return{question:'Find the midpoint x-coordinate of A('+x1+', '+y+') and B('+x2+', '+y+').',hints:['Average the x-values: ('+x1+' + '+x2+') \u00f7 2'],ans:(x1+x2)/2,tol:0.01,unit:'',working:'('+x1+' + '+x2+') \u00f7 2 = '+((x1+x2)/2)};})},
+    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var y=rInt(-3,3),x1=rInt(-5,3),x2=x1+rInt(2,8);return{question:'Find the midpoint x-coordinate of A('+x1+', '+y+') and B('+x2+', '+y+').',hints:['Average the x-values: ('+x1+' + '+x2+') \u00f7 2'],ans:(x1+x2)/2,tol:0.01,unit:'',working:'Add the x-values: '+x1+' + '+x2+' = '+(x1+x2)+'\nDivide by 2: '+(x1+x2)+' \u00f7 2 = '+((x1+x2)/2)};})},
   ]},
   {ey:'Q9 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Naming Points on Shapes Using Coordinates',su:'Plot square ABCD from its corner coordinates.',steps:[
     {lb:'List the corners',dr:dQ9,ht:'<div class="fm">A(\u22122,\u22121) B(2,\u22121) C(2,3) D(\u22122,3)</div>'},
