@@ -213,23 +213,34 @@ function dQ4(p){
 }
 
 function dQ5(p){
-  var s=g();s.setAttribute('viewBox','0 0 480 280');var o=[];
+  var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
   o.push(R(14,8,452,36,'#fff5f0','#C0272D',1.5));
   o.push(T(240,30,'Combined Sample Space Diagrams','#C0272D',13,'middle',true));
-  o.push(R(60,60,360,180,'#fff','#888',1));
-  for(var i=0;i<=6;i++){o.push(L(60+i*60,60,60+i*60,240,'#eee',1));}
-  for(var j=0;j<=3;j++){o.push(L(60,60+j*60,420,60+j*60,'#eee',1));}
-  if(p>=1)o.push(T(240,255,'Grid shows every combined outcome of two events','#241A17',12,'middle'));
-  if(p>=2)o.push(T(240,270,'Count the cells that match your event of interest','#1a7a3a',11,'middle',true));
+  var gx=130,gy=70,cell=38;
+  o.push(T(gx+3*cell,56,'Die B','#888',10,'middle'));
+  o.push(T(gx-32,gy+3*cell,'Die A','#888',10,'middle'));
+  for(var c=1;c<=6;c++)o.push(T(gx+c*cell-cell/2,gy-8,c,'#C0272D',12,'middle',true));
+  for(var r=1;r<=6;r++)o.push(T(gx-14,gy+r*cell-cell/2+4,r,'#C0272D',12,'middle',true));
+  for(var i=0;i<=6;i++){o.push(L(gx,gy+i*cell,gx+6*cell,gy+i*cell,'#ddd',1));o.push(L(gx+i*cell,gy,gx+i*cell,gy+6*cell,'#ddd',1));}
+  if(p>=1){
+    for(var a=1;a<=6;a++)for(var b=1;b<=6;b++){
+      var sum=a+b,cx=gx+b*cell-cell/2,cy=gy+a*cell-cell/2,hl=(sum===8);
+      if(hl)o.push(R(cx-cell/2+2,cy-cell/2+2,cell-4,cell-4,'#d7f5df','#1a7a3a',1.5));
+      o.push(T(cx,cy+4,sum,hl?'#1a7a3a':'#555',11,'middle',hl));
+    }
+  }
+  if(p>=2)o.push(T(240,gy+6*cell+22,'5 cells sum to 8 \u2192 P(sum=8) = 5/36','#1a7a3a',13,'middle',true));
   s.innerHTML=o.join('');
 }
 function dQ6(p){
   var s=g();s.setAttribute('viewBox','0 0 480 280');var o=[];
   o.push(R(14,8,452,36,'#fff5f0','#C0272D',1.5));
   o.push(T(240,30,'Venn Diagrams and Probability','#C0272D',13,'middle',true));
-  o.push(C(180,150,70,'#fce8d8','#C0272D',2));o.push(C(300,150,70,'#e8f4ff','#1a5a8a',2));
-  if(p>=1)o.push(T(240,150,'A\u2229B','#241A17',13,'middle',true));
-  if(p>=2)o.push(T(240,240,'P(A\u222aB) = P(A) + P(B) \u2212 P(A\u2229B)','#1a7a3a',13,'middle',true));
+  o.push(C(175,150,85,'#fce8d8','#C0272D',2));o.push(C(305,150,85,'#e8f4ff','#1a5a8a',2));
+  o.push(T(115,150,'A','#C0272D',15,'middle',true));
+  o.push(T(365,150,'B','#1a5a8a',15,'middle',true));
+  if(p>=1)o.push(T(240,153,'A\u2229B','#241A17',13,'middle',true));
+  if(p>=2)o.push(T(240,255,'P(A\u222aB) = P(A) + P(B) \u2212 P(A\u2229B)','#1a7a3a',13,'middle',true));
   s.innerHTML=o.join('');
 }
 function dQ7(p){
