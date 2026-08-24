@@ -133,8 +133,16 @@ function tryItMC(fn){
   ST[id]=fn;return genTryMC(id,fn());
 }
 function genTryMC(id,o){
-  var opts=o.options.map(function(opt,i){
-    return '<button class="mc-opt" onclick="ckMC(\''+id+'\','+i+','+o.correct+')">'+opt+'</button>';
+  // Shuffle option order at render time so the correct answer isn't always
+  // in the same position regardless of how the source data lists them.
+  var order=o.options.map(function(_,i){return i;});
+  for(var i=order.length-1;i>0;i--){
+    var j=Math.floor(Math.random()*(i+1));
+    var tmp=order[i];order[i]=order[j];order[j]=tmp;
+  }
+  var newCorrect=order.indexOf(o.correct);
+  var opts=order.map(function(origIdx,shownIdx){
+    return '<button class="mc-opt" onclick="ckMC(\''+id+'\','+shownIdx+','+newCorrect+')">'+o.options[origIdx]+'</button>';
   }).join('');
   return '<div class="try" data-tryid="'+id+'">'+
     '<div class="try-t">&#10004; Your Turn</div><p>'+o.question+'</p>'+
