@@ -67,6 +67,12 @@ header{background:var(--red);color:#fff;height:56px;display:flex;align-items:cen
 .wk-b{margin-top:8px;font-size:14px;line-height:1.6;color:#3a2a24;}
 .wk-line{padding:6px 0 6px 12px;border-left:3px solid var(--line);margin-bottom:6px;}
 .wk-line:last-child{margin-bottom:0;font-weight:700;border-left-color:var(--gold);}
+.reader-row{width:100%;max-width:760px;display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;}
+.reader-btn{font-size:12.5px;font-weight:700;padding:7px 14px;border-radius:5px;border:1.5px solid var(--gold);background:#fff;color:var(--gold);cursor:pointer;font-family:inherit;}
+.reader-btn.active{background:var(--gold);color:#fff;}
+.reader-btn:disabled{opacity:.4;cursor:default;}
+.reader-status{font-size:11.5px;color:#6b5750;}
+.reader-voice{font-size:12px;padding:6px 8px;border:1.5px solid var(--line);border-radius:5px;background:#fff;font-family:inherit;}
 .newq-btn{float:right;font-size:11px;font-weight:600;padding:3px 9px;border-radius:3px;border:1px solid var(--gold);background:#fff;color:var(--gold);cursor:pointer;font-family:inherit;}
 .newq-btn:hover{background:var(--gold);color:#fff;}
 .try-fb{margin-top:10px;font-size:14px;padding:9px 12px;border-radius:3px;}
@@ -121,6 +127,13 @@ header{background:var(--red);color:#fff;height:56px;display:flex;align-items:cen
       <div class="cvs"><svg id="dg" viewBox="0 0 480 260"></svg></div>
       <div class="pnl fi" id="pn"></div>
     </div>
+    <div class="reader-row">
+      <button class="reader-btn" id="readBtn">🔊 Read this step</button>
+      <button class="reader-btn" id="autoBtn">▶ Auto-play question</button>
+      <button class="reader-btn" id="stopReadBtn" style="display:none">■ Stop</button>
+      <select class="reader-voice" id="voiceSel"></select>
+      <span class="reader-status" id="readerStatus"></span>
+    </div>
     <div class="ctrl">
       <button class="btn" id="pb">&larr; Back</button>
       <div class="dots" id="dt"></div>
@@ -131,28 +144,6 @@ header{background:var(--red);color:#fff;height:56px;display:flex;align-items:cen
 <script>
 
 var ST={};
-function playTone(correct){
-  try{
-    var ctx=window._abcAudioCtx||(window._abcAudioCtx=new (window.AudioContext||window.webkitAudioContext)());
-    if(ctx.state==='suspended')ctx.resume();
-    var o=ctx.createOscillator(),g=ctx.createGain();
-    o.connect(g);g.connect(ctx.destination);
-    o.type='sine';
-    o.frequency.value=correct?880:220;
-    g.gain.setValueAtTime(0.001,ctx.currentTime);
-    g.gain.exponentialRampToValueAtTime(0.16,ctx.currentTime+0.02);
-    g.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.32);
-    o.start();o.stop(ctx.currentTime+0.34);
-    if(correct){
-      var o2=ctx.createOscillator(),g2=ctx.createGain();
-      o2.connect(g2);g2.connect(ctx.destination);o2.type='sine';o2.frequency.value=1320;
-      g2.gain.setValueAtTime(0.001,ctx.currentTime+0.14);
-      g2.gain.exponentialRampToValueAtTime(0.13,ctx.currentTime+0.16);
-      g2.gain.exponentialRampToValueAtTime(0.001,ctx.currentTime+0.4);
-      o2.start(ctx.currentTime+0.14);o2.stop(ctx.currentTime+0.42);
-    }
-  }catch(e){}
-}
 function rInt(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function rPick(arr){return arr[Math.floor(Math.random()*arr.length)];}
 function tryIt(genFn){
@@ -190,8 +181,8 @@ function ckById(id){
   var fb=document.querySelector('.try-fb[data-tryid="'+id+'"]');
   if(!inp||!fb)return;var v=parseFloat(inp.value);
   if(isNaN(v)){fb.className='try-fb fb er';fb.textContent='Enter a number.';return;}
-  if(Math.abs(v-o.ans)<=(o.tol!=null?o.tol:0.5)){fb.className='try-fb fb ok';fb.innerHTML='\u2713 Correct!<div class="wk-b">'+wkLines(o.working)+'</div>';playTone(true);}
-  else{fb.className='try-fb fb er';fb.textContent='Not quite \u2014 try again.';playTone(false);}
+  if(Math.abs(v-o.ans)<=(o.tol!=null?o.tol:0.5)){fb.className='try-fb fb ok';fb.innerHTML='\u2713 Correct!<div class="wk-b">'+wkLines(o.working)+'</div>';}
+  else{fb.className='try-fb fb er';fb.textContent='Not quite \u2014 try again.';}
 }
 var CST={},MST={};
 
@@ -231,8 +222,8 @@ function ckClick(id){
   var e=CST[id];if(!e)return;var o=e.o;
   var fb=document.querySelector('.try-fb[data-clickid="'+id+'"]');if(!fb)return;
   if(!e.picked){fb.className='try-fb fb er';fb.textContent='Tap a point on the grid first.';return;}
-  if(e.picked.x===o.tx&&e.picked.y===o.ty){fb.className='try-fb fb ok';fb.innerHTML='\u2713 Correct! ('+o.tx+', '+o.ty+') is plotted correctly.';playTone(true);}
-  else{fb.className='try-fb fb er';fb.innerHTML='Not quite \u2014 you plotted ('+e.picked.x+', '+e.picked.y+'). The correct point is ('+o.tx+', '+o.ty+'). Try again.';playTone(false);}
+  if(e.picked.x===o.tx&&e.picked.y===o.ty){fb.className='try-fb fb ok';fb.innerHTML='\u2713 Correct! ('+o.tx+', '+o.ty+') is plotted correctly.';}
+  else{fb.className='try-fb fb er';fb.innerHTML='Not quite \u2014 you plotted ('+e.picked.x+', '+e.picked.y+'). The correct point is ('+o.tx+', '+o.ty+'). Try again.';}
 }
 
 // ---- Tap-the-point multiple choice widget ----
@@ -284,8 +275,8 @@ document.addEventListener('click',function(e){
     var mid=btn.getAttribute('data-mcid'),lbl=btn.getAttribute('data-lbl');
     var e2=MST[mid];if(!e2)return;var o2=e2.o;
     var fb2=document.querySelector('.try-fb[data-mcid="'+mid+'"]');if(!fb2)return;
-    if(lbl===o2.correctLbl){fb2.className='try-fb fb ok';fb2.innerHTML='\u2713 Correct! Point '+lbl+' is at ('+o2.correctCoord+').';playTone(true);}
-    else{fb2.className='try-fb fb er';fb2.innerHTML='Not quite \u2014 that\u2019s point '+lbl+'. Look for the point at ('+o2.correctCoord+').';playTone(false);}
+    if(lbl===o2.correctLbl){fb2.className='try-fb fb ok';fb2.innerHTML='\u2713 Correct! Point '+lbl+' is at ('+o2.correctCoord+').';}
+    else{fb2.className='try-fb fb er';fb2.innerHTML='Not quite \u2014 that\u2019s point '+lbl+'. Look for the point at ('+o2.correctCoord+').';}
     return;
   }
   if(btn.classList.contains('click-ck')){ckClick(btn.getAttribute('data-clickid'));return;}
@@ -429,21 +420,21 @@ function dQ10(p){
 
 var QS=[
   {ey:'Q1 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Plotting Points in All Four Quadrants',su:'Plot A(3, 2), B(\u22122, 4) and C(\u22124, \u22123).',steps:[
-    {lb:'The rule',dr:dQ1,ht:'<p>A coordinate is written <b>(x, y)</b>. The <b>x</b> value tells you how far <b>left/right</b>, the <b>y</b> value tells you how far <b>up/down</b> from the origin (0,0).</p>'},
-    {lb:'Plot A(3, 2)',dr:dQ1,ht:'<div class="fm">A(3, 2): 3 right, 2 up</div>'},
-    {lb:'Plot B(\u22122, 4)',dr:dQ1,ht:'<div class="fm">B(\u22122, 4): 2 left, 4 up</div>'},
-    {lb:'Plot C(\u22124, \u22123)',dr:dQ1,ht:'<div class="fm">C(\u22124, \u22123): 4 left, 3 down</div><p>Negative x = left, negative y = down.</p>'},
+    {lb:'The rule',dr:dQ1,ht:'<p>A coordinate is written <b>(x, y)</b>. The <b>x</b> value tells you how far <b>left/right</b>, the <b>y</b> value tells you how far <b>up/down</b> from the origin (0,0).</p>',speak:'A coordinate is written x, y. The x value tells you how far left or right, the y value tells you how far up or down from the origin, 0, 0.'},
+    {lb:'Plot A(3, 2)',dr:dQ1,ht:'<div class="fm">A(3, 2): 3 right, 2 up</div>',speak:'Plot A, 3, 2: go 3 right, then 2 up.'},
+    {lb:'Plot B(\u22122, 4)',dr:dQ1,ht:'<div class="fm">B(\u22122, 4): 2 left, 4 up</div>',speak:'Plot B, minus 2, 4: go 2 left, then 4 up.'},
+    {lb:'Plot C(\u22124, \u22123)',dr:dQ1,ht:'<div class="fm">C(\u22124, \u22123): 4 left, 3 down</div><p>Negative x = left, negative y = down.</p>',speak:'Plot C, minus 4, minus 3: go 4 left, then 3 down. A negative x means left, and a negative y means down.'},
     {lb:'Your turn',dr:dQ1,ht:tryItClick(function(){
       var x=rInt(-5,5),y=rInt(-5,5);
       while(x===0||y===0){x=rInt(-5,5);y=rInt(-5,5);}
       return{question:'Plot the point ('+x+', '+y+') on the grid below.',tx:x,ty:y,n:5,unit:26};
-    })},
+    }),speak:'Now it\u2019s your turn \u2014 tap the correct point on the grid below.'},
   ]},
   {ey:'Q2 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Reading Coordinates from a Grid',su:'Read off the coordinates of a plotted point.',steps:[
-    {lb:'Find x first',dr:dQ2,ht:'<p>Trace <b>down</b> (or up) from the point to the x-axis to read the x-value.</p>'},
-    {lb:'x = 4',dr:dQ2,ht:'<div class="fm">x = 4</div>'},
-    {lb:'Find y',dr:dQ2,ht:'<div class="fm">y = 3</div><p>Trace across to the y-axis to read the y-value.</p>'},
-    {lb:'Write the coordinate',dr:dQ2,ht:'<div class="fm">Point = (4, 3)</div>'},
+    {lb:'Find x first',dr:dQ2,ht:'<p>Trace <b>down</b> (or up) from the point to the x-axis to read the x-value.</p>',speak:'Trace down, or up, from the point to the x-axis, to read the x-value.'},
+    {lb:'x = 4',dr:dQ2,ht:'<div class="fm">x = 4</div>',speak:'x equals 4.'},
+    {lb:'Find y',dr:dQ2,ht:'<div class="fm">y = 3</div><p>Trace across to the y-axis to read the y-value.</p>',speak:'Trace across to the y-axis to read the y-value. y equals 3.'},
+    {lb:'Write the coordinate',dr:dQ2,ht:'<div class="fm">Point = (4, 3)</div>',speak:'So the point is 4, 3.'},
     {lb:'Your turn',dr:dQ2,ht:tryItTapMC(function(){
       var labels=['A','B','C','D'],cols=['#C0272D','#1a5a8a','#1a7a3a','#8a4fbf'],used={},pts=[];
       labels.forEach(function(lbl,i){
@@ -453,63 +444,63 @@ var QS=[
       });
       var target=rPick(pts);
       return{question:'Which point is at ('+target.x+', '+target.y+')?',points:pts,correctLbl:target.lbl,correctCoord:target.x+', '+target.y,n:5,unit:26};
-    })},
+    }),speak:'Now it\u2019s your turn \u2014 tap the correct point on the grid below.'},
   ]},
   {ey:'Q3 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Function Machines (Input \u2192 Output)',su:'Put x = 5 through the rule "\u00d7 2, then + 1".',steps:[
-    {lb:'What is a function machine?',dr:dQ3,ht:'<p>A <b>function machine</b> applies steps to an input, in order, to give an output.</p>'},
-    {lb:'Step 1',dr:dQ3,ht:'<div class="fm">5 \u00d7 2 = 10</div>'},
-    {lb:'Step 2',dr:dQ3,ht:'<div class="fm">10 + 1 = 11</div>'},
-    {lb:'Output',dr:dQ3,ht:'<div class="fm">Output = 11</div>'},
-    {lb:'Your turn',dr:dQ3,ht:tryIt(function(){var m=rInt(2,5),a=rInt(1,8),x=rInt(2,9),ans=m*x+a;return{question:'A function machine does "\u00d7 '+m+', then + '+a+'". What is the output when the input is <b>'+x+'</b>?',hints:['Step 1: '+x+' \u00d7 '+m+' = '+(m*x),'Step 2: add '+a],ans:ans,tol:0,unit:'',working:'Step 1: '+x+' \u00d7 '+m+' = '+(m*x)+'\nStep 2: '+(m*x)+' + '+a+' = '+ans};})},
+    {lb:'What is a function machine?',dr:dQ3,ht:'<p>A <b>function machine</b> applies steps to an input, in order, to give an output.</p>',speak:'A function machine applies steps to an input, in order, to give an output.'},
+    {lb:'Step 1',dr:dQ3,ht:'<div class="fm">5 \u00d7 2 = 10</div>',speak:'Step 1: 5 times 2 equals 10.'},
+    {lb:'Step 2',dr:dQ3,ht:'<div class="fm">10 + 1 = 11</div>',speak:'Step 2: 10 plus 1 equals 11.'},
+    {lb:'Output',dr:dQ3,ht:'<div class="fm">Output = 11</div>',speak:'So the output is 11.'},
+    {lb:'Your turn',dr:dQ3,ht:tryIt(function(){var m=rInt(2,5),a=rInt(1,8),x=rInt(2,9),ans=m*x+a;return{question:'A function machine does "\u00d7 '+m+', then + '+a+'". What is the output when the input is <b>'+x+'</b>?',hints:['Step 1: '+x+' \u00d7 '+m+' = '+(m*x),'Step 2: add '+a],ans:ans,tol:0,unit:'',working:'Step 1: '+x+' \u00d7 '+m+' = '+(m*x)+'\nStep 2: '+(m*x)+' + '+a+' = '+ans};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
   ]},
   {ey:'Q4 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Finding the Rule from a Function Machine',su:'Input 1,2,3 give output 4,6,8 \u2014 find the rule.',steps:[
-    {lb:'Look at the pattern',dr:dQ4,ht:'<p>Compare inputs and outputs to spot what operation links them.</p>'},
-    {lb:'Check \u00d7 2',dr:dQ4,ht:'<div class="fm">1\u00d72=2, 2\u00d72=4, 3\u00d72=6</div><p>Outputs are 4,6,8 \u2014 always 2 more than \u00d72.</p>'},
-    {lb:'Add the adjustment',dr:dQ4,ht:'<div class="fm">y = 2x + 2</div>'},
-    {lb:'Check it',dr:dQ4,ht:'<p>x=1: 2(1)+2=4 \u2713 &nbsp; x=2: 2(2)+2=6 \u2713 &nbsp; x=3: 2(3)+2=8 \u2713</p>'},
-    {lb:'Your turn',dr:dQ4,ht:tryIt(function(){var m=rPick([2,3,4]),c=rInt(1,5),x=rInt(4,8),ans=m*x+c;return{question:'A rule gives: x=1\u2192'+(m+c)+', x=2\u2192'+(2*m+c)+', x=3\u2192'+(3*m+c)+'. Using the rule y = '+m+'x + '+c+', what is y when x = '+x+'?',hints:['Multiply x by '+m,'Then add '+c],ans:ans,tol:0,unit:'',working:'Step 1: '+m+' \u00d7 '+x+' = '+(m*x)+'\nStep 2: '+(m*x)+' + '+c+' = '+ans};})},
+    {lb:'Look at the pattern',dr:dQ4,ht:'<p>Compare inputs and outputs to spot what operation links them.</p>',speak:'Compare the inputs and outputs to spot what operation links them.'},
+    {lb:'Check \u00d7 2',dr:dQ4,ht:'<div class="fm">1\u00d72=2, 2\u00d72=4, 3\u00d72=6</div><p>Outputs are 4,6,8 \u2014 always 2 more than \u00d72.</p>',speak:'Check times 2: 1 times 2 is 2, 2 times 2 is 4, 3 times 2 is 6. But the outputs are 4, 6, 8, which are always 2 more than times 2.'},
+    {lb:'Add the adjustment',dr:dQ4,ht:'<div class="fm">y = 2x + 2</div>',speak:'So the rule is y equals 2x plus 2.'},
+    {lb:'Check it',dr:dQ4,ht:'<p>x=1: 2(1)+2=4 \u2713 &nbsp; x=2: 2(2)+2=6 \u2713 &nbsp; x=3: 2(3)+2=8 \u2713</p>',speak:'Check it: when x is 1, 2 times 1 plus 2 is 4, correct. When x is 2, 2 times 2 plus 2 is 6, correct. When x is 3, 2 times 3 plus 2 is 8, correct.'},
+    {lb:'Your turn',dr:dQ4,ht:tryIt(function(){var m=rPick([2,3,4]),c=rInt(1,5),x=rInt(4,8),ans=m*x+c;return{question:'A rule gives: x=1\u2192'+(m+c)+', x=2\u2192'+(2*m+c)+', x=3\u2192'+(3*m+c)+'. Using the rule y = '+m+'x + '+c+', what is y when x = '+x+'?',hints:['Multiply x by '+m,'Then add '+c],ans:ans,tol:0,unit:'',working:'Step 1: '+m+' \u00d7 '+x+' = '+(m*x)+'\nStep 2: '+(m*x)+' + '+c+' = '+ans};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
   ]},
   {ey:'Q5 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Plotting a Simple Linear Function (y = x + c)',su:'Plot y = x + 1 for x from \u22122 to 2.',steps:[
-    {lb:'Make a table',dr:dQ5,ht:'<p>Choose x-values, then calculate y = x + 1 for each.</p>'},
-    {lb:'Plot the points',dr:dQ5,ht:'<div class="fm">(\u22122,\u22121) (\u22121,0) (0,1) (1,2) (2,3)</div>'},
-    {lb:'Join with a straight line',dr:dQ5,ht:'<p>All points from y = x + 1 lie on a straight line.</p>'},
-    {lb:'Read the pattern',dr:dQ5,ht:'<p>The line crosses the y-axis at <b>(0, 1)</b> \u2014 this matches the "+1" in the rule.</p>'},
-    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var c=rInt(-4,4),x=rInt(-3,3);return{question:'For the line y = x + '+c+', what is y when x = '+x+'?',hints:['Substitute x = '+x,'y = '+x+' + '+c],ans:x+c,tol:0,unit:'',working:'Substitute x = '+x+'\ny = '+x+' + '+c+' = '+(x+c)};})},
+    {lb:'Make a table',dr:dQ5,ht:'<p>Choose x-values, then calculate y = x + 1 for each.</p>',speak:'Choose some x-values, then calculate y equals x plus 1 for each one.'},
+    {lb:'Plot the points',dr:dQ5,ht:'<div class="fm">(\u22122,\u22121) (\u22121,0) (0,1) (1,2) (2,3)</div>',speak:'Plot the points: minus 2, minus 1; minus 1, 0; 0, 1; 1, 2; and 2, 3.'},
+    {lb:'Join with a straight line',dr:dQ5,ht:'<p>All points from y = x + 1 lie on a straight line.</p>',speak:'All the points from y equals x plus 1 lie on a straight line.'},
+    {lb:'Read the pattern',dr:dQ5,ht:'<p>The line crosses the y-axis at <b>(0, 1)</b> \u2014 this matches the "+1" in the rule.</p>',speak:'The line crosses the y-axis at 0, 1 \u2014 this matches the plus 1 in the rule.'},
+    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var c=rInt(-4,4),x=rInt(-3,3);return{question:'For the line y = x + '+c+', what is y when x = '+x+'?',hints:['Substitute x = '+x,'y = '+x+' + '+c],ans:x+c,tol:0,unit:'',working:'Substitute x = '+x+'\ny = '+x+' + '+c+' = '+(x+c)};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
   ]},
   {ey:'Q6 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Plotting y = mx (through the origin)',su:'Plot y = 2x.',steps:[
-    {lb:'Notice no constant term',dr:dQ6,ht:'<p>y = 2x has no "+ number", so the line always passes through the <b>origin (0,0)</b>.</p>'},
-    {lb:'Make a table',dr:dQ6,ht:'<div class="fm">x: \u22122,\u22121,0,1,2 \u2192 y: \u22124,\u22122,0,2,4</div>'},
-    {lb:'Plot and join',dr:dQ6,ht:'<p>Every point doubles its x-value to get y.</p>'},
-    {lb:'Steepness',dr:dQ6,ht:'<p>The 2 in y = 2x controls how <b>steep</b> the line is \u2014 larger numbers make steeper lines.</p>'},
-    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var m=rPick([2,3,4,5]),x=rInt(-4,4);return{question:'For the line y = '+m+'x, what is y when x = '+x+'?',hints:['y = '+m+' \u00d7 x','Substitute x = '+x],ans:m*x,tol:0,unit:'',working:'Substitute x = '+x+'\ny = '+m+' \u00d7 '+x+' = '+(m*x)};})},
+    {lb:'Notice no constant term',dr:dQ6,ht:'<p>y = 2x has no "+ number", so the line always passes through the <b>origin (0,0)</b>.</p>',speak:'y equals 2x has no plus number, so the line always passes through the origin, 0, 0.'},
+    {lb:'Make a table',dr:dQ6,ht:'<div class="fm">x: \u22122,\u22121,0,1,2 \u2192 y: \u22124,\u22122,0,2,4</div>',speak:'Make a table: for x equals minus 2, minus 1, 0, 1, 2, y equals minus 4, minus 2, 0, 2, 4.'},
+    {lb:'Plot and join',dr:dQ6,ht:'<p>Every point doubles its x-value to get y.</p>',speak:'Every point doubles its x-value to get y.'},
+    {lb:'Steepness',dr:dQ6,ht:'<p>The 2 in y = 2x controls how <b>steep</b> the line is \u2014 larger numbers make steeper lines.</p>',speak:'The 2 in y equals 2x controls how steep the line is \u2014 larger numbers make steeper lines.'},
+    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var m=rPick([2,3,4,5]),x=rInt(-4,4);return{question:'For the line y = '+m+'x, what is y when x = '+x+'?',hints:['y = '+m+' \u00d7 x','Substitute x = '+x],ans:m*x,tol:0,unit:'',working:'Substitute x = '+x+'\ny = '+m+' \u00d7 '+x+' = '+(m*x)};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
   ]},
   {ey:'Q7 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Tables of Values for a Linear Function',su:'Complete a table of values for y = 3x \u2212 1.',steps:[
-    {lb:'Set up the table',dr:dQ7,ht:'<p>List x-values across the top row, then work out 3x for each.</p>'},
-    {lb:'Calculate 3x',dr:dQ7,ht:'<div class="fm">x=0\u21920, x=1\u21923, x=2\u21926, x=3\u21929</div>'},
-    {lb:'Subtract 1',dr:dQ7,ht:'<div class="fm">y = 3x \u2212 1: \u22121, 2, 5, 8</div>'},
-    {lb:'Check with substitution',dr:dQ7,ht:'<p>x=2: 3(2)\u22121 = 5 \u2713</p>'},
-    {lb:'Your turn',dr:dQ7,ht:tryIt(function(){var m=rInt(2,5),c=rInt(1,6),x=rInt(2,6);return{question:'For y = '+m+'x \u2212 '+c+', complete the table: what is y when x = '+x+'?',hints:['Calculate '+m+' \u00d7 '+x,'Then subtract '+c],ans:m*x-c,tol:0,unit:'',working:'Step 1: '+m+' \u00d7 '+x+' = '+(m*x)+'\nStep 2: '+(m*x)+' \u2212 '+c+' = '+(m*x-c)};})},
+    {lb:'Set up the table',dr:dQ7,ht:'<p>List x-values across the top row, then work out 3x for each.</p>',speak:'List x-values across the top row, then work out 3x for each one.'},
+    {lb:'Calculate 3x',dr:dQ7,ht:'<div class="fm">x=0\u21920, x=1\u21923, x=2\u21926, x=3\u21929</div>',speak:'Calculate 3x: when x is 0, 3x is 0. When x is 1, 3x is 3. When x is 2, 3x is 6. When x is 3, 3x is 9.'},
+    {lb:'Subtract 1',dr:dQ7,ht:'<div class="fm">y = 3x \u2212 1: \u22121, 2, 5, 8</div>',speak:'Now subtract 1 from each: y equals 3x minus 1 gives minus 1, 2, 5, and 8.'},
+    {lb:'Check with substitution',dr:dQ7,ht:'<p>x=2: 3(2)\u22121 = 5 \u2713</p>',speak:'Check with substitution: when x is 2, 3 times 2 minus 1 is 5, correct.'},
+    {lb:'Your turn',dr:dQ7,ht:tryIt(function(){var m=rInt(2,5),c=rInt(1,6),x=rInt(2,6);return{question:'For y = '+m+'x \u2212 '+c+', complete the table: what is y when x = '+x+'?',hints:['Calculate '+m+' \u00d7 '+x,'Then subtract '+c],ans:m*x-c,tol:0,unit:'',working:'Step 1: '+m+' \u00d7 '+x+' = '+(m*x)+'\nStep 2: '+(m*x)+' \u2212 '+c+' = '+(m*x-c)};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
   ]},
   {ey:'Q8 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Midpoint of a Line Segment (visual)',su:'Find the midpoint of A(2,3) and B(6,3).',steps:[
-    {lb:'What is a midpoint?',dr:dQ8,ht:'<p>The <b>midpoint</b> is exactly halfway between two points.</p>'},
-    {lb:'Look along the line',dr:dQ8,ht:'<p>A and B have the same y-value (3), so the midpoint sits on the same horizontal line.</p>'},
-    {lb:'Average the x-values',dr:dQ8,ht:'<div class="fm">(2 + 6) \u00f7 2 = 4</div>'},
-    {lb:'Midpoint',dr:dQ8,ht:'<div class="fm">Midpoint = (4, 3)</div>'},
-    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var y=rInt(-3,3),x1=rInt(-5,3),x2=x1+rInt(2,8);return{question:'Find the midpoint x-coordinate of A('+x1+', '+y+') and B('+x2+', '+y+').',hints:['Average the x-values: ('+x1+' + '+x2+') \u00f7 2'],ans:(x1+x2)/2,tol:0.01,unit:'',working:'Add the x-values: '+x1+' + '+x2+' = '+(x1+x2)+'\nDivide by 2: '+(x1+x2)+' \u00f7 2 = '+((x1+x2)/2)};})},
+    {lb:'What is a midpoint?',dr:dQ8,ht:'<p>The <b>midpoint</b> is exactly halfway between two points.</p>',speak:'The midpoint is exactly halfway between two points.'},
+    {lb:'Look along the line',dr:dQ8,ht:'<p>A and B have the same y-value (3), so the midpoint sits on the same horizontal line.</p>',speak:'A and B have the same y-value, 3, so the midpoint sits on the same horizontal line.'},
+    {lb:'Average the x-values',dr:dQ8,ht:'<div class="fm">(2 + 6) \u00f7 2 = 4</div>',speak:'Average the x-values: 2 plus 6, divided by 2, equals 4.'},
+    {lb:'Midpoint',dr:dQ8,ht:'<div class="fm">Midpoint = (4, 3)</div>',speak:'So the midpoint is 4, 3.'},
+    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var y=rInt(-3,3),x1=rInt(-5,3),x2=x1+rInt(2,8);return{question:'Find the midpoint x-coordinate of A('+x1+', '+y+') and B('+x2+', '+y+').',hints:['Average the x-values: ('+x1+' + '+x2+') \u00f7 2'],ans:(x1+x2)/2,tol:0.01,unit:'',working:'Add the x-values: '+x1+' + '+x2+' = '+(x1+x2)+'\nDivide by 2: '+(x1+x2)+' \u00f7 2 = '+((x1+x2)/2)};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
   ]},
   {ey:'Q9 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Naming Points on Shapes Using Coordinates',su:'Plot square ABCD from its corner coordinates.',steps:[
-    {lb:'List the corners',dr:dQ9,ht:'<div class="fm">A(\u22122,\u22121) B(2,\u22121) C(2,3) D(\u22122,3)</div>'},
-    {lb:'Plot each corner',dr:dQ9,ht:'<p>Plot all four points on the grid first, before joining.</p>'},
-    {lb:'Join in order',dr:dQ9,ht:'<p>Join A\u2192B\u2192C\u2192D\u2192A to complete the shape.</p>'},
-    {lb:'Check it is a square',dr:dQ9,ht:'<p>All sides should be equal length and all angles 90\u00b0.</p>'},
-    {lb:'Your turn',dr:dQ9,ht:tryIt(function(){var s=rInt(2,5),x0=rInt(-4,2);return{question:'A square has corners ('+x0+',0), ('+(x0+s)+',0), ('+(x0+s)+','+s+'), ('+x0+','+s+'). What is the side length of the square?',hints:['Compare the x-values of the first two corners'],ans:s,tol:0,unit:'',working:'Side length = '+(x0+s)+' \u2212 '+x0+' = '+s};})},
+    {lb:'List the corners',dr:dQ9,ht:'<div class="fm">A(\u22122,\u22121) B(2,\u22121) C(2,3) D(\u22122,3)</div>',speak:'List the corners: A, minus 2, minus 1; B, 2, minus 1; C, 2, 3; and D, minus 2, 3.'},
+    {lb:'Plot each corner',dr:dQ9,ht:'<p>Plot all four points on the grid first, before joining.</p>',speak:'Plot all four points on the grid first, before joining them.'},
+    {lb:'Join in order',dr:dQ9,ht:'<p>Join A\u2192B\u2192C\u2192D\u2192A to complete the shape.</p>',speak:'Join A to B, to C, to D, and back to A, to complete the shape.'},
+    {lb:'Check it is a square',dr:dQ9,ht:'<p>All sides should be equal length and all angles 90\u00b0.</p>',speak:'Check it is a square: all sides should be equal length, and all angles should be 90 degrees.'},
+    {lb:'Your turn',dr:dQ9,ht:tryIt(function(){var s=rInt(2,5),x0=rInt(-4,2);return{question:'A square has corners ('+x0+',0), ('+(x0+s)+',0), ('+(x0+s)+','+s+'), ('+x0+','+s+'). What is the side length of the square?',hints:['Compare the x-values of the first two corners'],ans:s,tol:0,unit:'',working:'Side length = '+(x0+s)+' \u2212 '+x0+' = '+s};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
   ]},
   {ey:'Q10 \u00b7 Year 7 \u00b7 Coordinates & Graphs',ti:'Real-Life Coordinate Problems (maps/grids)',su:'Home is at (1,2), School is at (6,3) on a street grid.',steps:[
-    {lb:'Read the grid',dr:dQ10,ht:'<p>Each grid line represents one street block.</p>'},
-    {lb:'Locate School',dr:dQ10,ht:'<div class="fm">School = (6, 3)</div>'},
-    {lb:'Work out the journey',dr:dQ10,ht:'<div class="fm">Right: 6 \u2212 1 = 5 blocks</div><div class="fm">Up: 3 \u2212 2 = 1 block</div>'},
-    {lb:'Describe the route',dr:dQ10,ht:'<p>Move 5 blocks right, then 1 block up, to get from Home to School.</p>'},
-    {lb:'Your turn',dr:dQ10,ht:tryIt(function(){var hx=rInt(0,3),hy=rInt(0,3),sx=hx+rInt(3,7),sy=hy+rInt(1,4);return{question:'Home is at ('+hx+', '+hy+'). School is at ('+sx+', '+sy+'). How many blocks right must you travel?',hints:['Right distance = school x \u2212 home x'],ans:sx-hx,tol:0,unit:'blocks',working:sx+' \u2212 '+hx+' = '+(sx-hx)+' blocks right'};})},
+    {lb:'Read the grid',dr:dQ10,ht:'<p>Each grid line represents one street block.</p>',speak:'Each grid line represents one street block.'},
+    {lb:'Locate School',dr:dQ10,ht:'<div class="fm">School = (6, 3)</div>',speak:'School is at 6, 3.'},
+    {lb:'Work out the journey',dr:dQ10,ht:'<div class="fm">Right: 6 \u2212 1 = 5 blocks</div><div class="fm">Up: 3 \u2212 2 = 1 block</div>',speak:'Work out the journey: right, 6 minus 1 equals 5 blocks. Up, 3 minus 2 equals 1 block.'},
+    {lb:'Describe the route',dr:dQ10,ht:'<p>Move 5 blocks right, then 1 block up, to get from Home to School.</p>',speak:'So move 5 blocks right, then 1 block up, to get from Home to School.'},
+    {lb:'Your turn',dr:dQ10,ht:tryIt(function(){var hx=rInt(0,3),hy=rInt(0,3),sx=hx+rInt(3,7),sy=hy+rInt(1,4);return{question:'Home is at ('+hx+', '+hy+'). School is at ('+sx+', '+sy+'). How many blocks right must you travel?',hints:['Right distance = school x \u2212 home x'],ans:sx-hx,tol:0,unit:'blocks',working:sx+' \u2212 '+hx+' = '+(sx-hx)+' blocks right'};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
   ]},
 
 ];
@@ -517,9 +508,122 @@ var QS=[
 var qi=0,si=0;
 function bSB(){var sb=document.getElementById('sb');var lbl=sb.querySelector('.sb-lbl');sb.innerHTML='';sb.appendChild(lbl);QS.forEach(function(q,i){var b=document.createElement('button');b.className='qb'+(i===qi?' on':'');b.innerHTML='<span class="qn">Q'+(i+1)+'</span>'+q.ti;b.onclick=function(){qi=i;si=0;render();};sb.appendChild(b);});}
 function bDT(){var w=document.getElementById('dt');w.innerHTML='';QS[qi].steps.forEach(function(_,i){var d=document.createElement('div');d.className='dot'+(i===si?' on':i<si?' dn':'');w.appendChild(d);});}
-function render(){bSB();var q=QS[qi],st=q.steps[si];document.getElementById('ey').innerHTML=q.ey;document.getElementById('ti').textContent=q.ti;document.getElementById('su').textContent=q.su;var p=document.getElementById('pn');p.classList.remove('fi');void p.offsetWidth;p.classList.add('fi');p.innerHTML='<div class="sl">'+st.lb+'</div>'+st.ht;st.dr(si);bDT();document.getElementById('pb').disabled=(si===0);document.getElementById('nb').textContent=(si===q.steps.length-1)?'Restart':'Next \u2192';}
+function render(){if(typeof stopReading==='function')stopReading();bSB();var q=QS[qi],st=q.steps[si];document.getElementById('ey').innerHTML=q.ey;document.getElementById('ti').textContent=q.ti;document.getElementById('su').textContent=q.su;var p=document.getElementById('pn');p.classList.remove('fi');void p.offsetWidth;p.classList.add('fi');p.innerHTML='<div class="sl">'+st.lb+'</div>'+st.ht;st.dr(si);bDT();document.getElementById('pb').disabled=(si===0);document.getElementById('nb').textContent=(si===q.steps.length-1)?'Restart':'Next \u2192';}
 document.getElementById('pb').addEventListener('click',function(){if(si>0){si--;render();}});
 document.getElementById('nb').addEventListener('click',function(){var q=QS[qi];si=(si===q.steps.length-1)?0:si+1;render();});
+
+// ── Auto-reader ──────────────────────────────────────────────────────────
+// "Read this step" speaks just the current step once. "Auto-play question"
+// chains through every step of the current question, stopping (rather than
+// talking over) any step containing the interactive Your Turn question.
+var voiceSelEl = document.getElementById('voiceSel');
+var readerStatusEl = document.getElementById('readerStatus');
+var readBtnEl = document.getElementById('readBtn');
+var autoBtnEl = document.getElementById('autoBtn');
+var stopBtnEl = document.getElementById('stopReadBtn');
+var autoPlaying = false;
+var userPickedVoice = false; // only true once the student manually changes the dropdown
+
+function populateVoices(){
+  var voices = (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter(function(v){return v.lang.indexOf('en')===0;});
+  voiceSelEl.innerHTML = '<option value="">Default voice</option>' + voices.map(function(v,i){return '<option value="'+i+'">'+v.name+' ('+v.lang+')</option>';}).join('');
+}
+if (window.speechSynthesis) {
+  populateVoices();
+  speechSynthesis.onvoiceschanged = populateVoices;
+}
+voiceSelEl.addEventListener('change', function(){ userPickedVoice = (voiceSelEl.value !== ''); });
+function currentVoice(){
+  // iOS Safari silently fails to speak() if given a Voice object fetched before
+  // the voice list is fully ready — safest default is no explicit voice at all
+  // unless the student has deliberately picked one.
+  if (!userPickedVoice) return null;
+  var voices = (window.speechSynthesis ? speechSynthesis.getVoices() : []).filter(function(v){return v.lang.indexOf('en')===0;});
+  return voices[parseInt(voiceSelEl.value,10)] || null;
+}
+function hasInteractiveQuestion(st){ return st.ht.indexOf('data-tryid')>-1 || st.ht.indexOf('data-clickid')>-1 || st.ht.indexOf('data-mcid')>-1; }
+
+function stopReading(){
+  if (window.speechSynthesis) speechSynthesis.cancel();
+  autoPlaying = false;
+  readBtnEl.disabled = false; autoBtnEl.disabled = false;
+  stopBtnEl.style.display = 'none';
+  readerStatusEl.textContent = '';
+  window.__activeUtterance = null;
+}
+
+// WebKit (Safari/iOS) can garbage-collect an utterance mid-speech if nothing
+// keeps a strong reference to it, silently killing the audio.
+function speakStep(st, onDone){
+  if (!window.speechSynthesis) { readerStatusEl.textContent = 'Speech isn\u2019t supported on this browser.'; if(onDone) onDone(); return; }
+  if (!st.speak) { if(onDone) onDone(); return; }
+  var u = new SpeechSynthesisUtterance(st.speak);
+  var v = currentVoice();
+  if (v) u.voice = v;
+  u.rate = 0.95;
+  u.onend = function(){ window.__activeUtterance = null; if (onDone) onDone(); };
+  u.onerror = function(ev){
+    window.__activeUtterance = null;
+    readerStatusEl.textContent = 'Couldn\u2019t play audio (' + (ev && ev.error ? ev.error : 'unknown error') + '). Check the device isn\u2019t muted and try again.';
+    if (onDone) onDone();
+  };
+  window.__activeUtterance = u;
+  speechSynthesis.speak(u);
+  setTimeout(function(){
+    if (window.__activeUtterance === u && !speechSynthesis.speaking && !speechSynthesis.pending) {
+      readerStatusEl.textContent = 'No audio started \u2014 try tapping the button again, or check the device isn\u2019t on silent/muted.';
+    }
+  }, 600);
+}
+
+readBtnEl.addEventListener('click', function(){
+  if (!window.speechSynthesis) { readerStatusEl.textContent = 'Speech not supported on this device.'; return; }
+  speechSynthesis.cancel();
+  readBtnEl.disabled = true; autoBtnEl.disabled = true; stopBtnEl.style.display = 'inline-block';
+  readerStatusEl.textContent = 'Reading\u2026';
+  var st = QS[qi].steps[si];
+  speakStep(st, function(){
+    readBtnEl.disabled = false; autoBtnEl.disabled = false; stopBtnEl.style.display = 'none';
+  });
+});
+
+autoBtnEl.addEventListener('click', function(){
+  if (!window.speechSynthesis) { readerStatusEl.textContent = 'Speech not supported on this device.'; return; }
+  speechSynthesis.cancel();
+  autoPlaying = true;
+  readBtnEl.disabled = true; autoBtnEl.disabled = true; stopBtnEl.style.display = 'inline-block';
+  autoStep();
+});
+
+function autoStep(){
+  if (!autoPlaying) return;
+  var q = QS[qi], st = q.steps[si];
+  readerStatusEl.textContent = 'Reading step '+(si+1)+' of '+q.steps.length+'\u2026';
+  speakStep(st, function(){
+    if (!autoPlaying) return;
+    if (hasInteractiveQuestion(st)) {
+      autoPlaying = false;
+      readBtnEl.disabled = false; autoBtnEl.disabled = false; stopBtnEl.style.display = 'none';
+      readerStatusEl.textContent = 'Your turn \u2014 try the question below.';
+      return;
+    }
+    if (si < q.steps.length-1) {
+      si++;
+      var p=document.getElementById('pn'); var nst=q.steps[si];
+      p.innerHTML='<div class="sl">'+nst.lb+'</div>'+nst.ht; nst.dr(si);
+      p.classList.remove('fi');void p.offsetWidth;p.classList.add('fi');
+      bDT();
+      autoStep();
+    } else {
+      autoPlaying = false;
+      readBtnEl.disabled = false; autoBtnEl.disabled = false; stopBtnEl.style.display = 'none';
+      readerStatusEl.textContent = 'Question narrated.';
+    }
+  });
+}
+
+stopBtnEl.addEventListener('click', stopReading);
+
 render();
 
 </script>
