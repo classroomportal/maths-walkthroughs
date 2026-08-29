@@ -9,10 +9,30 @@
   const _loggedQuestions = new Set();
   const _pageOpenedAt = Date.now();
 
+  // Don't rely on the host page having set window._supabase — some
+  // walkthrough files create their Supabase client as a page-local const
+  // and never expose it globally, which silently breaks getSession() here.
+  // Create our own client lazily (and reuse window._supabase if present).
+  let _clientPromise = null;
+  function getClient() {
+    if (window._supabase) return Promise.resolve(window._supabase);
+    if (!_clientPromise) {
+      _clientPromise = import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm')
+        .then(function(mod) {
+          const c = mod.createClient(SUPABASE_URL, SUPABASE_ANON);
+          window._supabase = c;
+          return c;
+        })
+        .catch(function(e) { console.error('supabase client init failed:', e); return null; });
+    }
+    return _clientPromise;
+  }
+
   async function getSession() {
     try {
-      if (window._supabase) {
-        const { data: { session } } = await window._supabase.auth.getSession();
+      const client = await getClient();
+      if (client) {
+        const { data: { session } } = await client.auth.getSession();
         return session;
       }
     } catch(e) {}
