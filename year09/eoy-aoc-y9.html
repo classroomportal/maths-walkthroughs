@@ -1,6 +1,13 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+  const _lc = createClient('https://lnwinoghbefmjpvmixzo.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxud2lub2doYmVmbWpwdm1peHpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODIxNzQsImV4cCI6MjA5Nzk1ODE3NH0.ubKHVLrxlxQd-w3n5pS3O6YMAI7I--ndEkI2xWM9qCo');
+  window._supabase = _lc;
+  const { data: { session } } = await _lc.auth.getSession();
+  if (!session) window.location.href = '../login.html';
+</script>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>EOY Assessment of Competency &middot; Year 9 &middot; Maths Walkthroughs</title>
@@ -78,7 +85,7 @@ header{background:var(--red);color:#fff;height:56px;display:flex;align-items:cen
   </div>
 </div>
 <header>
-  <a href="../index.html" class="back">&larr; All Topics</a>
+  <a href="../dashboard-student.html" class="back">&larr; My Dashboard</a>
   <div class="ht">EOY Assessment of Competency &mdash; Year 9</div>
   <div style="width:80px"></div>
 </header>
@@ -1449,5 +1456,7 @@ document.getElementById('pb').addEventListener('click',function(){if(si>0){si--;
 document.getElementById('nb').addEventListener('click',function(){var q=QS[qi];si=si===q.steps.length-1?0:si+1;render();});
 render();
 </script>
+<script>window._abcTopicCode = "Y9-AOC-01";</script>
+<script src="../abc_feedback_widget.js"></script>
 </body>
 </html>
