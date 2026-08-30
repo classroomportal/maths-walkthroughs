@@ -2988,8 +2988,9 @@
     // Build review map: topicId -> { reviewerIds, ratings }
     const reviewMap = {};
     allReviews.forEach(r => {
-      if (!reviewMap[r.topic_id]) reviewMap[r.topic_id] = { reviewers: new Set(), ratings: [], questions: new Set() };
+      if (!reviewMap[r.topic_id]) reviewMap[r.topic_id] = { reviewers: new Set(), reviewerNames: new Set(), ratings: [], questions: new Set() };
       reviewMap[r.topic_id].reviewers.add(r.reviewer_id);
+      reviewMap[r.topic_id].reviewerNames.add(r.profiles?.full_name || 'Unknown reviewer');
       reviewMap[r.topic_id].ratings.push(r.rating);
       reviewMap[r.topic_id].questions.add(r.question_number);
     });
@@ -3139,6 +3140,7 @@
         ? `<span style="color:${strandColour}">${subjIcon} ${t.strand || subj}</span>`
         : `<span style="color:#888">📐 Maths</span>`;
       const reviewerCount = rm ? rm.reviewers.size : 0;
+      const reviewerNamesStr = rm ? [...rm.reviewerNames].join(', ') : '';
       const qCount = rm ? rm.questions.size : 0;
       const dominant = rm ? getDominantRating(rm.ratings) : null;
       const isLocked = !!t.locked;
@@ -3171,7 +3173,7 @@
         </div>
         <div style="display:flex;align-items:center;gap:8px">
           ${statusBadge}
-          ${reviewerCount > 0 ? `<span style="font-size:0.75rem;color:#888">${reviewerCount} reviewer${reviewerCount>1?'s':''} · ${qCount} Qs</span>` : ''}
+          ${reviewerCount > 0 ? `<span style="font-size:0.75rem;color:#888">${escAttr(reviewerNamesStr)} · ${qCount} Qs</span>` : ''}
         </div>
         ${actionButtons}
       </div>`;
