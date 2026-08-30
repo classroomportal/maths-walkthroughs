@@ -1277,7 +1277,7 @@ const BIOLOGY_WALKTHROUGH_FILES = {
     if (isArtsSubject) {
       // Arts subjects: load all topics for this subject regardless of year
       const { data } = await supabase
-        .from('topics').select('*').eq('subject', selectedSubject).order('topic_code');
+        .from('topics').select('*').eq('subject', selectedSubject).eq('retired', false).order('topic_code');
       topics = data;
     } else if (selectedSubject === 'english') {
       // English: load the selected year's topics PLUS the year-agnostic
@@ -1286,13 +1286,13 @@ const BIOLOGY_WALKTHROUGH_FILES = {
       const yr = parseInt(document.getElementById('year-select').value);
       if (!yr) return;
       const { data } = await supabase
-        .from('topics').select('*').eq('subject', 'english').order('topic_code');
+        .from('topics').select('*').eq('subject', 'english').eq('retired', false).order('topic_code');
       topics = (data || []).filter(t => t.year_group === yr || (yr >= 10 && ENGLISH_AGNOSTIC_RE.test(t.topic_code)));
     } else {
       const yr = parseInt(document.getElementById('year-select').value);
       if (!yr) return;
       const { data } = await supabase
-        .from('topics').select('*').eq('year_group', yr).order('topic_code');
+        .from('topics').select('*').eq('year_group', yr).eq('retired', false).order('topic_code');
       topics = (data || []).filter(t => (t.subject || 'maths') === selectedSubject);
     }
 

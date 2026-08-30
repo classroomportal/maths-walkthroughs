@@ -1598,7 +1598,7 @@
 
       // Load all topics
       const { data: topics } = await supabase
-        .from('topics').select('*').order('year_group').order('topic_code');
+        .from('topics').select('*').eq('retired', false).order('year_group').order('topic_code');
       allTopics = topics || [];
 
       // Load progress
