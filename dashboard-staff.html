@@ -4454,7 +4454,7 @@
     // the <option> itself, rather than exposing 13/14 as fake entries in the year picker.
     const yr = fixedYear ? parseInt(fixedYear) : (parseInt(yearSelectEl.value) || 13);
     const hideYearPicker = isYearAgnostic || !!fixedYear;
-    const filtered = allTopics.filter(t => (isYearAgnostic || t.year_group === yr) && (t.subject || 'maths') === subject);
+    const filtered = allTopics.filter(t => (isYearAgnostic || t.year_group === yr) && (t.subject || 'maths') === subject && !t.retired);
     const grid = document.getElementById('topics-grid');
     grid.style.display = 'grid';
     yearSelectEl.style.display = hideYearPicker ? 'none' : '';
