@@ -306,31 +306,16 @@ const _sb = createClient('https://lnwinoghbefmjpvmixzo.supabase.co','eyJhbGciOiJ
 window._supabase = _sb;
 window._abcUpdated = '2026-06-28';
 
-// Resolve topic code from student's year group
-async function resolveTopicCode() {
-  const { data: { session } } = await _sb.auth.getSession();
-  if (!session) return null;
-  const { data: profile } = await _sb.from('profiles').select('year_group').eq('id', session.user.id).maybeSingle();
-  const yr = profile?.year_group;
-  return yr <= 9 ? 'Y9-NUM-02' : 'Y10-NUM-03';
-}
-
-window.markComplete = async function() {
+// Resolve topic code from student's year group and expose it for
+// abc_feedback_widget.js (interaction logging + Mark as Complete both
+// require window._abcTopicCode to be set).
+(async function() {
   const { data: { session } } = await _sb.auth.getSession();
   if (!session) return;
-  const code = await resolveTopicCode();
-  if (!code) return;
-  const { data: topic } = await _sb.from('topics').select('id').eq('topic_code', code).maybeSingle();
-  if (!topic) return;
-  window._abcTopicId = topic.id;
-  const { data: __mySchoolProfile } = await _sb.from('profiles').select('school_id').eq('id', session.user.id).maybeSingle();
-  const __mySchoolId = __mySchoolProfile ? __mySchoolProfile.school_id : null;
-  await _sb.from('walkthrough_progress').upsert({
-    student_id: session.user.id, school_id: __mySchoolId, topic_id: topic.id,
-    status: 'completed', completed_at: new Date().toISOString(),
-    last_visited_at: new Date().toISOString(),
-  }, { onConflict: 'student_id,topic_id' });
-};
+  const { data: profile } = await _sb.from('profiles').select('year_group').eq('id', session.user.id).maybeSingle();
+  const yr = profile?.year_group;
+  window._abcTopicCode = yr <= 9 ? 'Y9-NUM-02' : 'Y10-NUM-03';
+})();
 </script>
 <script src="../abc_feedback_widget.js"></script>
 </body>
