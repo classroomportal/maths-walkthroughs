@@ -607,10 +607,13 @@ var Q=[
     speak:'Worked example.'},
    {d:dQ6,p:4,html:'<p>The same rearranging trick works on A = \u00bdr\u00b2\u03b8 too, whichever letter is missing.</p>'
      +tryItMC(function(){
-       var r=pick([2,3,4,5]),th=pick([1.5,2,2.5,3]);
-       var s=r*th;
+       var r,th,s,opts;
+       do{
+         r=pick([2,3,4,5]); th=pick([1.5,2,2.5,3]); s=r*th;
+         opts=[String(th), String(s), (s/2).toFixed(1), (r/s).toFixed(2)];
+       }while(new Set(opts).size<4);
        return {question:'Arc length = '+s+'cm, r = '+r+'cm. What is \u03b8 in radians?',
-         options:[String(th), String(s), (s/2).toFixed(1), (r/s).toFixed(2)],
+         options:opts,
          correct:0,
          working:'\u03b8=s/r='+s+'/'+r+'='+th+' radians.'};
      }),

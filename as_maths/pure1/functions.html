@@ -576,7 +576,8 @@ var Q=[
     speak:'Watch f inverse appear as the mirror image of f in that line \u2014 every point, a comma b, on f becomes b comma a, on f inverse.'},
    {d:dQ4,p:4,html:'<p>This reflection also means domain and range swap between a function and its inverse.</p>'
      +tryItMC(function(){
-       var a=pick([1,2,3]),b=pick([2,3,4,5]);
+       var a,b;
+       do{ a=pick([1,2,3]); b=pick([2,3,4,5]); }while(a===b);
        return {question:'If f has domain x\u2265'+a+' and range f(x)\u2265'+b+', what is the domain of f\u207b\u00b9?',
          options:['x\u2265'+b,'x\u2265'+a,'x\u22650','all real x'],
          correct:0,
