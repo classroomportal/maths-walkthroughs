@@ -1484,7 +1484,9 @@
         const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
         if (!isPreview) { window.location.href = 'dashboard-staff.html'; return; }
       }
-      const isStaffPreview = new URLSearchParams(window.location.search).get('preview') === '1';
+      // Preview mode is staff-only, so students can't use ?preview=1 to skip their diagnostic.
+      const previewParams = new URLSearchParams(window.location.search);
+      const isStaffPreview = (profile.role === 'admin' || profile.role === 'teacher') && previewParams.get('preview') === '1';
 
       if (profile.active === false) {
         showError('This account is no longer active. Please contact the school office if you believe this is an error.');
@@ -1493,10 +1495,17 @@
 
       myYearGroup = profile.year_group || 7;
 
-      if (new URLSearchParams(window.location.search).get('preview') === '1') {
+      if (isStaffPreview) {
+        // ?year=N lets staff see the dashboard as a student in that year group
+        const previewYear = parseInt(previewParams.get('year'), 10);
+        if (previewYear >= 7 && previewYear <= 12) myYearGroup = previewYear;
+        const yearOpts = [7, 8, 9, 10, 11, 12].map(y =>
+          `<option value="${y}"${y === Number(myYearGroup) ? ' selected' : ''}>Year ${y}</option>`).join('');
         const banner = document.createElement('div');
         banner.style.cssText = 'background:#C0272D;color:#fff;text-align:center;padding:8px;font-size:0.82rem;font-weight:600;';
-        banner.innerHTML = '👁 Staff Preview Mode — viewing the student dashboard · <a href="dashboard-staff.html" style="color:#fff;text-decoration:underline">Back to Staff Dashboard</a>';
+        banner.innerHTML = '👁 Staff Preview Mode — viewing as a '
+          + `<select aria-label="Preview year group" onchange="location.href='dashboard-student.html?preview=1&year='+this.value" style="font:inherit;font-weight:700;border:none;border-radius:4px;padding:1px 4px;color:#C0272D">${yearOpts}</select>`
+          + ' student · <a href="dashboard-staff.html" style="color:#fff;text-decoration:underline">Back to Staff Dashboard</a>';
         document.body.insertBefore(banner, document.body.firstChild);
       }
 
