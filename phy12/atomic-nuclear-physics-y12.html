@@ -225,6 +225,8 @@ function bDT(){var w=document.getElementById('dt');w.innerHTML='';QS[qi].steps.f
 function render(){bSB();var q=QS[qi],st=q.steps[si];document.getElementById('ey').innerHTML=q.ey;document.getElementById('ti').textContent=q.ti;document.getElementById('su').textContent=q.su;var p=document.getElementById('pn');p.classList.remove('fi');void p.offsetWidth;p.classList.add('fi');p.innerHTML='<div class="sl">'+st.lb+'</div>'+st.ht;st.dr(si);bDT();document.getElementById('pb').disabled=si===0;document.getElementById('nb').textContent=si===q.steps.length-1?'Restart':'Next';}
 document.getElementById('pb').addEventListener('click',function(){if(si>0){si--;render();}});
 document.getElementById('nb').addEventListener('click',function(){var q=QS[qi];si=si===q.steps.length-1?0:si+1;render();});
+// Completion: once the last step of every question has been reached, save the topic as completed
+(function(){var seen={},done=false,_render=render;render=function(){_render.apply(this,arguments);try{if(done||!QS[qi]||si!==QS[qi].steps.length-1)return;seen[qi]=1;if(Object.keys(seen).length<QS.length||!window.markComplete)return;done=true;Promise.resolve(window.markComplete()).then(function(){var t=document.createElement('div');t.textContent='\u2713 Saved as completed';t.style.cssText='position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#2e7d32;color:#fff;padding:8px 16px;border-radius:20px;font:600 14px sans-serif;z-index:9999;box-shadow:0 2px 8px rgba(0,0,0,.2)';document.body.appendChild(t);setTimeout(function(){t.remove();},4000);}).catch(function(){done=false;});}catch(e){}};})();
 render();
 </script>
 <script type="module">

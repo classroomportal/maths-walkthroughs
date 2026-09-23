@@ -554,7 +554,7 @@ function revealNext(){
   var btn=document.getElementById('revealBtn');
   if(btn){if(revealStep>=steps.length)btn.style.display='none';else btn.textContent='Show step '+(revealStep+1)+' →';}
 }
-function nextQ(){qi++;if(qi>=order.length){qi=0;buildOrder();}loadQ();}
+function nextQ(){qi++;if(qi>=order.length){if(window.markComplete)window.markComplete();qi=0;buildOrder();}loadQ();}
 loadQ();
 </script>
 

@@ -65,6 +65,13 @@
     .btn { padding: 10px 20px; background: #C0272D; color: white; border: none; border-radius: 5px; font-size: 0.9rem; font-weight: 700; cursor: pointer; transition: background 0.2s; }
     .btn:hover { background: #a01f24; }
     .btn:disabled { background: #ccc; cursor: not-allowed; }
+    .view-as-wrap { position: relative; display: inline-block; margin-right: 8px; }
+    .view-as-menu { display: none; position: absolute; right: 0; top: calc(100% + 6px); background: white; border-radius: 6px; box-shadow: 0 4px 16px rgba(0,0,0,0.18); min-width: 230px; z-index: 1000; padding: 6px 0; text-align: left; }
+    .view-as-menu.open { display: block; }
+    .view-as-hdr { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; color: #999; padding: 6px 14px; }
+    .view-as-menu a { display: block; padding: 8px 14px; color: #333; font-size: 0.86rem; font-weight: 600; text-decoration: none; }
+    .view-as-menu a:hover { background: #fcf0f0; color: #C0272D; }
+    .view-as-menu a span { display: block; font-size: 0.72rem; font-weight: 400; color: #999; }
     .btn-outline { padding: 10px 20px; background: white; color: #C0272D; border: 2px solid #C0272D; border-radius: 5px; font-size: 0.9rem; font-weight: 700; cursor: pointer; }
     .import-log { background: #1e1e1e; color: #d4d4d4; border-radius: 6px; padding: 16px; font-family: monospace; font-size: 0.82rem; max-height: 240px; overflow-y: auto; display: none; }
     .import-log .ok  { color: #6ec26e; }
@@ -342,7 +349,18 @@
   </div>
   <div class="header-right">
     <span class="user-name" id="header-name"></span>
-    <a class="btn-outline" id="view-as-student-btn" href="dashboard-student.html?preview=1" style="display:none;text-decoration:none;font-size:0.82rem;padding:6px 12px;margin-right:8px">👁 View as Student</a>
+    <div class="view-as-wrap" id="view-as-student-btn" style="display:none">
+      <button type="button" class="btn-outline" onclick="toggleViewAsMenu(event)" aria-haspopup="true" style="font-size:0.82rem;padding:6px 12px">👁 View as Student ▾</button>
+      <div class="view-as-menu" id="view-as-menu">
+        <div class="view-as-hdr">See the student dashboard as…</div>
+        <a href="dashboard-student.html?preview=1&year=7">Year 7</a>
+        <a href="dashboard-student.html?preview=1&year=8">Year 8</a>
+        <a href="dashboard-student.html?preview=1&year=9">Year 9</a>
+        <a href="dashboard-student.html?preview=1&year=10">Year 10 <span>Maths week-by-week plan</span></a>
+        <a href="dashboard-student.html?preview=1&year=11">Year 11</a>
+        <a href="dashboard-student.html?preview=1&year=12">Year 12</a>
+      </div>
+    </div>
     <a class="btn-outline" href="test.html" target="_blank" style="text-decoration:none;font-size:0.82rem;padding:6px 12px;margin-right:8px">📝 Take a Test</a>
     <button class="btn-signout" onclick="signOut()">Sign out</button>
   </div>
@@ -1343,9 +1361,11 @@
     if (isSuperAdmin) await loadSchoolsForPickers();
 
     document.getElementById('header-name').textContent = profile.full_name;
-    if (profile.role === 'admin') {
+    if (profile.role === 'admin' || profile.role === 'teacher') {
       const viewAsBtn = document.getElementById('view-as-student-btn');
       if (viewAsBtn) viewAsBtn.style.display = 'inline-block';
+    }
+    if (profile.role === 'admin') {
       const exportReviewsBtn = document.getElementById('btn-export-locked-reviews');
       if (exportReviewsBtn) exportReviewsBtn.style.display = '';
     }
@@ -4428,6 +4448,15 @@
     document.getElementById('cu-form').value  = '';
     document.getElementById('cu-password').value = 'ABC2026';
   };
+
+  window.toggleViewAsMenu = function(e) {
+    e.stopPropagation();
+    document.getElementById('view-as-menu').classList.toggle('open');
+  };
+  document.addEventListener('click', () => {
+    const m = document.getElementById('view-as-menu');
+    if (m) m.classList.remove('open');
+  });
 
   window.signOut = async function() {
     await supabase.auth.signOut();

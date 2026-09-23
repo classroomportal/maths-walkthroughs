@@ -156,6 +156,37 @@
     .no-topics { text-align: center; color: #aaa; padding: 32px; font-size: 0.9rem; font-style: italic; }
     .strand-group-hdr { grid-column: 1 / -1; font-size: 0.78rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin: 18px 0 2px; padding-bottom: 6px; border-bottom: 1.5px solid #eee; display: flex; align-items: center; gap: 6px; }
     .strand-group-hdr:first-child { margin-top: 0; }
+
+    /* Year 10 week-by-week plan (replaces the Y10 maths card grid) */
+    .plan-wrap { grid-column: 1 / -1; }
+    .plan-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin-bottom: 14px; }
+    .plan-term-btn { background: #f3f3f3; border: 1.5px solid #e4e4e4; color: #555; font-size: 0.8rem; font-weight: 600; padding: 5px 12px; border-radius: 16px; cursor: pointer; }
+    .plan-term-btn.active { background: #C0272D; border-color: #C0272D; color: #fff; }
+    .plan-term-btn:disabled { color: #bbb; cursor: not-allowed; }
+    .plan-toggle { margin-left: auto; background: none; border: none; color: #C0272D; font-size: 0.8rem; font-weight: 600; cursor: pointer; text-decoration: underline; padding: 4px 0; }
+    .plan-term-title { font-size: 1.05rem; font-weight: 700; color: #C0272D; }
+    .plan-term-sub { font-size: 0.8rem; color: #777; font-style: italic; margin: 2px 0 12px; }
+    .plan-grid { border: 1.5px solid #eee; border-radius: 6px; overflow: hidden; }
+    .plan-head, .plan-week { display: grid; grid-template-columns: 84px repeat(4, 1fr); }
+    .plan-head { background: #C0272D; color: #fff; font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.4px; }
+    .plan-head div { padding: 8px 10px; }
+    .plan-week { border-top: 1px solid #eee; }
+    .plan-week:nth-child(odd) { background: #fcf6f6; }
+    .plan-wk { padding: 10px; font-size: 0.8rem; font-weight: 700; color: #7A1418; }
+    .plan-cell { display: block; margin: 5px; padding: 8px 10px; background: #fff; border: 1.5px solid #eee; border-radius: 6px; cursor: pointer; text-align: left; font: inherit; color: inherit; transition: border-color 0.15s, box-shadow 0.15s; }
+    .plan-cell:hover:not(.soon) { border-color: #C0272D; box-shadow: 0 2px 6px rgba(192,39,45,0.12); }
+    .plan-cell.started { border-left: 4px solid #f57f17; }
+    .plan-cell.completed { border-left: 4px solid #2e7d32; }
+    .plan-cell.soon { background: #f7f7f7; cursor: default; color: #aaa; }
+    .plan-lsn { display: none; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; color: #999; letter-spacing: 0.4px; }
+    .plan-name { font-size: 0.84rem; font-weight: 600; line-height: 1.25; }
+    .plan-sec { font-size: 0.7rem; color: #888; margin-top: 3px; line-height: 1.25; }
+    @media (max-width: 720px) {
+      .plan-head { display: none; }
+      .plan-week { grid-template-columns: 1fr 1fr; padding-bottom: 4px; }
+      .plan-wk { grid-column: 1 / -1; padding-bottom: 0; }
+      .plan-lsn { display: block; }
+    }
     .strand-group-dot { width: 9px; height: 9px; border-radius: 50%; flex-shrink: 0; }
     .loading { text-align: center; color: #aaa; padding: 40px; font-size: 0.95rem; }
     .error-box { background: #fde8e8; color: #a01f24; border-radius: 8px; padding: 20px; margin: 20px 0; font-size: 0.9rem; }
@@ -1169,6 +1200,110 @@
     ],
   };
 
+  // ── Year 10 Maths week-by-week plan (2026/27) ──
+  // Shown instead of the topic cards when Year 10 Maths is being viewed.
+  // Each lesson: n = topic name from the plan, f = walkthrough file, q = question to
+  // open at (walkthroughs read ?q=N), s = section shown under the name. No f = coming soon.
+  // Terms 2–4: add objects to Y10_MATHS_PLAN in the same shape.
+  const Y10_MATHS_PLAN = [
+    {
+      term: 'Term 1 — Foundations',
+      sub: "Units 1–3: Introduction to mathematics I & II; Further algebra, Pythagoras' theorem, surds and appropriate accuracy",
+      weeks: [
+        [ { n: 'Types of number', f: 'bridge_mth_y10/BRG10-MTH-01.html' },
+          { n: 'Types of number', f: 'year10/number-y10.html', q: 1, s: 'Prime factor decomposition' },
+          { n: 'The four operations', f: 'bridge_mth/BRG-MTH-02.html' },
+          { n: 'Indices I', f: 'bridge_mth_y10/BRG10-MTH-04.html' } ],
+        [ { n: 'Powers and roots', f: 'year10/number-y10.html', q: 3, s: 'Powers, roots and index laws' },
+          { n: 'Time', f: 'bridge_mth_y10/BRG10-MTH-05.html' },
+          { n: 'Introduction to algebra', f: 'year07/algebra-y7.html' },
+          { n: 'Algebraic manipulation', f: 'year08/manipulation-y8.html' } ],
+        [ { n: 'Algebraic manipulation', f: 'year10/algebra-y10.html', q: 2, s: 'Expanding double brackets' },
+          { n: 'Classifying statistical data' },
+          { n: 'Geometrical constructions', f: 'year10/constructions-y10.html', q: 1, s: 'Bisectors and triangles' },
+          { n: 'Money' } ],
+        [ { n: 'Units of measure', f: 'year08/units-measurement-y8.html', q: 1, s: 'Metric conversions' },
+          { n: 'Fractions, decimals and percentages', f: 'year10/number-y10.html', q: 5, s: 'Converting between FDP' },
+          { n: 'Fractions, decimals and percentages', f: 'year10/number-y10.html', q: 5, s: 'Converting between FDP' },
+          { n: 'Percentages', f: 'year10/number-y10.html', q: 6, s: 'Percentage increase and decrease' } ],
+        [ { n: 'Percentages', f: 'year10/number-y10.html', q: 7, s: 'Reverse percentages' },
+          { n: 'Exponential growth and decay', f: 'year11/exponential-y11.html' },
+          { n: 'Interpreting statistical data', f: 'year10/stats-y10.html', q: 6, s: 'Scatter graphs and correlation' },
+          { n: 'Interpreting statistical data', f: 'year10/stats-y10.html', q: 7, s: 'Cumulative frequency' } ],
+        [ { n: 'Averages and range', f: 'year10/stats-y10.html', q: 1, s: 'Mean, median, mode and range' },
+          { n: 'Averages and range', f: 'year10/stats-y10.html', q: 2, s: 'Mean from a frequency table' },
+          { n: 'Statistical charts and diagrams', f: 'year10/stats-y10.html', q: 4, s: 'Pie charts' },
+          { n: 'Statistical charts and diagrams', f: 'year10/stats-y10.html', q: 5, s: 'Bar charts' } ],
+        [ { n: 'Area and perimeter', f: 'year10/mensuration-y10.html', q: 1, s: 'Rectangles, triangles, compound shapes' },
+          { n: 'Geometrical terms' },
+          { n: 'Ordering', f: 'year07/ordering-integers-y7.html' },
+          { n: 'Estimation', f: 'year08/place-value-rounding-y8.html', q: 4, s: 'Estimation' } ],
+        [ { n: 'Algebraic fractions', f: 'year10/algebra-y10.html', q: 7, s: 'Simplifying an algebraic fraction' },
+          { n: 'Algebraic fractions', f: 'year10/algebra-y10.html', q: 7, s: 'Simplifying an algebraic fraction' },
+          { n: 'Equations (linear, simultaneous, quadratic)', f: 'year10/algebra-y10.html', q: 1, s: 'Linear equations' },
+          { n: 'Equations (linear, simultaneous, quadratic)', f: 'year10/algebra-y10.html', q: 6, s: 'Forming and solving' } ],
+        [ { n: 'Equations (linear, simultaneous, quadratic)', f: 'year10/algebra-y10.html', q: 4, s: 'Simultaneous equations' },
+          { n: 'Equations (linear, simultaneous, quadratic)', f: 'year10/algebra-y10.html', q: 3, s: 'Quadratics by factorising' },
+          { n: 'Proportion', f: 'year10/proportion-y10.html' },
+          { n: 'Surds', f: 'year10/surds-y10.html', q: 1, s: 'Simplifying and multiplying' } ],
+        [ { n: 'Surds', f: 'year10/surds-y10.html', q: 6, s: 'Rationalising the denominator' },
+          { n: "Pythagoras' theorem", f: 'year09/pythagoras-trig-y9.html', q: 1, s: 'Finding the hypotenuse' },
+          { n: "Pythagoras' theorem", f: 'year09/pythagoras-trig-y9.html', q: 2, s: 'Finding a shorter side' },
+          { n: 'Term 1 review / consolidation', f: 'year10/misconceptions-y10.html', s: 'Common misconceptions quiz' } ],
+      ],
+    },
+  ];
+  let planTermIdx = 0;
+  let showY10Plan = true;
+
+  // Finds the Supabase topic for a walkthrough file so plan clicks still record progress.
+  function topicForFile(file) {
+    const maps = [WALKTHROUGH_FILES, BRIDGE_MTH_WALKTHROUGH_FILES];
+    for (const m of maps) {
+      for (const code in m) {
+        if (m[code] !== file) continue;
+        const t = allTopics.find(x => x.topic_code === code);
+        if (t) return t;
+      }
+    }
+    return null;
+  }
+
+  function renderY10Plan(grid) {
+    const term = Y10_MATHS_PLAN[planTermIdx];
+    const termBtns = ['Term 1', 'Term 2', 'Term 3', 'Term 4'].map((lbl, i) =>
+      `<button class="plan-term-btn${i === planTermIdx ? ' active' : ''}" ${Y10_MATHS_PLAN[i] ? `onclick="setPlanTerm(${i})"` : 'disabled title="Coming soon"'}>${lbl}</button>`
+    ).join('');
+    const head = `<div class="plan-head"><div>Week</div><div>Lesson 1</div><div>Lesson 2</div><div>Lesson 3</div><div>Lesson 4</div></div>`;
+    const rows = term.weeks.map((lessons, w) => {
+      const cells = lessons.map((l, i) => {
+        const lsn = `<div class="plan-lsn">Lesson ${i + 1}</div>`;
+        if (!l.f) {
+          return `<div class="plan-cell soon">${lsn}<div class="plan-name">${l.n}</div><div class="plan-sec">🔒 Coming soon</div></div>`;
+        }
+        const t = topicForFile(l.f);
+        const status = t ? (progressMap[t.id] || '') : '';
+        const href = l.f + (l.q ? '?q=' + l.q : '');
+        return `<button class="plan-cell ${status}" onclick="openPlanLesson('${href}','${l.f}')">${lsn}<div class="plan-name">${l.n}</div>${l.s ? `<div class="plan-sec">${l.s}</div>` : ''}</button>`;
+      }).join('');
+      return `<div class="plan-week"><div class="plan-wk">Week ${w + 1}</div>${cells}</div>`;
+    }).join('');
+    grid.innerHTML = `<div class="plan-wrap">
+      <div class="plan-bar">${termBtns}<button class="plan-toggle" onclick="toggleY10Plan()">Show all Year 10 topics</button></div>
+      <div class="plan-term-title">${term.term}</div>
+      <div class="plan-term-sub">${term.sub}</div>
+      <div class="plan-grid">${head}${rows}</div>
+    </div>`;
+  }
+
+  window.setPlanTerm = function(i) { planTermIdx = i; window.renderTopics(); };
+  window.toggleY10Plan = function() { showY10Plan = !showY10Plan; window.renderTopics(); };
+  window.openPlanLesson = function(href, file) {
+    const t = topicForFile(file);
+    if (t) window.openTopic(t.id, href);
+    else window.location.href = href;
+  };
+
   function getWalkthroughFile(subject, topicCode) {
     let file;
     if (subject === 'as_maths')  file = AS_MATHS_WALKTHROUGH_FILES[topicCode];
@@ -1349,7 +1484,9 @@
         const isPreview = new URLSearchParams(window.location.search).get('preview') === '1';
         if (!isPreview) { window.location.href = 'dashboard-staff.html'; return; }
       }
-      const isStaffPreview = new URLSearchParams(window.location.search).get('preview') === '1';
+      // Preview mode is staff-only, so students can't use ?preview=1 to skip their diagnostic.
+      const previewParams = new URLSearchParams(window.location.search);
+      const isStaffPreview = (profile.role === 'admin' || profile.role === 'teacher') && previewParams.get('preview') === '1';
 
       if (profile.active === false) {
         showError('This account is no longer active. Please contact the school office if you believe this is an error.');
@@ -1358,10 +1495,17 @@
 
       myYearGroup = profile.year_group || 7;
 
-      if (new URLSearchParams(window.location.search).get('preview') === '1') {
+      if (isStaffPreview) {
+        // ?year=N lets staff see the dashboard as a student in that year group
+        const previewYear = parseInt(previewParams.get('year'), 10);
+        if (previewYear >= 7 && previewYear <= 12) myYearGroup = previewYear;
+        const yearOpts = [7, 8, 9, 10, 11, 12].map(y =>
+          `<option value="${y}"${y === Number(myYearGroup) ? ' selected' : ''}>Year ${y}</option>`).join('');
         const banner = document.createElement('div');
         banner.style.cssText = 'background:#C0272D;color:#fff;text-align:center;padding:8px;font-size:0.82rem;font-weight:600;';
-        banner.innerHTML = '👁 Staff Preview Mode — viewing the student dashboard · <a href="dashboard-staff.html" style="color:#fff;text-decoration:underline">Back to Staff Dashboard</a>';
+        banner.innerHTML = '👁 Staff Preview Mode — viewing as a '
+          + `<select aria-label="Preview year group" onchange="location.href='dashboard-student.html?preview=1&year='+this.value" style="font:inherit;font-weight:700;border:none;border-radius:4px;padding:1px 4px;color:#C0272D">${yearOpts}</select>`
+          + ' student · <a href="dashboard-staff.html" style="color:#fff;text-decoration:underline">Back to Staff Dashboard</a>';
         document.body.insertBefore(banner, document.body.firstChild);
       }
 
@@ -1894,6 +2038,16 @@
     document.getElementById('viewing-label').textContent = label;
 
     const grid = document.getElementById('topic-grid');
+
+    const viewYear = value === 'own' ? myYearGroup : parseInt(value);
+    if (currentSubject === 'maths' && viewYear === 10) {
+      if (showY10Plan) {
+        document.getElementById('viewing-label').textContent = 'Your Year 10 week-by-week plan — tap a lesson to open its walkthrough';
+        renderY10Plan(grid);
+        return;
+      }
+      document.getElementById('viewing-label').innerHTML = label + ' · <button class="plan-toggle" style="margin:0" onclick="toggleY10Plan()">Back to week-by-week plan</button>';
+    }
     if (filtered.length === 0) {
       grid.innerHTML = '<div class="no-topics">No topics available here yet — check back soon!</div>';
       return;
