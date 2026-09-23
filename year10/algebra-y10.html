@@ -409,6 +409,8 @@ function render(){
 }
 document.getElementById('pb').addEventListener('click',function(){if(si>0){si--;render();}});
 document.getElementById('nb').addEventListener('click',function(){var q=QS[qi];si=si===q.steps.length-1?0:si+1;render();});
+// Deep link: ?q=N opens question N (used by the Year 10 week-by-week plan)
+(function(){var m=location.search.match(/[?&]q=(\d+)/);if(m){var n=parseInt(m[1],10)-1;if(n>=0&&n<QS.length)qi=n;}})();
 render();
 </script>
 
