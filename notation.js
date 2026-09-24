@@ -40,25 +40,38 @@
       .replace(/\+\/-/g, '±');
   }
 
-  // Splits text into plain strings and {sup: "..."} parts that have no Unicode superscript form
+  // Unicode superscript fractions (²ᐟ³, ⁻¹ᐟ², ᵐᐟⁿ) are too small to read, so they become real superscripts
+  var SUPCH = '⁰¹²³⁴⁵⁶⁷⁸⁹⁻⁺ⁿᵐᵃᵇᶜᵈᵏᵖʳˢᵗˣʸ', NORMCH = '0123456789−+nmabcdkprstxy';
+  var FRAC = new RegExp('([' + SUPCH + ']+)ᐟ([' + SUPCH + ']+)', 'g');
+  function unsup(x) { return x.replace(/./g, function (c) { var i = SUPCH.indexOf(c); return i < 0 ? c : NORMCH[i]; }); }
+
+  // Splits text into plain strings and {sup: "..."} parts that need a real superscript element
   function parts(text) {
     var t = prep(text), out = [], last = 0, buf = '', m;
     POW.lastIndex = 0;
     while ((m = POW.exec(t))) {
       var inner = m[3] != null ? m[3] : m[4] != null ? m[4] : m[2];
-      if (/^[⁰-⁹¹²³⁻⁺ⁿᵃ-ᶻʰ-ʸˡ-ˣᐟ]+$/.test(inner)) { buf += t.slice(last, m.index) + m[1] + inner; last = POW.lastIndex; continue; }
-      var sup = toSup(inner);
+      if (/^[⁰-⁹¹²³⁻⁺ⁿᵃ-ᶻʰ-ʸˡ-ˣᐟ]+$/.test(inner) && inner.indexOf('ᐟ') < 0) { buf += t.slice(last, m.index) + m[1] + inner; last = POW.lastIndex; continue; }
+      var sup = inner.indexOf('/') < 0 && inner.indexOf('ᐟ') < 0 ? toSup(inner) : null;
       if (sup != null) { buf += t.slice(last, m.index) + m[1] + sup; last = POW.lastIndex; continue; }
       buf += t.slice(last, m.index) + m[1];
-      out.push(buf, { sup: inner, orig: m[0].slice(m[1].length) }); buf = ''; last = POW.lastIndex;
+      out.push(buf, { sup: unsup(inner).replace(/-/g, '−'), orig: m[0].slice(m[1].length) }); buf = ''; last = POW.lastIndex;
     }
     buf += t.slice(last);
     out.push(buf);
-    return out;
+    // second pass: Unicode superscript fractions inside the plain strings
+    var res = [];
+    out.forEach(function (p) {
+      if (typeof p !== 'string') { res.push(p); return; }
+      var l = 0, f; FRAC.lastIndex = 0;
+      while ((f = FRAC.exec(p))) { res.push(p.slice(l, f.index), { sup: unsup(f[1]) + '/' + unsup(f[2]), orig: f[0] }); l = FRAC.lastIndex; }
+      res.push(p.slice(l));
+    });
+    return res;
   }
 
   function fix(text) {
-    if (text.indexOf('^') === -1 && text.indexOf('sqrt') === -1 && text.indexOf('+/-') === -1) return text;
+    if (text.indexOf('^') === -1 && text.indexOf('sqrt') === -1 && text.indexOf('+/-') === -1 && text.indexOf('ᐟ') === -1) return text;
     return parts(text).map(function (p) { return typeof p === 'string' ? p : p.orig; }).join('');
   }
 
@@ -69,18 +82,30 @@
     var p = node.parentNode;
     if (!p || SKIP[p.nodeName.toUpperCase()]) return;
     var v = node.nodeValue;
-    if (v.indexOf('^') === -1 && v.indexOf('sqrt') === -1 && v.indexOf('+/-') === -1) return;
+    if (v.indexOf('^') === -1 && v.indexOf('sqrt') === -1 && v.indexOf('+/-') === -1 && v.indexOf('ᐟ') === -1) return;
     var ps = parts(v);
     if (ps.length === 1) { if (ps[0] !== v) node.nodeValue = ps[0]; return; }
     // Some exponents need a real superscript element: <sup> in HTML, a raised <tspan> in SVG
     var inSvg = p.namespaceURI === SVGNS, frag = document.createDocumentFragment();
+    var raised = false;
     ps.forEach(function (x) {
-      if (typeof x === 'string') { if (x) frag.appendChild(document.createTextNode(x)); return; }
+      if (typeof x === 'string') {
+        if (!x) return;
+        if (inSvg && raised) {
+          var back = document.createElementNS(SVGNS, 'tspan');
+          back.setAttribute('dy', '0.32em');
+          back.textContent = x;
+          frag.appendChild(back);
+          raised = false;
+        } else frag.appendChild(document.createTextNode(x));
+        return;
+      }
       var el;
       if (inSvg) {
         el = document.createElementNS(SVGNS, 'tspan');
-        el.setAttribute('baseline-shift', 'super');
         el.setAttribute('font-size', '70%');
+        el.setAttribute('dy', raised ? '0' : '-0.46em');
+        raised = true;
       } else {
         el = document.createElement('sup');
       }

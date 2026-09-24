@@ -434,6 +434,67 @@ function dQ10(p){
   s.innerHTML=o.join('');
 }
 
+/* Shared: vertical working chain. rows = [[expression, note], ...]; only the first `shown` rows are drawn */
+function wkChain(o,title,rows,shown){
+  o.push(T(240,28,title,'#241A17',14,undefined,true));
+  var n=rows.length,h=Math.min(50,236/n),y0=46;
+  rows.forEach(function(r,i){
+    if(i>=shown)return;
+    var y=y0+i*h,last=(i===n-1&&shown>=n);
+    o.push(R(40,y,190,h-12,last?'#e8f8ee':'#fce8d8',last?'#1a7a3a':'#C0272D',last?2:1.5));
+    o.push(T(135,y+(h-12)/2+6,r[0],last?'#1a7a3a':'#C0272D',r[0].length>16?13:16,undefined,true));
+    if(r[1])o.push(T(244,y+(h-12)/2+5,r[1],'#6b5750',12,'start'));
+    if(i<shown-1)o.push(T(135,y+h-1,'↓','#C8922A',12));
+  });
+}
+
+/* Q11 Fractional and negative indices */
+function dQ11(p){
+  var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
+  if(p===0||p>=5){
+    o.push(T(240,34,'The index laws for fractions','#241A17',14,undefined,true));
+    o.push(R(110,52,260,62,'#fce8d8','#C0272D',2));
+    o.push(T(240,93,'aᵐᐟⁿ = (ⁿ√a)ᵐ','#C0272D',26,undefined,true));
+    o.push(T(240,146,'Denominator n  →  take the nth root','#6b5750',13));
+    o.push(T(240,172,'Numerator m  →  raise to the power m','#6b5750',13));
+    o.push(T(240,198,'Negative index  →  take the reciprocal','#6b5750',13));
+    o.push(T(240,236,'Take the root first so the numbers stay small:','#C8922A',12,undefined,true));
+    o.push(T(240,256,'27²ᐟ³ = (∛27)² = 3² = 9','#C8922A',12,undefined,true));
+  }else if(p===1){
+    wkChain(o,'Evaluate 27²ᐟ³',[['27²ᐟ³','start'],['(∛27)²','denominator 3: cube root'],['3²','∛27 = 3'],['9','numerator 2: square']],4);
+  }else if(p===2){
+    wkChain(o,'Evaluate 8⁻²ᐟ³',[['8⁻²ᐟ³','start'],['1 ÷ 8²ᐟ³','negative index: reciprocal'],['1 ÷ (∛8)²','denominator 3: cube root'],['1 ÷ 2²','∛8 = 2'],['1/4','numerator 2: square']],5);
+  }else if(p===3){
+    wkChain(o,'Evaluate (16/81)⁻³ᐟ⁴',[['(16/81)⁻³ᐟ⁴','start'],['(81/16)³ᐟ⁴','negative index: flip the fraction'],['(3/2)³','4th root: ⁴√81 = 3, ⁴√16 = 2'],['27/8 = 3⅜','cube top and bottom']],4);
+  }else if(p===4){
+    wkChain(o,'Find x when 9ˣ = 27',[['9ˣ = 27','the equation'],['(3²)ˣ = 3³','write both as powers of 3'],['3²ˣ = 3³','power of a power: multiply'],['2x = 3','same base, so indices are equal'],['x = 3/2','answer']],5);
+  }
+  s.innerHTML=o.join('');
+}
+
+/* Q12 Order of operations with fractions, decimals and negatives */
+function dQ12(p){
+  var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
+  if(p===0||p>=6){
+    o.push(T(240,30,'Order of operations','#241A17',14,undefined,true));
+    var lv=[['B','Brackets','#C0272D'],['I','Indices (powers and roots)','#C8922A'],['D M','Divide and multiply, left to right','#1565C0'],['A S','Add and subtract, left to right','#1a7a3a']];
+    lv.forEach(function(l,i){var y=50+i*52;o.push(R(80,y,70,40,'#fff',l[2],2));o.push(T(115,y+26,l[0],l[2],17,undefined,true));o.push(T(166,y+25,l[1],'#6b5750',13,'start'));});
+    o.push(T(240,280,'A fraction bar works like brackets around the top and the bottom','#888',11));
+  }else if(p<=4){
+    wkChain(o,'(2/3 + 1/4) ÷ 1⅚ − (−0.5)²',[
+      ['(2/3 + 1/4) ÷ 1⅚ − (−0.5)²','the calculation'],
+      ['11/12 ÷ 1⅚ − (−0.5)²','B: 8/12 + 3/12 = 11/12'],
+      ['11/12 ÷ 1⅚ − 0.25','I: (−0.5)² = +0.25'],
+      ['11/12 × 6/11 − 0.25','D: 1⅚ = 11/6, flip and multiply'],
+      ['1/2 − 0.25 = 0.25','S: last. Answer 0.25 = 1/4']],p+1);
+  }else{
+    o.push(T(240,30,'Common traps','#241A17',14,undefined,true));
+    var tr=[['20 − 12 ÷ 4 × 3','= 20 − 3 × 3 = 11','÷ and × go left to right'],['−3²  vs  (−3)²','−9  vs  9','the power only applies to 3'],['(6 + 2 × 3) ÷ (10 − 2²)','= 12 ÷ 6 = 2','work out top and bottom first']];
+    tr.forEach(function(t,i){var y=52+i*76;o.push(R(30,y,420,60,'#fff5f0','#C0272D',1.5));o.push(T(46,y+24,t[0],'#C0272D',15,'start',true));o.push(T(434,y+24,t[1],'#1a7a3a',15,'end',true));o.push(T(46,y+46,t[2],'#888',11,'start'));});
+  }
+  s.innerHTML=o.join('');
+}
+
 var QS=[
   {ey:'Q1 \u00b7 Prime Factors \u00b7 Foundation',ti:'Prime Factor Decomposition',su:'Express 60 as a product of prime factors using a factor tree.',lv:'F',steps:[
     {lb:'The number',dr:dQ1,ht:'<span class="lt lf">Foundation</span><p>Break <b>60</b> down into its prime factors using a factor tree. Keep splitting each branch until every leaf is a prime number (circled in green).</p>'},
@@ -504,7 +565,35 @@ var QS=[
     {lb:'Step 2 \u2014 Apply increases',dr:dQ10,ht:'<div class="fm">Gold: \u00a32000 \u00d7 1.25 = <b>\u00a32500</b></div><div class="fm">Silver: \u00a33000 \u00d7 1.10 = <b>\u00a33300</b></div>'},
     {lb:'Step 3 \u2014 New total',dr:dQ10,ht:'<div class="fm">New total = \u00a32500 + \u00a33300 = <b>\u00a35800</b></div><div class="fm">Overall % increase = 800/5000 \u00d7 100 = <b>16%</b></div>'},
     {lb:'Your turn',dr:dQ10,ht:tryIt(function(){var tot=pick([2000,3000,4000,5000,6000]);var a=rnd(2,4),b=rnd(2,4);var pA=pick([10,15,20,25]);var pB=pick([5,10,15,20]);var partA=tot*a/(a+b),partB=tot*b/(a+b);var ans=Math.round((partA*(1+pA/100)+partB*(1+pB/100))*100)/100;return{question:'£'+tot+' split in ratio '+a+':'+b+'. First part grows '+pA+'%, second grows '+pB+'%. New total?',hints:['First: £'+partA+' ×'+(1+pA/100),'Second: £'+partB+' ×'+(1+pB/100)],ans:ans,tol:1,unit:'',working:'£'+Math.round(partA*(1+pA/100))+' + £'+Math.round(partB*(1+pB/100))+' = £'+ans};})}
+  ]},
+  {ey:'Q11 · Indices · Extended',ti:'Fractional and Negative Indices',su:'Evaluate 27²ᐟ³, 8⁻²ᐟ³ and (16/81)⁻³ᐟ⁴ without a calculator, and solve 9ˣ = 27.',lv:'E',steps:[
+    {lb:'The rule',dr:dQ11,ht:'<span class="lt le">Extended</span><p>A fractional index means a <b>root</b> and a <b>power</b>: <b>aᵐᐟⁿ = (ⁿ√a)ᵐ</b>. The denominator tells you which root, the numerator which power. A negative index means take the <b>reciprocal</b>.</p><p>Always take the root first: the numbers stay small.</p>'},
+    {lb:'Step 1 — 27²ᐟ³',dr:dQ11,ht:'<div class="fm">27²ᐟ³ = (∛27)² = 3² = <b>9</b></div><p>Denominator 3: cube root of 27 is 3. Numerator 2: square it.</p>'},
+    {lb:'Step 2 — 8⁻²ᐟ³',dr:dQ11,ht:'<div class="fm">8⁻²ᐟ³ = 1 ÷ 8²ᐟ³ = 1 ÷ (∛8)² = 1 ÷ 2² = <b>1/4</b></div><p>Deal with the minus sign first by taking the reciprocal. The answer is positive: a negative index never makes the answer negative.</p>'},
+    {lb:'Step 3 — (16/81)⁻³ᐟ⁴',dr:dQ11,ht:'<div class="fm">(16/81)⁻³ᐟ⁴ = (81/16)³ᐟ⁴ = (3/2)³ = <b>27/8 = 3⅜</b></div><p>For a fraction, the reciprocal just flips it. Then take the 4th root of the top and the bottom separately: ⁴√81 = 3 and ⁴√16 = 2.</p>'},
+    {lb:'Step 4 — Finding the index',dr:dQ11,ht:'<div class="fm">9ˣ = 27 → (3²)ˣ = 3³ → 3²ˣ = 3³ → 2x = 3 → <b>x = 3/2</b></div><p>Write both sides as powers of the same base. When the bases are equal, the indices must be equal.</p>'},
+    {lb:'Your turn',dr:dQ11,ht:tryIt(function(){var SU='⁰¹²³⁴⁵⁶⁷⁸⁹';function su(k){return String(k).split('').map(function(d){return SU[+d];}).join('');}
+      var b=pick([[8,3],[27,3],[64,3],[125,3],[1000,3],[16,4],[81,4],[32,5],[4,2],[9,2],[16,2],[25,2],[36,2],[49,2],[100,2]]);var a=b[0],n=b[1],r=Math.round(Math.pow(a,1/n));var m=n===2?3:pick([2,2,3]);if(r>5&&m===3)m=2;var val=Math.pow(r,m);var neg=Math.random()<0.5;
+      var root={2:'√',3:'∛',4:'⁴√',5:'⁵√'}[n];var ex=su(m)+'ᐟ'+su(n);var work=root+a+' = '+r+', then '+r+su(m)+' = '+val;
+      if(!neg)return{question:'Evaluate <b>'+a+ex+'</b> without a calculator.',hints:['Denominator '+n+': take the root first','Then raise to the power '+m],ans:val,tol:0,unit:'',working:a+ex+' = ('+root+a+')'+su(m)+'. '+work+'.'};
+      return{question:'<b>'+a+'⁻'+ex+' = 1/k</b>. Find k.',hints:['Negative index: take the reciprocal first','Denominator '+n+': root. Numerator '+m+': power'],ans:val,tol:0,unit:'',working:a+'⁻'+ex+' = 1 ÷ '+a+ex+'. '+work+', so k = '+val+'.'};})}
+  ]},
+  {ey:'Q12 · The Four Operations · Extended',ti:'Order of Operations with Fractions and Decimals',su:'Work out (2/3 + 1/4) ÷ 1⅚ − (−0.5)² without a calculator.',lv:'E',steps:[
+    {lb:'The order',dr:dQ12,ht:'<span class="lt le">Extended</span><p>Work out <b>(2/3 + 1/4) ÷ 1⅚ − (−0.5)²</b>.</p><p>Follow the order: <b>B</b>rackets, <b>I</b>ndices, <b>D</b>ivision and <b>M</b>ultiplication (left to right), <b>A</b>ddition and <b>S</b>ubtraction (left to right).</p>'},
+    {lb:'Step 1 — Brackets',dr:dQ12,ht:'<div class="fm">2/3 + 1/4 = 8/12 + 3/12 = <b>11/12</b></div><p>Use a common denominator of 12.</p>'},
+    {lb:'Step 2 — Indices',dr:dQ12,ht:'<div class="fm">(−0.5)² = (−0.5) × (−0.5) = <b>+0.25</b></div><p>The bracket means the whole of −0.5 is squared. Without the bracket, −0.5² = −0.25.</p>'},
+    {lb:'Step 3 — Division',dr:dQ12,ht:'<div class="fm">1⅚ = 11/6</div><div class="fm">11/12 ÷ 11/6 = 11/12 × 6/11 = <b>1/2</b></div><p>Change the mixed number to an improper fraction, then flip the second fraction and multiply.</p>'},
+    {lb:'Step 4 — Subtraction',dr:dQ12,ht:'<div class="fm">1/2 − 0.25 = 0.5 − 0.25 = <b>0.25 = 1/4</b></div><p>Addition and subtraction come last. Convert to the same form (here decimals) before subtracting.</p>'},
+    {lb:'Common traps',dr:dQ12,ht:'<div class="fm">20 − 12 ÷ 4 × 3 = 20 − 3 × 3 = <b>11</b> (not 19: ÷ and × go left to right)</div><div class="fm">−3² = <b>−9</b> but (−3)² = <b>9</b></div><div class="fm">(6 + 2 × 3) ÷ (10 − 2²) = 12 ÷ 6 = <b>2</b></div>'},
+    {lb:'Your turn',dr:dQ12,ht:tryIt(function(){var M='−',f=rnd(1,5),q,ans,wk,h;
+      if(f===1){var c=rnd(2,5),k=rnd(2,6),d=rnd(2,5),a=rnd(10,40);ans=a-k*d;q=a+' '+M+' '+(c*k)+' ÷ '+c+' × '+d;wk=(c*k)+' ÷ '+c+' = '+k+', then '+k+' × '+d+' = '+(k*d)+' (left to right). '+a+' '+M+' '+(k*d)+' = '+ans;h=['÷ and × before '+M,'Work left to right through ÷ and ×'];}
+      else if(f===2){var a2=rnd(2,7),b=rnd(2,6),c2=rnd(2,6);ans=a2*a2-b*c2;q='('+M+a2+')² '+M+' '+b+' × '+c2;wk='('+M+a2+')² = '+(a2*a2)+' (negative × negative), '+b+' × '+c2+' = '+(b*c2)+'. '+(a2*a2)+' '+M+' '+(b*c2)+' = '+ans;h=['The bracket means the negative is squared too','Indices, then multiply, then subtract'];}
+      else if(f===3){var t=rnd(1,3),d3=pick([2,3,4,5]),k3=rnd(2,6),qq=rnd(2,4),rr=rnd(2,3),num=k3*d3;while(num<=qq*rr){k3++;num=k3*d3;}var pp=num-qq*rr;ans=k3;q='('+pp+' + '+qq+' × '+rr+') ÷ ('+(t*t+d3)+' '+M+' '+t+'²)';wk='Top: '+qq+' × '+rr+' = '+(qq*rr)+', + '+pp+' = '+num+'. Bottom: '+t+'² = '+(t*t)+', '+(t*t+d3)+' '+M+' '+(t*t)+' = '+d3+'. '+num+' ÷ '+d3+' = '+ans;h=['Work out each bracket fully first','Inside a bracket, still use the order: indices, ×, then + or '+M];}
+      else if(f===4){var ab=pick([[2,3],[2,5],[3,4],[3,5],[4,5],[2,7]]),mm=rnd(1,3),cc=ab[0]*ab[1]*mm;ans=mm*(ab[0]+ab[1]);q='(1/'+ab[0]+' + 1/'+ab[1]+') × '+cc;wk='1/'+ab[0]+' + 1/'+ab[1]+' = '+(ab[0]+ab[1])+'/'+(ab[0]*ab[1])+'. × '+cc+' = '+ans;h=['Add the fractions using a common denominator','Then multiply'];}
+      else{var u=pick([1.5,2.5,0.4,1.2]),dd=pick([0.5,0.2,0.25]),a5=rnd(5,9),b5=rnd(1,4);ans=Math.round(u*(a5-b5)/dd*100)/100;q=u+' × ('+a5+' '+M+' '+b5+') ÷ '+dd;wk='Bracket: '+a5+' '+M+' '+b5+' = '+(a5-b5)+'. '+u+' × '+(a5-b5)+' = '+Math.round(u*(a5-b5)*100)/100+'. ÷ '+dd+' = '+ans;h=['Bracket first','Then × and ÷ from left to right'];}
+      return{question:'Work out <b>'+q+'</b> without a calculator.',hints:h,ans:ans,tol:0.001,unit:'',working:wk};})}
   ]}
+
 ];
 
 var qi=0,si=0;
