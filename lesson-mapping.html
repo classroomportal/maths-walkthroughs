@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ABC Portal — Lesson Mapping</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { font-family: 'Segoe UI', Arial, sans-serif; background: #f5f5f5; min-height: 100vh; color: #333; }
+    header { background: #C0272D; color: white; padding: 8px 24px; min-height: 56px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 10px; position: sticky; top: 0; z-index: 50; }
+    .header-left { display: flex; align-items: center; gap: 14px; }
+    .logo { font-size: 1.3rem; font-weight: 700; letter-spacing: 1px; }
+    .subtitle { font-size: 0.85rem; opacity: 0.85; border-left: 1px solid rgba(255,255,255,0.4); padding-left: 14px; }
+    .header-right { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+    .hbtn { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 4px; padding: 5px 12px; font-size: 0.82rem; cursor: pointer; text-decoration: none; font-family: inherit; }
+    .hbtn:hover { background: rgba(255,255,255,0.3); }
+    main { max-width: 1180px; margin: 0 auto; padding: 22px 16px 60px; }
+    .intro { background: white; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); padding: 16px 20px; margin-bottom: 18px; font-size: 0.88rem; line-height: 1.5; color: #555; }
+    .intro b { color: #333; }
+    .ro-note { background: #fff8e1; border: 1px solid #f3d27a; color: #7a5a00; border-radius: 6px; padding: 8px 12px; margin-top: 10px; font-size: 0.84rem; }
+    .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 14px; }
+    .pill { background: #fff; border: 1.5px solid #e4e4e4; color: #555; font-size: 0.82rem; font-weight: 600; padding: 6px 13px; border-radius: 16px; cursor: pointer; font-family: inherit; }
+    .pill.active { background: #C0272D; border-color: #C0272D; color: #fff; }
+    .sep { width: 1px; height: 22px; background: #ddd; margin: 0 4px; }
+    .summary { margin-left: auto; font-size: 0.82rem; color: #666; }
+    .summary b { color: #C0272D; }
+    .term-title { font-size: 1.1rem; font-weight: 700; color: #C0272D; }
+    .term-sub { font-size: 0.8rem; color: #777; font-style: italic; margin: 2px 0 14px; }
+    .not-live { display: inline-block; font-size: 0.7rem; font-weight: 700; color: #7a5a00; background: #fff3cd; border-radius: 10px; padding: 2px 8px; margin-left: 8px; vertical-align: middle; font-style: normal; }
+    .week { background: white; border-radius: 8px; box-shadow: 0 1px 6px rgba(0,0,0,0.08); margin-bottom: 12px; overflow: hidden; }
+    .week-hdr { font-size: 0.8rem; font-weight: 700; color: #7A1418; padding: 9px 14px; background: #fcf6f6; border-bottom: 1px solid #f0e4e4; }
+    .slots { display: grid; grid-template-columns: repeat(4, 1fr); }
+    .slot { padding: 10px 12px 12px; border-right: 1px solid #f0f0f0; cursor: pointer; transition: background 0.15s; min-height: 96px; }
+    .slot:last-child { border-right: none; }
+    .slot:hover { background: #fffafa; }
+    .slot.empty { cursor: default; background: #fafafa; }
+    .slot-lsn { font-size: 0.64rem; font-weight: 700; text-transform: uppercase; color: #999; letter-spacing: 0.4px; }
+    .slot-name { font-size: 0.86rem; font-weight: 700; margin: 2px 0 6px; line-height: 1.25; }
+    .slot-count { font-size: 0.74rem; color: #2e7d32; font-weight: 600; }
+    .slot-count.zero { color: #C0272D; }
+    .slot-items { font-size: 0.72rem; color: #777; margin-top: 3px; line-height: 1.35; }
+    .flag { display: inline-block; font-size: 0.64rem; font-weight: 700; color: #b45309; background: #fff1e0; border-radius: 8px; padding: 1px 7px; margin-top: 5px; }
+    @media (max-width: 820px) { .slots { grid-template-columns: 1fr 1fr; } .slot:nth-child(2) { border-right: none; } .slot { border-bottom: 1px solid #f0f0f0; } .summary { margin-left: 0; width: 100%; } }
+    @media (max-width: 480px) { .slots { grid-template-columns: 1fr; } .slot { border-right: none; } header { padding: 8px 14px; } }
+
+    /* Editor panel */
+    .overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 100; }
+    .overlay.open { display: block; }
+    .panel { position: fixed; top: 0; right: 0; bottom: 0; width: min(720px, 100%); background: #fff; z-index: 101; display: none; flex-direction: column; box-shadow: -4px 0 20px rgba(0,0,0,0.15); }
+    .panel.open { display: flex; }
+    .panel-hdr { padding: 14px 18px; border-bottom: 1px solid #eee; display: flex; align-items: flex-start; gap: 10px; }
+    .panel-hdr .where { font-size: 0.72rem; font-weight: 700; color: #999; text-transform: uppercase; letter-spacing: 0.4px; }
+    .panel-hdr h2 { font-size: 1.08rem; color: #C0272D; margin-top: 2px; }
+    .close { margin-left: auto; background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #888; line-height: 1; }
+    .panel-body { overflow-y: auto; padding: 14px 18px 30px; flex: 1; }
+    h3 { font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; color: #888; margin: 16px 0 8px; }
+    h3:first-child { margin-top: 0; }
+    .ticked-group { border: 1.5px solid #eee; border-radius: 6px; margin-bottom: 8px; }
+    .ticked-group .g-title { font-size: 0.82rem; font-weight: 700; padding: 7px 10px; background: #fafafa; border-bottom: 1px solid #eee; display: flex; gap: 8px; align-items: center; }
+    .row { display: flex; align-items: center; gap: 8px; padding: 6px 10px; font-size: 0.84rem; border-bottom: 1px solid #f5f5f5; }
+    .row:last-child { border-bottom: none; }
+    .row .qn { font-weight: 700; color: #C0272D; min-width: 30px; font-size: 0.78rem; }
+    .row .t { flex: 1; }
+    .lv { font-size: 0.62rem; font-weight: 700; padding: 1px 6px; border-radius: 8px; text-transform: uppercase; }
+    .lv.F { background: #e3f2fd; color: #1565C0; } .lv.E { background: #fde8e8; color: #a01820; }
+    .prev { font-size: 0.74rem; color: #1565C0; text-decoration: none; white-space: nowrap; }
+    .prev:hover { text-decoration: underline; }
+    .rm { background: none; border: 1px solid #e0b4b4; color: #a01820; border-radius: 4px; font-size: 0.72rem; padding: 2px 7px; cursor: pointer; font-family: inherit; }
+    .none { font-size: 0.84rem; color: #999; font-style: italic; }
+    .needs { display: flex; gap: 8px; align-items: center; font-size: 0.86rem; font-weight: 600; }
+    textarea { width: 100%; min-height: 56px; margin-top: 6px; border: 1.5px solid #ddd; border-radius: 5px; padding: 7px 9px; font: inherit; font-size: 0.85rem; resize: vertical; }
+    textarea:focus, .search input:focus, .search select:focus { outline: none; border-color: #C0272D; }
+    .search { display: flex; gap: 8px; flex-wrap: wrap; }
+    .search input { flex: 1; min-width: 180px; padding: 7px 10px; border: 1.5px solid #ddd; border-radius: 5px; font: inherit; font-size: 0.86rem; }
+    .search select { padding: 7px 8px; border: 1.5px solid #ddd; border-radius: 5px; font: inherit; font-size: 0.84rem; background: #fff; }
+    .file { border: 1px solid #eee; border-radius: 6px; margin-top: 6px; }
+    .file > summary { list-style: none; cursor: pointer; padding: 8px 10px; font-size: 0.84rem; font-weight: 600; display: flex; gap: 8px; align-items: center; }
+    .file > summary::-webkit-details-marker { display: none; }
+    .file > summary .path { font-size: 0.7rem; color: #999; font-weight: 400; margin-left: auto; }
+    .file[open] > summary { border-bottom: 1px solid #f0f0f0; background: #fcfcfc; }
+    .row input[type=checkbox] { width: 16px; height: 16px; accent-color: #C0272D; cursor: pointer; }
+    .hint { font-size: 0.74rem; color: #999; margin-top: 6px; }
+    .log { font-size: 0.76rem; color: #777; line-height: 1.6; }
+    .toast { position: fixed; bottom: 18px; left: 50%; transform: translateX(-50%); background: #333; color: #fff; padding: 8px 16px; border-radius: 20px; font-size: 0.85rem; z-index: 200; display: none; }
+    .toast.err { background: #a01820; }
+    .dept { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 4px 12px; }
+    .dept label { display: flex; gap: 8px; align-items: center; font-size: 0.86rem; padding: 4px 0; cursor: pointer; }
+    #loading { text-align: center; color: #999; padding: 40px; }
+  </style>
+<script src="plans/maths-plans.js"></script>
+<script src="plans/question-catalogue.js"></script>
+<script src="notation.js" defer></script>
+</head>
+<body>
+<header>
+  <div class="header-left">
+    <div class="logo">ABC</div>
+    <div class="subtitle">Lesson Mapping — Maths</div>
+  </div>
+  <div class="header-right">
+    <button class="hbtn" id="dept-btn" style="display:none" onclick="openDept()">👥 Maths department</button>
+    <button class="hbtn" onclick="exportCsv()">⬇ Export CSV</button>
+    <a class="hbtn" id="preview-btn" href="dashboard-student.html?preview=1&year=10">👁 Preview as student</a>
+    <a class="hbtn" href="dashboard-staff.html">← Staff dashboard</a>
+  </div>
+</header>
+
+<main>
+  <div class="intro">
+    <b>Which walkthrough questions go with each lesson?</b> Click a lesson to tick the questions students should see.
+    When a student opens that lesson from their week-by-week plan, they see <b>only the ticked questions</b>.
+    Changes go live straight away. Suggestions from the IGCSE 0580 syllabus audit are already ticked; untick anything that doesn't belong.
+    Lessons marked <span class="flag" style="margin:0">needs content</span> have no suitable walkthrough yet.
+    <div class="ro-note" id="ro-note" style="display:none">You can view the mapping but not change it. Only admins and teachers in the maths department can edit.</div>
+  </div>
+  <div class="controls" id="plan-tabs"></div>
+  <div class="controls" id="term-tabs"></div>
+  <div id="loading">Loading…</div>
+  <div id="term-view"></div>
+</main>
+
+<div class="overlay" id="overlay" onclick="closePanel()"></div>
+<div class="panel" id="panel" role="dialog" aria-modal="true">
+  <div class="panel-hdr">
+    <div><div class="where" id="p-where"></div><h2 id="p-title"></h2></div>
+    <button class="close" onclick="closePanel()" aria-label="Close">×</button>
+  </div>
+  <div class="panel-body" id="p-body"></div>
+</div>
+<div class="toast" id="toast"></div>
+
+<script type="module">
+  import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
+
+  const SUPABASE_URL  = 'https://lnwinoghbefmjpvmixzo.supabase.co';
+  const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxud2lub2doYmVmbWpwdm1peHpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODIxNzQsImV4cCI6MjA5Nzk1ODE3NH0.ubKHVLrxlxQd-w3n5pS3O6YMAI7I--ndEkI2xWM9qCo';
+  const supabase = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+  const PLANS = window.MATHS_PLANS, CATALOGUE = window.QUESTION_CATALOGUE;
+  const CAT = {}; CATALOGUE.forEach(e => { CAT[e.file] = e; });
+  const FOLDERS = [['', 'All walkthroughs'], ['year10', 'Year 10'], ['year11', 'Year 11'], ['year09', 'Year 9'], ['year08', 'Year 8'], ['year07', 'Year 7'], ['year12', 'Year 12'], ['addmaths', 'Add Maths'], ['furthermaths', 'Further Maths'], ['ext_mth', 'Extension'], ['bridge', 'Bridge'], ['deepdive', 'Deep dive']];
+
+  let me = null, canEdit = false, isAdmin = false;
+  let planKey = 'Y10', termIdx = 0;
+  let ticks = {};      // slot_id -> [{id, file, q}]
+  let notes = {};      // slot_id -> {needs_content, note}
+  let openSlot = null; // slot currently in the editor
+
+  const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const fileTitle = f => (CAT[f] && CAT[f].title) || f.replace(/^.*\//, '').replace('.html', '');
+  const qInfo = (f, q) => (CAT[f] && CAT[f].questions[q - 1]) || null;
+  const previewUrl = (f, q) => f + (q ? '?q=' + q : '');
+
+  function toast(msg, err) {
+    const t = document.getElementById('toast');
+    t.textContent = msg; t.className = 'toast' + (err ? ' err' : ''); t.style.display = 'block';
+    clearTimeout(t._h); t._h = setTimeout(() => { t.style.display = 'none'; }, err ? 4000 : 1800);
+  }
+
+  async function fetchAll(table, cols) {
+    const out = [];
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await supabase.from(table).select(cols).eq('school_id', me.school_id).range(from, from + 999);
+      if (error) throw error;
+      out.push(...data);
+      if (data.length < 1000) return out;
+    }
+  }
+
+  async function init() {
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session) { location.href = 'login.html'; return; }
+    const { data: profile } = await supabase.from('profiles').select('id, full_name, role, school_id, subject').eq('id', session.user.id).maybeSingle();
+    if (!profile || (profile.role !== 'teacher' && profile.role !== 'admin')) { location.href = 'dashboard-student.html'; return; }
+    me = profile; isAdmin = profile.role === 'admin';
+    const { data: editor } = await supabase.rpc('is_maths_staff');
+    canEdit = editor === true;
+    document.getElementById('ro-note').style.display = canEdit ? 'none' : 'block';
+    document.getElementById('dept-btn').style.display = isAdmin ? '' : 'none';
+
+    const [q, n] = await Promise.all([fetchAll('lesson_slot_questions', 'id, slot_id, file, q'), fetchAll('lesson_slot_notes', 'slot_id, needs_content, note')]);
+    ticks = {}; q.forEach(r => { (ticks[r.slot_id] = ticks[r.slot_id] || []).push(r); });
+    notes = {}; n.forEach(r => { notes[r.slot_id] = r; });
+    document.getElementById('loading').style.display = 'none';
+    render();
+  }
+
+  function sortItems(list) {
+    return list.slice().sort((a, b) => a.file === b.file ? (a.q || 0) - (b.q || 0) : fileTitle(a.file).localeCompare(fileTitle(b.file)));
+  }
+
+  function render() {
+    const plans = Object.keys(PLANS);
+    document.getElementById('plan-tabs').innerHTML = plans.map(k =>
+      `<button class="pill${k === planKey ? ' active' : ''}" onclick="setPlan('${k}')">${esc(PLANS[k].label)}</button>`).join('');
+    const plan = PLANS[planKey];
+    if (termIdx >= plan.terms.length) termIdx = 0;
+    const term = plan.terms[termIdx];
+    let lessons = 0, mapped = 0, flagged = 0;
+    term.weeks.forEach((w, wi) => w.forEach((name, li) => {
+      if (!name) return; lessons++;
+      const id = window.mathsSlotId(planKey, termIdx, wi, li);
+      if ((ticks[id] || []).length) mapped++;
+      if (notes[id] && notes[id].needs_content) flagged++;
+    }));
+    document.getElementById('term-tabs').innerHTML = plan.terms.map((t, i) =>
+      `<button class="pill${i === termIdx ? ' active' : ''}" onclick="setTerm(${i})">Term ${i + 1}</button>`).join('') +
+      `<span class="summary"><b>${mapped}</b> of ${lessons} lessons have questions ticked · <b>${flagged}</b> need content</span>`;
+    document.getElementById('preview-btn').href = 'dashboard-student.html?preview=1&year=' + plan.year;
+
+    const weeks = term.weeks.map((w, wi) => {
+      const cells = w.map((name, li) => {
+        if (!name) return `<div class="slot empty"><div class="slot-lsn">Lesson ${li + 1}</div><div class="none">No lesson</div></div>`;
+        const id = window.mathsSlotId(planKey, termIdx, wi, li);
+        const items = sortItems(ticks[id] || []);
+        const files = [...new Set(items.map(x => x.file))];
+        const nq = items.length;
+        const note = notes[id];
+        const summary = files.slice(0, 2).map(f => esc(fileTitle(f))).join('; ') + (files.length > 2 ? '; +' + (files.length - 2) + ' more' : '');
+        return `<div class="slot" onclick="openEditor('${id}')" title="Click to ${canEdit ? 'edit' : 'view'}">
+          <div class="slot-lsn">Lesson ${li + 1}</div>
+          <div class="slot-name">${esc(name)}</div>
+          <div class="slot-count${nq ? '' : ' zero'}">${nq ? nq + ' ticked' : 'Nothing ticked'}</div>
+          ${summary ? `<div class="slot-items">${summary}</div>` : ''}
+          ${note && note.needs_content ? '<span class="flag">needs content</span>' : ''}
+        </div>`;
+      }).join('');
+      return `<div class="week"><div class="week-hdr">Week ${wi + 1}</div><div class="slots">${cells}</div></div>`;
+    }).join('');
+    document.getElementById('term-view').innerHTML =
+      `<div class="term-title">${esc(term.term)}${plan.live ? '' : '<span class="not-live">Not yet shown to students</span>'}</div>
+       <div class="term-sub">${esc(term.sub)}</div>${weeks}`;
+  }
+
+  window.setPlan = k => { planKey = k; termIdx = 0; render(); };
+  window.setTerm = i => { termIdx = i; render(); };
+
+  function slotName(id) {
+    const m = id.match(/^(Y\d+)-T(\d+)-W(\d+)-L(\d+)$/);
+    const plan = PLANS[m[1]];
+    return { plan, term: +m[2], week: +m[3], lesson: +m[4], name: plan.terms[m[2] - 1].weeks[m[3] - 1][m[4] - 1] };
+  }
+
+  window.openEditor = function (id) {
+    openSlot = id;
+    const s = slotName(id);
+    document.getElementById('p-where').textContent = `${s.plan.label} · Term ${s.term} · Week ${s.week} · Lesson ${s.lesson}`;
+    document.getElementById('p-title').textContent = s.name;
+    document.getElementById('p-body').innerHTML = `
+      <h3>Ticked for this lesson</h3><div id="p-ticked"></div>
+      <h3>Status</h3>
+      <label class="needs"><input type="checkbox" id="p-needs" ${canEdit ? '' : 'disabled'} onchange="saveNote()"> Needs new content written</label>
+      <textarea id="p-note" placeholder="Note for the department (what's missing, ideas…)" ${canEdit ? '' : 'disabled'} onblur="saveNote()"></textarea>
+      ${canEdit ? `<h3>Add questions</h3>
+      <div class="search"><input id="p-q" type="search" placeholder="Search walkthroughs and questions, e.g. BODMAS, fraction, bearing" oninput="renderSearch()">
+        <select id="p-folder" onchange="renderSearch()">${FOLDERS.map(f => `<option value="${f[0]}">${f[1]}</option>`).join('')}</select></div>
+      <div class="hint">Tick a question to add it; untick to remove. Walkthroughs marked "whole" can only be added as a whole.</div>
+      <div id="p-results"></div>` : ''}
+      <h3>Recent changes</h3><div class="log" id="p-log">Loading…</div>`;
+    const n = notes[id] || {};
+    document.getElementById('p-needs').checked = !!n.needs_content;
+    document.getElementById('p-note').value = n.note || '';
+    renderTicked();
+    if (canEdit) renderSearch();
+    loadLog(id);
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('panel').classList.add('open');
+  };
+
+  window.closePanel = function () {
+    document.getElementById('overlay').classList.remove('open');
+    document.getElementById('panel').classList.remove('open');
+    openSlot = null;
+    render();
+  };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && openSlot) closePanel(); });
+
+  function renderTicked() {
+    const items = sortItems(ticks[openSlot] || []);
+    const el = document.getElementById('p-ticked');
+    if (!items.length) { el.innerHTML = '<div class="none">Nothing ticked yet — students will see "coming soon" for this lesson.</div>'; return; }
+    const groups = {};
+    items.forEach(x => { (groups[x.file] = groups[x.file] || []).push(x); });
+    el.innerHTML = Object.keys(groups).map(f => `<div class="ticked-group">
+        <div class="g-title">${esc(fileTitle(f))}<a class="prev" style="margin-left:auto" target="_blank" href="${esc(f)}">open walkthrough ↗</a></div>
+        ${groups[f].map(x => {
+          const qi = x.q ? qInfo(f, x.q) : null;
+          return `<div class="row"><span class="qn">${x.q ? 'Q' + x.q : 'All'}</span>
+            <span class="t">${x.q ? esc(qi ? qi.t : 'Question ' + x.q) : 'Whole walkthrough'}</span>
+            ${qi && qi.l ? `<span class="lv ${qi.l}">${qi.l === 'E' ? 'Extended' : 'Foundation'}</span>` : ''}
+            <a class="prev" target="_blank" href="${esc(previewUrl(f, x.q))}">preview ↗</a>
+            ${canEdit ? `<button class="rm" onclick="untick('${esc(f)}', ${x.q == null ? 'null' : x.q})">remove</button>` : ''}</div>`;
+        }).join('')}</div>`).join('');
+  }
+
+  function isTicked(file, q) { return (ticks[openSlot] || []).some(x => x.file === file && (x.q || null) === (q || null)); }
+
+  window.renderSearch = function () {
+    const term = (document.getElementById('p-q').value || '').trim().toLowerCase();
+    const folder = document.getElementById('p-folder').value;
+    const words = term.split(/\s+/).filter(Boolean);
+    const match = s => words.every(w => s.toLowerCase().includes(w));
+    // With no search and no year chosen, start with the Year 10 and 11 walkthroughs
+    const inFolder = (e, f) => f === 'bridge' ? e.file.startsWith('bridge_') : f === 'deepdive' ? e.file.startsWith('deepdive/') : e.file.startsWith(f + '/');
+    const files = CATALOGUE.filter(e => folder ? inFolder(e, folder) : words.length || inFolder(e, 'year10') || inFolder(e, 'year11'));
+    const out = [];
+    for (const e of files) {
+      const fileHit = !words.length || match(e.title + ' ' + e.file);
+      const qs = e.questions.map((q, i) => ({ q, n: i + 1 })).filter(x => !words.length || fileHit || match(x.q.t + ' ' + x.q.s));
+      if (!fileHit && !qs.length) continue;
+      out.push({ e, qs: fileHit ? e.questions.map((q, i) => ({ q, n: i + 1 })) : qs, open: words.length > 0 });
+      if (out.length >= 60) break;
+    }
+    const el = document.getElementById('p-results');
+    if (!out.length) { el.innerHTML = '<div class="none" style="margin-top:8px">No walkthroughs match.</div>'; return; }
+    el.innerHTML = out.map(({ e, qs, open }) => {
+      const whole = !e.filterable;
+      const rows = whole
+        ? `<div class="row"><input type="checkbox" ${isTicked(e.file, null) ? 'checked' : ''} onchange="toggleTick(this, '${esc(e.file)}', null)">
+             <span class="t">Whole walkthrough${e.questions.length ? ' (' + e.questions.length + ' questions)' : ''}</span>
+             <a class="prev" target="_blank" href="${esc(e.file)}">preview ↗</a></div>`
+        : qs.map(({ q, n }) => `<div class="row"><input type="checkbox" ${isTicked(e.file, n) ? 'checked' : ''} onchange="toggleTick(this, '${esc(e.file)}', ${n})">
+             <span class="qn">Q${n}</span><span class="t">${esc(q.t)}</span>
+             ${q.l ? `<span class="lv ${q.l}">${q.l === 'E' ? 'Extended' : 'Foundation'}</span>` : ''}
+             <a class="prev" target="_blank" href="${esc(previewUrl(e.file, n))}">preview ↗</a></div>`).join('');
+      const count = (ticks[openSlot] || []).filter(x => x.file === e.file).length;
+      return `<details class="file"${open ? ' open' : ''}><summary>${esc(e.title)}${whole ? ' <span class="lv F">whole</span>' : ''}${count ? ` <span class="slot-count">${count} ticked</span>` : ''}<span class="path">${esc(e.file)}</span></summary>${rows}</details>`;
+    }).join('') + (out.length >= 60 ? '<div class="hint">Showing the first 60 walkthroughs — search to narrow down.</div>' : '');
+  };
+
+  window.toggleTick = async function (box, file, q) {
+    box.disabled = true;
+    const ok = box.checked ? await tick(file, q) : await untickRow(file, q);
+    if (!ok) box.checked = !box.checked;
+    box.disabled = false;
+  };
+
+  async function tick(file, q) {
+    const { data, error } = await supabase.from('lesson_slot_questions')
+      .insert({ school_id: me.school_id, slot_id: openSlot, file, q, added_by: me.id }).select('id, slot_id, file, q').single();
+    if (error) { toast('Could not save: ' + error.message, true); return false; }
+    (ticks[openSlot] = ticks[openSlot] || []).push(data);
+    renderTicked(); loadLog(openSlot); toast('Ticked');
+    return true;
+  }
+
+  async function untickRow(file, q) {
+    const row = (ticks[openSlot] || []).find(x => x.file === file && (x.q || null) === (q || null));
+    if (!row) return true;
+    const { error } = await supabase.from('lesson_slot_questions').delete().eq('id', row.id);
+    if (error) { toast('Could not remove: ' + error.message, true); return false; }
+    ticks[openSlot] = ticks[openSlot].filter(x => x !== row);
+    renderTicked(); loadLog(openSlot); toast('Removed');
+    return true;
+  }
+
+  window.untick = async function (file, q) {
+    if (await untickRow(file, q) && document.getElementById('p-results')) renderSearch();
+  };
+
+  window.saveNote = async function () {
+    if (!canEdit || !openSlot) return;
+    const needs = document.getElementById('p-needs').checked, note = document.getElementById('p-note').value.trim();
+    const cur = notes[openSlot] || {};
+    if (!!cur.needs_content === needs && (cur.note || '') === note) return;
+    const row = { school_id: me.school_id, slot_id: openSlot, needs_content: needs, note: note || null, updated_by: me.id, updated_at: new Date().toISOString() };
+    const { error } = await supabase.from('lesson_slot_notes').upsert(row, { onConflict: 'school_id,slot_id' });
+    if (error) { toast('Could not save note: ' + error.message, true); return; }
+    notes[openSlot] = row; toast('Saved');
+  };
+
+  const names = {};
+  async function loadLog(id) {
+    const { data, error } = await supabase.from('lesson_slot_log').select('file, q, action, changed_by, changed_at')
+      .eq('school_id', me.school_id).eq('slot_id', id).order('changed_at', { ascending: false }).limit(8);
+    const el = document.getElementById('p-log');
+    if (!el || openSlot !== id) return;
+    if (error) { el.textContent = 'Could not load the change history.'; return; }
+    const ids = [...new Set(data.map(r => r.changed_by).filter(x => x && !names[x]))];
+    if (ids.length) {
+      const { data: ps } = await supabase.from('profiles').select('id, full_name').in('id', ids);
+      (ps || []).forEach(p => { names[p.id] = p.full_name; });
+    }
+    el.innerHTML = data.length ? data.map(r => {
+      const who = r.changed_by ? esc(names[r.changed_by] || 'A teacher') : 'Pre-filled from the syllabus audit';
+      const what = (r.action === 'tick' ? 'ticked ' : 'unticked ') + esc(fileTitle(r.file)) + (r.q ? ' Q' + r.q : ' (whole)');
+      return `${who} ${r.changed_by ? what : '— ' + what} · ${new Date(r.changed_at).toLocaleString()}`;
+    }).join('<br>') : 'No changes yet.';
+  }
+
+  // Everything, one row per ticked question, for checking in a spreadsheet
+  window.exportCsv = function () {
+    const rows = [['Plan', 'Term', 'Week', 'Lesson', 'Lesson name', 'Walkthrough', 'File', 'Question', 'Question title', 'Level', 'Needs content', 'Note']];
+    for (const [k, plan] of Object.entries(PLANS)) plan.terms.forEach((t, ti) => t.weeks.forEach((w, wi) => w.forEach((name, li) => {
+      if (!name) return;
+      const id = window.mathsSlotId(k, ti, wi, li), n = notes[id] || {};
+      const items = sortItems(ticks[id] || []);
+      const base = [plan.label, ti + 1, wi + 1, li + 1, name];
+      const tail = [n.needs_content ? 'yes' : '', n.note || ''];
+      if (!items.length) rows.push([...base, '', '', '', '', '', ...tail]);
+      items.forEach(x => { const qi = x.q ? qInfo(x.file, x.q) : null; rows.push([...base, fileTitle(x.file), x.file, x.q || 'whole', qi ? qi.t : '', qi && qi.l ? (qi.l === 'E' ? 'Extended' : 'Foundation') : '', ...tail]); });
+    })));
+    const csv = rows.map(r => r.map(v => '"' + String(v).replace(/"/g, '""') + '"').join(',')).join('\r\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob(['﻿' + csv], { type: 'text/csv' }));
+    a.download = 'maths-lesson-mapping.csv';
+    a.click();
+  };
+
+  // Admins choose which teachers are in the maths department (profiles.subject = 'Maths')
+  window.openDept = async function () {
+    openSlot = null;
+    document.getElementById('p-where').textContent = 'Admin';
+    document.getElementById('p-title').textContent = 'Maths department';
+    document.getElementById('p-body').innerHTML = '<div class="none">Loading…</div>';
+    document.getElementById('overlay').classList.add('open');
+    document.getElementById('panel').classList.add('open');
+    const { data, error } = await supabase.from('profiles').select('id, full_name, subject').eq('role', 'teacher').eq('school_id', me.school_id).order('full_name');
+    if (error) { document.getElementById('p-body').textContent = 'Could not load teachers.'; return; }
+    document.getElementById('p-body').innerHTML = `<p class="hint" style="margin:0 0 12px">Ticked teachers can edit the lesson mapping. Admins always can.</p>
+      <div class="dept">${data.map(t => `<label><input type="checkbox" ${/math/i.test(t.subject || '') ? 'checked' : ''} onchange="setDept(this, '${t.id}')"> ${esc(t.full_name || 'Unnamed')}</label>`).join('')}</div>`;
+  };
+
+  window.setDept = async function (box, id) {
+    box.disabled = true;
+    const { error } = await supabase.from('profiles').update({ subject: box.checked ? 'Maths' : null }).eq('id', id);
+    box.disabled = false;
+    if (error) { box.checked = !box.checked; toast('Could not update: ' + error.message, true); } else toast(box.checked ? 'Added to maths department' : 'Removed from maths department');
+  };
+
+  init().catch(e => { document.getElementById('loading').textContent = 'Could not load the lesson mapping: ' + e.message; });
+</script>
+</body>
+</html>
