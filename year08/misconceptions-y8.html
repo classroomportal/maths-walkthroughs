@@ -555,7 +555,7 @@ function revealNext(){
   var btn=document.getElementById('revealBtn');
   if(btn){if(revealStep>=steps.length)btn.style.display='none';else btn.textContent='Show step '+(revealStep+1)+' →';}
 }
-function nextQ(){qi++;if(qi>=order.length){if(window.markComplete)window.markComplete();qi=0;buildOrder();}loadQ();}
+function nextQ(){qi++;if(qi>=order.length){if(window._supabase&&window._abcTopicCode)window._supabase.rpc('mark_walkthrough_complete',{p_topic_code:window._abcTopicCode});qi=0;buildOrder();}loadQ();}
 loadQ();
 </script>
 
