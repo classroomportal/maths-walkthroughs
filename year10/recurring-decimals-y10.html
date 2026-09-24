@@ -60,6 +60,7 @@ header{background:var(--red);color:#fff;height:56px;display:flex;align-items:cen
 .lf{background:#e8f4ff;color:#1a5a8a;}.le{background:#fce8d8;color:#7A1418;}
 @media(max-width:640px){.layout{flex-direction:column;}.sb{width:100%;flex-direction:row;flex-wrap:wrap;}.qb{flex:1;min-width:80px;}}
 </style>
+<script src="../notation.js" defer></script>
 </head>
 <body>
 <header>
@@ -358,7 +359,8 @@ render();
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 const _sb = createClient('https://lnwinoghbefmjpvmixzo.supabase.co','eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imxud2lub2doYmVmbWpwdm1peHpvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIzODIxNzQsImV4cCI6MjA5Nzk1ODE3NH0.ubKHVLrxlxQd-w3n5pS3O6YMAI7I--ndEkI2xWM9qCo');
 window._supabase=_sb;window._abcUpdated='2026-06-28';window._abcTopicCode='Y10-NUM-04';
-const { data: __mySchoolProfile } = await _sb.from('profiles').select('school_id').eq('id', session.user.id).maybeSingle();
+const { data: { session: __mySession } } = await _sb.auth.getSession();
+const { data: __mySchoolProfile } = __mySession ? await _sb.from('profiles').select('school_id').eq('id', __mySession.user.id).maybeSingle() : { data: null };
 const __mySchoolId = __mySchoolProfile ? __mySchoolProfile.school_id : null;
 window.markComplete=async function(){const{data:{session}}=await _sb.auth.getSession();if(!session)return;const{data:topic}=await _sb.from('topics').select('id').eq('topic_code',window._abcTopicCode).maybeSingle();if(!topic)return;window._abcTopicId=topic.id;await _sb.from('walkthrough_progress').upsert({student_id:session.user.id, school_id: __mySchoolId,topic_id:topic.id,status:'completed',completed_at:new Date().toISOString(),last_visited_at:new Date().toISOString()},{onConflict:'student_id,topic_id'});};
 </script>

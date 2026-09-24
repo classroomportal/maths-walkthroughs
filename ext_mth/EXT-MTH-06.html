@@ -30,6 +30,7 @@
   button.nav-btn.primary { background:var(--red); color:#fff; }
 </style>
 
+<script src="../notation.js" defer></script>
 </head>
 <body>
 <header><h1>Extension Maths: Introduction to Indices & Standard Form</h1></header>
@@ -84,7 +85,7 @@ function render() {
       <div class="yt-box">
         <div>${q.yt_prompt}</div>
         <div class="worked">${currentYT.q}</div>
-        <input type="text" id="ytAnswer" placeholder="Your answer">
+        <input type="text" id="ytAnswer" placeholder="Your answer (type powers with ^, e.g. 3x10^5)">
         <button class="act" onclick="checkYT()">Check</button>
         <div id="ytFeedback"></div>
       </div>`;
@@ -97,7 +98,10 @@ function render() {
 function checkYT() {
   const val = document.getElementById('ytAnswer').value.trim();
   const fb = document.getElementById('ytFeedback');
-  if (val.toLowerCase() == String(currentYT.answer).toLowerCase()) {
+  // Accept 3x10^5, 3 × 10^5, 3*10^5 or 3×10⁵ as the same answer
+  const normAns = a => String(a).toLowerCase().replace(/\s+/g, '').replace(/[×*]/g, 'x')
+    .replace(/[⁰¹²³⁴⁵⁶⁷⁸⁹⁻]+/g, m => '^' + m.replace(/./g, c => '0123456789-'['⁰¹²³⁴⁵⁶⁷⁸⁹⁻'.indexOf(c)]));
+  if (normAns(val) === normAns(currentYT.answer)) {
     fb.innerHTML = '<div class="try-fb ok">Correct! Well done.</div>';
     document.getElementById('nextBtn').disabled = false;
   } else {
