@@ -107,7 +107,9 @@
   // still requires a sensible minimum time actually spent on the page.
   setInterval(function() {
     if (typeof window.qi === 'number') {
-      logInteraction(window.qi + 1);
+      // When a lesson link shows only some questions, log the question's real number
+      const nums = window.abcQuestionNumbers;
+      logInteraction(nums ? nums[window.qi] : window.qi + 1);
     } else {
       const secondsOpen = Math.floor((Date.now() - _pageOpenedAt) / 1000);
       const bucket = Math.min(10, Math.floor(secondsOpen / 6) + 1);

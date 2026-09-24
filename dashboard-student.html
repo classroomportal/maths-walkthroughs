@@ -181,6 +181,20 @@
     .plan-lsn { display: none; font-size: 0.62rem; font-weight: 700; text-transform: uppercase; color: #999; letter-spacing: 0.4px; }
     .plan-name { font-size: 0.84rem; font-weight: 600; line-height: 1.25; }
     .plan-sec { font-size: 0.7rem; color: #888; margin-top: 3px; line-height: 1.25; }
+    .plan-empty { visibility: hidden; }
+    .plan-staff-note { background: #fff8e1; border: 1px solid #f3d27a; color: #7a5a00; border-radius: 6px; padding: 7px 12px; font-size: 0.8rem; margin-bottom: 10px; }
+    #lesson-chooser .lc-back { position: fixed; inset: 0; background: rgba(0,0,0,0.35); z-index: 1000; }
+    #lesson-chooser .lc-box { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); width: min(520px, calc(100% - 32px)); max-height: 80vh; overflow-y: auto; background: #fff; border-radius: 10px; padding: 18px; z-index: 1001; box-shadow: 0 8px 30px rgba(0,0,0,0.2); }
+    #lesson-chooser .lc-close { position: absolute; top: 8px; right: 12px; background: none; border: none; font-size: 1.5rem; color: #888; cursor: pointer; }
+    #lesson-chooser .lc-hdr { font-size: 1.05rem; font-weight: 700; color: #C0272D; padding-right: 24px; }
+    #lesson-chooser .lc-sub { font-size: 0.82rem; color: #777; margin: 4px 0 12px; }
+    #lesson-chooser .lc-item { display: block; width: 100%; text-align: left; background: #fff; border: 1.5px solid #eee; border-radius: 6px; padding: 10px 12px; margin-bottom: 8px; cursor: pointer; font: inherit; color: inherit; }
+    #lesson-chooser .lc-item:hover { border-color: #C0272D; }
+    #lesson-chooser .lc-item.started { border-left: 4px solid #f57f17; }
+    #lesson-chooser .lc-item.completed { border-left: 4px solid #2e7d32; }
+    #lesson-chooser .lc-title { font-weight: 700; font-size: 0.9rem; }
+    #lesson-chooser .lc-qs { font-size: 0.76rem; color: #777; margin-top: 3px; line-height: 1.4; }
+    #lesson-chooser .lc-st { font-size: 0.72rem; font-weight: 600; margin-top: 4px; color: #2e7d32; }
     @media (max-width: 720px) {
       .plan-head { display: none; }
       .plan-week { grid-template-columns: 1fr 1fr; padding-bottom: 4px; }
@@ -494,6 +508,7 @@
 
 <footer>© Adorable British College — ABC Learning Portal</footer>
 
+<script src="plans/maths-plans.js"></script>
 <script type="module">
   import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm';
 
@@ -1201,61 +1216,52 @@
     ],
   };
 
-  // ── Year 10 Maths week-by-week plan (2026/27) ──
-  // Shown instead of the topic cards when Year 10 Maths is being viewed.
-  // Each lesson: n = topic name from the plan, f = walkthrough file, q = question to
-  // open at (walkthroughs read ?q=N), s = section shown under the name. No f = coming soon.
-  // Terms 2–4: add objects to Y10_MATHS_PLAN in the same shape.
-  const Y10_MATHS_PLAN = [
-    {
-      term: 'Term 1 — Foundations',
-      sub: "Units 1–3: Introduction to mathematics I & II; Further algebra, Pythagoras' theorem, surds and appropriate accuracy",
-      weeks: [
-        [ { n: 'Types of number', f: 'bridge_mth_y10/BRG10-MTH-01.html' },
-          { n: 'Types of number', f: 'year10/number-y10.html', q: 1, s: 'Prime factor decomposition' },
-          { n: 'The four operations', f: 'year10/number-y10.html', q: 12, s: 'Order of operations with fractions and decimals' },
-          { n: 'Indices I', f: 'year10/number-y10.html', q: 11, s: 'Fractional and negative indices' } ],
-        [ { n: 'Powers and roots', f: 'year10/number-y10.html', q: 3, s: 'Powers, roots and index laws' },
-          { n: 'Time', f: 'bridge_mth_y10/BRG10-MTH-05.html' },
-          { n: 'Introduction to algebra', f: 'year07/algebra-y7.html' },
-          { n: 'Algebraic manipulation', f: 'year08/manipulation-y8.html' } ],
-        [ { n: 'Algebraic manipulation', f: 'year10/algebra-y10.html', q: 2, s: 'Expanding double brackets' },
-          { n: 'Classifying statistical data' },
-          { n: 'Geometrical constructions', f: 'year10/constructions-y10.html', q: 1, s: 'Bisectors and triangles' },
-          { n: 'Money' } ],
-        [ { n: 'Units of measure', f: 'year08/units-measurement-y8.html', q: 1, s: 'Metric conversions' },
-          { n: 'Fractions, decimals and percentages', f: 'year10/number-y10.html', q: 5, s: 'Converting between FDP' },
-          { n: 'Fractions, decimals and percentages', f: 'year10/number-y10.html', q: 5, s: 'Converting between FDP' },
-          { n: 'Percentages', f: 'year10/number-y10.html', q: 6, s: 'Percentage increase and decrease' } ],
-        [ { n: 'Percentages', f: 'year10/number-y10.html', q: 7, s: 'Reverse percentages' },
-          { n: 'Exponential growth and decay', f: 'year11/exponential-y11.html' },
-          { n: 'Interpreting statistical data', f: 'year10/stats-y10.html', q: 6, s: 'Scatter graphs and correlation' },
-          { n: 'Interpreting statistical data', f: 'year10/stats-y10.html', q: 7, s: 'Cumulative frequency' } ],
-        [ { n: 'Averages and range', f: 'year10/stats-y10.html', q: 1, s: 'Mean, median, mode and range' },
-          { n: 'Averages and range', f: 'year10/stats-y10.html', q: 2, s: 'Mean from a frequency table' },
-          { n: 'Statistical charts and diagrams', f: 'year10/stats-y10.html', q: 4, s: 'Pie charts' },
-          { n: 'Statistical charts and diagrams', f: 'year10/stats-y10.html', q: 5, s: 'Bar charts' } ],
-        [ { n: 'Area and perimeter', f: 'year10/mensuration-y10.html', q: 1, s: 'Rectangles, triangles, compound shapes' },
-          { n: 'Geometrical terms' },
-          { n: 'Ordering', f: 'year07/ordering-integers-y7.html' },
-          { n: 'Estimation', f: 'year08/place-value-rounding-y8.html', q: 4, s: 'Estimation' } ],
-        [ { n: 'Algebraic fractions', f: 'year10/algebra-y10.html', q: 7, s: 'Simplifying an algebraic fraction' },
-          { n: 'Algebraic fractions', f: 'year10/algebra-y10.html', q: 7, s: 'Simplifying an algebraic fraction' },
-          { n: 'Equations (linear, simultaneous, quadratic)', f: 'year10/algebra-y10.html', q: 1, s: 'Linear equations' },
-          { n: 'Equations (linear, simultaneous, quadratic)', f: 'year10/algebra-y10.html', q: 6, s: 'Forming and solving' } ],
-        [ { n: 'Equations (linear, simultaneous, quadratic)', f: 'year10/algebra-y10.html', q: 4, s: 'Simultaneous equations' },
-          { n: 'Equations (linear, simultaneous, quadratic)', f: 'year10/algebra-y10.html', q: 3, s: 'Quadratics by factorising' },
-          { n: 'Proportion', f: 'year10/proportion-y10.html' },
-          { n: 'Surds', f: 'year10/surds-y10.html', q: 1, s: 'Simplifying and multiplying' } ],
-        [ { n: 'Surds', f: 'year10/surds-y10.html', q: 6, s: 'Rationalising the denominator' },
-          { n: "Pythagoras' theorem", f: 'year09/pythagoras-trig-y9.html', q: 1, s: 'Finding the hypotenuse' },
-          { n: "Pythagoras' theorem", f: 'year09/pythagoras-trig-y9.html', q: 2, s: 'Finding a shorter side' },
-          { n: 'Term 1 review / consolidation', f: 'year10/misconceptions-y10.html', s: 'Common misconceptions quiz' } ],
-      ],
-    },
-  ];
+  // ── Maths week-by-week plans ──
+  // Lesson names come from plans/maths-plans.js. The questions for each lesson are ticked by
+  // the maths department on lesson-mapping.html and stored in Supabase (lesson_slot_questions).
+  const MATHS_PLANS = window.MATHS_PLANS || {};
   let planTermIdx = 0;
-  let showY10Plan = true;
+  let showPlan = true;
+  let planStaffPreview = false;
+  let slotTicks = {}; // slot_id -> [{file, q}]
+
+  const escHtml = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+  // A plan is shown to students once it is marked live; staff previewing can see any plan
+  function planKeyForYear(y) {
+    const k = Object.keys(MATHS_PLANS).find(k => MATHS_PLANS[k].year === y);
+    return k && (MATHS_PLANS[k].live || planStaffPreview) ? k : null;
+  }
+
+  async function loadSlotTicks() {
+    const rows = [];
+    for (let from = 0; ; from += 1000) {
+      const { data, error } = await supabase.from('lesson_slot_questions').select('slot_id, file, q').range(from, from + 999);
+      if (error || !data) break;
+      rows.push(...data);
+      if (data.length < 1000) break;
+    }
+    slotTicks = {};
+    rows.forEach(r => { (slotTicks[r.slot_id] = slotTicks[r.slot_id] || []).push(r); });
+  }
+
+  // Ticked questions for a lesson, grouped by walkthrough
+  function slotGroups(id) {
+    const groups = [];
+    (slotTicks[id] || []).forEach(r => {
+      let g = groups.find(x => x.file === r.file);
+      if (!g) { g = { file: r.file, qs: [], whole: false }; groups.push(g); }
+      if (r.q == null) g.whole = true; else g.qs.push(r.q);
+    });
+    groups.forEach(g => g.qs.sort((a, b) => a - b));
+    return groups;
+  }
+  const groupHref = g => g.file + (!g.whole && g.qs.length ? '?only=' + g.qs.join(',') : '');
+
+  function slotLesson(id) {
+    const m = id.match(/^(Y\d+)-T(\d+)-W(\d+)-L(\d+)$/);
+    return MATHS_PLANS[m[1]].terms[m[2] - 1].weeks[m[3] - 1][m[4] - 1];
+  }
 
   // Finds the Supabase topic for a walkthrough file so plan clicks still record progress.
   function topicForFile(file) {
@@ -1270,39 +1276,80 @@
     return null;
   }
 
-  function renderY10Plan(grid) {
-    const term = Y10_MATHS_PLAN[planTermIdx];
-    const termBtns = ['Term 1', 'Term 2', 'Term 3', 'Term 4'].map((lbl, i) =>
-      `<button class="plan-term-btn${i === planTermIdx ? ' active' : ''}" ${Y10_MATHS_PLAN[i] ? `onclick="setPlanTerm(${i})"` : 'disabled title="Coming soon"'}>${lbl}</button>`
+  function groupStatus(groups) {
+    const st = groups.map(g => { const t = topicForFile(g.file); return t ? progressMap[t.id] || '' : ''; });
+    if (st.length && st.every(x => x === 'completed')) return 'completed';
+    return st.some(x => x) ? 'started' : '';
+  }
+
+  function renderMathsPlan(grid, key) {
+    const plan = MATHS_PLANS[key];
+    if (planTermIdx >= plan.terms.length) planTermIdx = 0;
+    const term = plan.terms[planTermIdx];
+    const termBtns = [0, 1, 2, 3].map(i =>
+      `<button class="plan-term-btn${i === planTermIdx ? ' active' : ''}" ${plan.terms[i] ? `onclick="setPlanTerm(${i})"` : 'disabled title="Coming soon"'}>Term ${i + 1}</button>`
     ).join('');
     const head = `<div class="plan-head"><div>Week</div><div>Lesson 1</div><div>Lesson 2</div><div>Lesson 3</div><div>Lesson 4</div></div>`;
     const rows = term.weeks.map((lessons, w) => {
-      const cells = lessons.map((l, i) => {
+      const cells = lessons.map((name, i) => {
         const lsn = `<div class="plan-lsn">Lesson ${i + 1}</div>`;
-        if (!l.f) {
-          return `<div class="plan-cell soon">${lsn}<div class="plan-name">${l.n}</div><div class="plan-sec">🔒 Coming soon</div></div>`;
+        if (!name) return `<div class="plan-cell soon plan-empty"></div>`;
+        const id = window.mathsSlotId(key, planTermIdx, w, i);
+        const groups = slotGroups(id);
+        if (!groups.length) {
+          return `<div class="plan-cell soon">${lsn}<div class="plan-name">${escHtml(name)}</div><div class="plan-sec">🔒 Coming soon</div></div>`;
         }
-        const t = topicForFile(l.f);
-        const status = t ? (progressMap[t.id] || '') : '';
-        const href = l.f + (l.q ? '?q=' + l.q : '');
-        return `<button class="plan-cell ${status}" onclick="openPlanLesson('${href}','${l.f}')">${lsn}<div class="plan-name">${l.n}</div>${l.s ? `<div class="plan-sec">${l.s}</div>` : ''}</button>`;
+        const nq = groups.reduce((a, g) => a + (g.whole ? 0 : g.qs.length), 0), nw = groups.filter(g => g.whole).length;
+        const sec = [nq ? nq + (nq === 1 ? ' question' : ' questions') : '', nw ? nw + (nw === 1 ? ' walkthrough' : ' walkthroughs') : ''].filter(Boolean).join(' + ');
+        return `<button class="plan-cell ${groupStatus(groups)}" onclick="openPlanLesson('${id}')">${lsn}<div class="plan-name">${escHtml(name)}</div><div class="plan-sec">${sec}</div></button>`;
       }).join('');
       return `<div class="plan-week"><div class="plan-wk">Week ${w + 1}</div>${cells}</div>`;
     }).join('');
     grid.innerHTML = `<div class="plan-wrap">
-      <div class="plan-bar">${termBtns}<button class="plan-toggle" onclick="toggleY10Plan()">Show all Year 10 topics</button></div>
-      <div class="plan-term-title">${term.term}</div>
-      <div class="plan-term-sub">${term.sub}</div>
+      ${plan.live ? '' : '<div class="plan-staff-note">Staff preview: this plan is not shown to students yet.</div>'}
+      <div class="plan-bar">${termBtns}<button class="plan-toggle" onclick="togglePlan()">Show all ${escHtml(plan.label)} topics</button></div>
+      <div class="plan-term-title">${escHtml(term.term)}</div>
+      <div class="plan-term-sub">${escHtml(term.sub)}</div>
       <div class="plan-grid">${head}${rows}</div>
     </div>`;
   }
 
   window.setPlanTerm = function(i) { planTermIdx = i; window.renderTopics(); };
-  window.toggleY10Plan = function() { showY10Plan = !showY10Plan; window.renderTopics(); };
-  window.openPlanLesson = function(href, file) {
-    const t = topicForFile(file);
+  window.togglePlan = function() { showPlan = !showPlan; window.renderTopics(); };
+
+  function openGroup(g) {
+    const t = topicForFile(g.file), href = groupHref(g);
     if (t) window.openTopic(t.id, href);
     else window.location.href = href;
+  }
+  window.openPlanGroup = (id, i) => openGroup(slotGroups(id)[i]);
+  window.closeLessonChooser = () => { const el = document.getElementById('lesson-chooser'); if (el) el.remove(); };
+
+  function loadCatalogue() {
+    if (window.QUESTION_CATALOGUE) return Promise.resolve();
+    return new Promise(res => { const sc = document.createElement('script'); sc.src = 'plans/question-catalogue.js'; sc.onload = res; sc.onerror = res; document.head.appendChild(sc); });
+  }
+
+  // One walkthrough: open it straight away. Several: let the student choose.
+  window.openPlanLesson = async function(id) {
+    const groups = slotGroups(id);
+    if (groups.length === 1) { openGroup(groups[0]); return; }
+    await loadCatalogue();
+    const cat = {}; (window.QUESTION_CATALOGUE || []).forEach(e => { cat[e.file] = e; });
+    const items = groups.map((g, i) => {
+      const e = cat[g.file], title = e ? e.title : g.file;
+      const t = topicForFile(g.file), st = t ? progressMap[t.id] || '' : '';
+      const what = g.whole ? 'Whole walkthrough'
+        : g.qs.map(q => { const qq = e && e.questions[q - 1]; return 'Q' + q + (qq ? ' ' + escHtml(qq.t) : ''); }).join(' · ');
+      return `<button class="lc-item ${st}" onclick="openPlanGroup('${id}', ${i})"><div class="lc-title">${escHtml(title)}</div><div class="lc-qs">${what}</div>${st ? `<div class="lc-st">${st === 'completed' ? '✓ Completed' : '▶ In progress'}</div>` : ''}</button>`;
+    }).join('');
+    closeLessonChooser();
+    const box = document.createElement('div');
+    box.id = 'lesson-chooser';
+    box.innerHTML = `<div class="lc-back" onclick="closeLessonChooser()"></div><div class="lc-box" role="dialog" aria-modal="true">
+      <button class="lc-close" onclick="closeLessonChooser()" aria-label="Close">×</button>
+      <div class="lc-hdr">${escHtml(slotLesson(id))}</div><div class="lc-sub">Work through these walkthroughs for this lesson:</div>${items}</div>`;
+    document.body.appendChild(box);
   };
 
   function getWalkthroughFile(subject, topicCode) {
@@ -1488,6 +1535,7 @@
       // Preview mode is staff-only, so students can't use ?preview=1 to skip their diagnostic.
       const previewParams = new URLSearchParams(window.location.search);
       const isStaffPreview = (profile.role === 'admin' || profile.role === 'teacher') && previewParams.get('preview') === '1';
+      planStaffPreview = isStaffPreview;
 
       if (profile.active === false) {
         showError('This account is no longer active. Please contact the school office if you believe this is an error.');
@@ -1750,6 +1798,9 @@
       const { data: progress } = await supabase
         .from('walkthrough_progress').select('*').eq('student_id', userId);
       (progress || []).forEach(p => { progressMap[p.topic_id] = p.status; });
+
+      // Lesson-by-lesson question choices for the maths plans
+      await loadSlotTicks();
 
       // Load best test result per topic
       const { data: testResults } = await supabase
@@ -2041,13 +2092,14 @@
     const grid = document.getElementById('topic-grid');
 
     const viewYear = value === 'own' ? myYearGroup : parseInt(value);
-    if (currentSubject === 'maths' && viewYear === 10) {
-      if (showY10Plan) {
-        document.getElementById('viewing-label').textContent = 'Your Year 10 week-by-week plan — tap a lesson to open its walkthrough';
-        renderY10Plan(grid);
+    const planKey = currentSubject === 'maths' ? planKeyForYear(viewYear) : null;
+    if (planKey) {
+      if (showPlan) {
+        document.getElementById('viewing-label').textContent = 'Your ' + MATHS_PLANS[planKey].label + ' week-by-week plan — tap a lesson to open its walkthrough';
+        renderMathsPlan(grid, planKey);
         return;
       }
-      document.getElementById('viewing-label').innerHTML = label + ' · <button class="plan-toggle" style="margin:0" onclick="toggleY10Plan()">Back to week-by-week plan</button>';
+      document.getElementById('viewing-label').innerHTML = label + ' · <button class="plan-toggle" style="margin:0" onclick="togglePlan()">Back to week-by-week plan</button>';
     }
     if (filtered.length === 0) {
       grid.innerHTML = '<div class="no-topics">No topics available here yet — check back soon!</div>';
