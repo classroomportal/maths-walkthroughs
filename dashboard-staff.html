@@ -4417,6 +4417,18 @@
     btn.disabled = true;
     btn.textContent = 'Creating…';
 
+    // New accounts are students unless an admin has approved a staff role for that email first
+    if (role !== 'student') {
+      const { error: inviteError } = await supabase.from('staff_invites')
+        .upsert({ email: email.toLowerCase(), role, school_id: schoolId }, { onConflict: 'email' });
+      if (inviteError) {
+        showMsg('cu-msg', 'error', 'Only admins can create teacher or admin accounts.');
+        btn.disabled = false;
+        btn.textContent = 'Create User';
+        return;
+      }
+    }
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
