@@ -107,20 +107,22 @@ function tryIt(fn){
   var id='t'+Math.random().toString(36).slice(2);
   ST[id]=fn;return genTry(id,fn());
 }
+var CUR={},SEQ=0;
 function genTry(id,o){
   var h=(o.hints||[]).map(function(x){return '<li>'+x+'</li>';}).join('');
+  var iid=id+'_'+(++SEQ);CUR[iid]=o;
   return '<div class="try" data-tryid="'+id+'">'+
     '<div class="try-t">&#10004; Your Turn</div><p>'+o.question+'</p>'+
-    '<div class="ar"><input type="number" step="any" placeholder="Your answer" id="'+id+'_i"/>'+
-    '<button class="ck" onclick="ck(\''+id+'\')">&#10003; Check</button></div>'+
-    '<div class="fb" id="'+id+'_f"></div>'+
+    '<div class="ar"><input type="number" step="any" placeholder="Your answer" id="'+iid+'_i"/>'+
+    '<button class="ck" onclick="ck(\''+iid+'\')">&#10003; Check</button></div>'+
+    '<div class="fb" id="'+iid+'_f"></div>'+
     '<details class="wk"><summary>Show working</summary><div class="wk-b">'+
     (h?'<ul class="hl">'+h+'</ul>':'')+
     '<div class="wk-ans">'+o.working+'</div></div></details>'+
     '<button class="nq" data-tryid="'+id+'">New question</button></div>';
 }
 function ck(id){
-  var fn=ST[id];var o=typeof fn==='function'?fn():fn;
+  var o=CUR[id];if(!o)return;
   var v=parseFloat(document.getElementById(id+'_i').value);
   var f=document.getElementById(id+'_f');
   if(isNaN(v)){f.className='fb er';f.textContent='Please enter a number.';return;}
@@ -187,15 +189,19 @@ function arr(x1,y1,x2,y2,c,w){
   return L(x1,y1,x2,y2,c,w)+'<polygon points="'+x2+','+y2+' '+p1x.toFixed(1)+','+p1y.toFixed(1)+' '+p2x.toFixed(1)+','+p2y.toFixed(1)+'" fill="'+c+'"/>';
 }
 
+// Multi-line SVG label: lines separated by \n
+function TM(x,y,t,c,sz,a,b){return t.split('\n').map(function(ln,i){return T(x,y+i*(sz+3),ln,c,sz,a,b);}).join('');}
 
 var QS=[
 {ey:'Y8 Biology \u2022 Q1',ti:'Aerobic Respiration',su:'Releasing energy with oxygen',steps:[
-{sl:'What is respiration?',p:'<b>Respiration</b> is the process by which cells release energy from glucose. It occurs in every living cell.<br><br><b>Aerobic respiration</b> requires <b>oxygen</b> and is the most efficient form:<br><span class="fm">glucose + oxygen \u2192 carbon dioxide + water (+ energy)</span>',
+{sl:'What is respiration?',p:'<b>Respiration</b> is the process by which cells release energy from glucose. It occurs in every living cell.<br><br><b>Aerobic respiration</b> requires <b>oxygen</b> and is the most efficient form:<br><span class="fm">glucose + oxygen \u2192 carbon dioxide + water + energy</span>',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(R(30,80,140,80,'#e8f5e9','#2E7D32',2,4));o.push(T(100,110,'Glucose','#2E7D32',11,'middle',true));o.push(T(100,128,'+ Oxygen','#2E7D32',10,'middle',false));
-o.push(arr(175,120,215,120,'#555',2));o.push(T(195,110,'cell','#555',9,'middle',false));
-o.push(R(220,80,150,80,'#fde8e8','#C0272D',2,4));o.push(T(295,110,'CO\u2082','#C0272D',11,'middle',true));o.push(T(295,128,'+ H\u2082O','#C0272D',10,'middle',false));
-o.push(R(380,80,80,80,'#fff9c4','#C8922A',2,4));o.push(T(420,120,'ENERGY','#C8922A',11,'middle',true));
+o.push(R(20,80,130,80,'#e8f5e9','#2E7D32',2,4));o.push(T(85,112,'Glucose','#2E7D32',11,'middle',true));o.push(T(85,132,'+ Oxygen','#2E7D32',11,'middle',true));
+o.push(arr(155,120,190,120,'#555',2));o.push(T(172,110,'cell','#555',9,'middle',false));
+o.push(R(195,80,150,80,'#fde8e8','#C0272D',2,4));o.push(T(270,112,'Carbon dioxide','#C0272D',11,'middle',true));o.push(T(270,132,'+ Water','#C0272D',11,'middle',true));
+o.push(T(358,125,'+','#555',18,'middle',true));
+o.push(R(372,80,90,80,'#fff9c4','#C8922A',2,4));o.push(T(417,125,'Energy','#C8922A',11,'middle',true));
+o.push(T(240,200,'glucose + oxygen \u2192 carbon dioxide + water + energy','#2E7D32',12,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Where does respiration occur?',p:'Aerobic respiration occurs in the <b>mitochondria</b> — small organelles found in almost all eukaryotic cells.<br><br>Cells that need lots of energy (muscle cells, liver cells) have more mitochondria than others.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
@@ -219,8 +225,8 @@ tryItMC(function(){var qs=[
 ];return rPick(qs);})
 ,draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(240,30,'Aerobic respiration summary','#2E7D32',12,'middle',true));
-o.push(R(30,55,420,60,'#e8f5e9','#2E7D32',2,4));o.push(T(240,85,'glucose + oxygen \u2192 CO\u2082 + H\u2082O + energy','#2E7D32',12,'middle',true));
-var rows=[['Location','Mitochondria'],['Requires','Oxygen (aerobic)'],['Products','CO\u2082 + H\u2082O'],['Energy yield','High (efficient)']];var cols=['#2E7D32','#1565C0','#C0272D','#C8922A'];
+o.push(R(30,55,420,60,'#e8f5e9','#2E7D32',2,4));o.push(T(240,85,'glucose + oxygen \u2192 carbon dioxide + water + energy','#2E7D32',11,'middle',true));
+var rows=[['Location','Mitochondria'],['Requires','Oxygen (aerobic)'],['Products','Carbon dioxide + water'],['Energy yield','High (efficient)']];var cols=['#2E7D32','#1565C0','#C0272D','#C8922A'];
 rows.forEach(function(r,i){o.push(R(30,130+i*38,420,30,cols[i]+'18',cols[i],1.5,3));o.push(T(130,150+i*38,r[0],cols[i],10,'start',false));o.push(T(320,150+i*38,r[1],'#555',9,'middle',false));});
 s.innerHTML=o.join('');}}
 ]},
@@ -230,7 +236,7 @@ draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(R(30,80,130,80,'#e8f5e9','#2E7D32',2,4));o.push(T(95,120,'Glucose','#2E7D32',11,'middle',true));
 o.push(arr(165,120,205,120,'#555',2));o.push(T(185,110,'no O\u2082','#C0272D',9,'middle',false));
 o.push(R(210,80,150,80,'#fde8e8','#C0272D',2,4));o.push(T(285,120,'Lactic acid','#C0272D',11,'middle',true));
-o.push(R(370,80,80,80,'#fff9c4','#C8922A',2,4));o.push(T(410,120,'Energy\n(less)','#C8922A',10,'middle',true));
+o.push(R(370,80,80,80,'#fff9c4','#C8922A',2,4));o.push(TM(410,115,'Energy\n(less)','#C8922A',10,'middle',true));
 o.push(T(240,250,'Less energy produced than aerobic','#555',10,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'Anaerobic in yeast (fermentation)',p:'Yeast (and other microorganisms) produce <b>ethanol</b> and carbon dioxide instead of lactic acid:<br><br><span class="fm">glucose \u2192 ethanol + carbon dioxide (+ energy)</span>This process is used in <b>brewing</b> (alcohol) and <b>baking</b> (CO\u2082 makes bread rise).',
@@ -280,20 +286,26 @@ o.push(arr(235,120,280,115,'#C0272D',1.5));o.push(T(290,110,'O\u2082 in','#2E7D3
 o.push(arr(280,140,235,145,'#1565C0',1.5));o.push(T(290,145,'CO\u2082 out','#C0272D',9,'start',true));
 o.push(T(240,270,'Thin walls + capillaries = fast gas exchange','#555',10,'middle',false));
 s.innerHTML=o.join('');}},
-{sl:'Breathing mechanism',p:'<b>Inhaling</b>: intercostal muscles and diaphragm contract \u2192 chest volume increases \u2192 air pressure decreases \u2192 air flows in.<br><br><b>Exhaling</b>: muscles relax \u2192 chest volume decreases \u2192 pressure increases \u2192 air flows out.',
+{sl:'Breathing mechanism',p:'There are two sets of <b>intercostal muscles</b> between the ribs: the <b>external</b> and the <b>internal</b> intercostals. They are <b>antagonistic</b> — when one set contracts, the other relaxes.<br><br><b>Inhaling</b>: external intercostal muscles <b>contract</b>, internal intercostals <b>relax</b> \u2192 ribs move up and out; diaphragm <b>contracts and flattens</b> \u2192 chest volume increases \u2192 pressure inside decreases \u2192 air flows in.<br><br><b>Exhaling</b>: external intercostal muscles <b>relax</b>, internal intercostals <b>contract</b> (most strongly when breathing out forcefully) \u2192 ribs move down and in; diaphragm <b>relaxes and domes upwards</b> \u2192 chest volume decreases \u2192 pressure increases \u2192 air flows out.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(120,22,'Inhale','#2E7D32',11,'middle',true));
 o.push(ellipse(120,150,70,85,'#e8f5e9','#2E7D32',2));
-o.push(L(60,230,180,230,'#555',2));o.push(arr(120,240,120,260,'#555',2));o.push(T(120,270,'diaphragm\nflattens','#555',8,'middle',false));
-o.push(arr(105,80,80,60,'#2E7D32',1.5));o.push(arr(135,80,160,60,'#2E7D32',1.5));o.push(T(120,50,'ribs up & out','#2E7D32',8,'middle',false));
+o.push(L(60,230,180,230,'#555',2));o.push(arr(120,236,120,252,'#555',2));o.push(TM(120,264,'diaphragm contracts\nand flattens','#555',8,'middle',false));
+o.push(arr(105,80,80,60,'#2E7D32',1.5));o.push(arr(135,80,160,60,'#2E7D32',1.5));o.push(T(120,74,'ribs up & out','#2E7D32',8,'middle',false));
+o.push(TM(120,36,'external intercostals contract,\ninternal relax','#2E7D32',8,'middle',false));
+o.push(arr(120,120,120,160,'#1565C0',1.5));o.push(T(120,175,'air in','#1565C0',9,'middle',true));
 o.push(T(360,22,'Exhale','#C0272D',11,'middle',true));
 o.push(ellipse(360,155,55,70,'#fde8e8','#C0272D',2));
-o.push(L(300,225,420,225,'#555',2));o.push(arr(360,210,360,230,'#555',1.5));
-o.push(arr(350,95,365,75,'#C0272D',1.5));o.push(arr(370,95,355,75,'#C0272D',1.5));o.push(T(360,65,'ribs down & in','#C0272D',8,'middle',false));
+o.push('<path d="M300,232 Q360,195 420,232" fill="none" stroke="#555" stroke-width="2"/>');o.push(arr(360,245,360,222,'#555',1.5));o.push(TM(360,264,'diaphragm relaxes\nand domes upwards','#555',8,'middle',false));
+o.push(arr(340,75,355,95,'#C0272D',1.5));o.push(arr(380,75,365,95,'#C0272D',1.5));o.push(T(360,65,'ribs down & in','#C0272D',8,'middle',false));
+o.push(TM(360,36,'external intercostals relax,\ninternal contract','#C0272D',8,'middle',false));
+o.push(arr(360,170,360,125,'#1565C0',1.5));o.push(T(360,185,'air out','#1565C0',9,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Try it',p:''+
 tryItMC(function(){var qs=[
 {question:'What feature of alveoli makes them good at gas exchange?',options:['Large surface area and thin walls','Thick walls to protect lungs','They contain blood cells','They produce mucus'],correct:0,working:'Alveoli are adapted for gas exchange by having a very <b>large surface area</b> (millions of tiny sacs) and <b>thin walls</b> (one cell thick) for a short diffusion distance. They are also surrounded by capillaries.'},
+{question:'Which muscles contract when you breathe in?',options:['External intercostal muscles and the diaphragm','Internal intercostal muscles only','Internal intercostal muscles and the diaphragm','No muscles \u2014 breathing in is passive'],correct:0,working:'When breathing in, the <b>external intercostal muscles contract</b> (the internal intercostals relax) to pull the ribs up and out, and the <b>diaphragm contracts and flattens</b>. The two sets of intercostal muscles are antagonistic.'},
+{question:'What do the internal intercostal muscles do when you breathe out forcefully?',options:['They contract, pulling the ribs down and in','They relax, letting the ribs rise','They contract, pulling the ribs up and out','They flatten the diaphragm'],correct:0,working:'During (forced) exhalation the <b>internal intercostal muscles contract</b> while the external intercostals relax, pulling the ribs <b>down and in</b>, reducing chest volume and pushing air out.'},
 {question:'What happens to the diaphragm during inhalation?',options:['It contracts and flattens','It relaxes and curves upward','It expands sideways','It stays still'],correct:0,working:'During inhalation, the diaphragm <b>contracts and flattens</b>, increasing the volume of the chest cavity. This decreases air pressure inside, so air flows in from outside.'},
 {question:'By which process does oxygen move from the alveoli into the blood?',options:['Diffusion','Active transport','Osmosis','Evaporation'],correct:0,working:'Oxygen moves from the alveoli (high O\u2082) into the blood in capillaries (low O\u2082) by <b>diffusion</b> — down the concentration gradient, from high to low concentration.'}
 ];return rPick(qs);})
@@ -313,23 +325,24 @@ o.push(arr(130,130,175,145,'#1565C0',2));o.push(T(120,123,'CO\u2082 in','#1565C0
 o.push(arr(100,170,155,170,'#1565C0',2));o.push(T(90,165,'H\u2082O in','#1565C0',9,'end',false));
 o.push(arr(310,120,355,100,'#2E7D32',2));o.push(T(365,95,'O\u2082 out','#2E7D32',9,'start',false));
 s.innerHTML=o.join('');}},
-{sl:'Factors affecting photosynthesis',p:'Rate of photosynthesis is affected by <b>limiting factors</b>:<br><br>\u2022 <b>Light intensity</b>: more light \u2192 faster photosynthesis (up to a limit)<br>\u2022 <b>CO\u2082 concentration</b>: more CO\u2082 \u2192 faster<br>\u2022 <b>Temperature</b>: warmer \u2192 faster (enzyme-controlled), but too hot damages enzymes',
+{sl:'Factors affecting photosynthesis',p:'Rate of photosynthesis is affected by <b>limiting factors</b>:<br><br>\u2022 <b>Light intensity</b>: more light \u2192 faster photosynthesis (up to a limit)<br>\u2022 <b>CO\u2082 concentration</b>: more CO\u2082 \u2192 faster<br>\u2022 <b>Temperature</b>: warmer \u2192 faster (the reactions are enzyme-controlled), but too hot <b>denatures</b> the enzymes, so the rate falls',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(arr(40,250,440,250,'#555',1.5));o.push(arr(40,250,40,20,'#555',1.5));
 o.push(T(240,275,'Light intensity','#555',11,'middle',false));o.push(T(18,135,'Rate of PS','#555',9,'middle',false));
 o.push('<path d="M40,240 C100,220 160,150 220,100 C260,70 300,55 380,50 C420,50 440,50 440,50" fill="none" stroke="#2E7D32" stroke-width="2.5"/>');
 o.push(T(360,45,'Limited by CO\u2082 or temp','#888',9,'start',false));
 s.innerHTML=o.join('');}},
-{sl:'Glucose uses',p:'The glucose produced by photosynthesis is used for:<br><br>\u2022 <b>Respiration</b> — to release energy<br>\u2022 <b>Growth</b> — converted to cellulose for cell walls<br>\u2022 <b>Storage</b> — converted to starch (insoluble) or sucrose<br>\u2022 <b>Protein synthesis</b> — combined with nitrogen (from soil)',
+{sl:'Glucose uses',p:'The glucose produced by photosynthesis is used for:<br><br>\u2022 <b>Respiration</b> — to release energy<br>\u2022 <b>Support and structure</b> — converted to <b>cellulose</b> to build strong cell walls<br>\u2022 <b>Storage</b> — converted to insoluble <b>starch</b> (and to fats/oils in seeds)<br>\u2022 <b>Transport</b> — converted to <b>sucrose</b> for translocation through the phloem to other parts of the plant<br>\u2022 <b>Protein synthesis</b> — combined with <b>nitrate</b> ions absorbed from the soil to make amino acids and proteins',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(circ(240,130,42,'#fff9c4','#C8922A',2));o.push(T(240,134,'Glucose','#C8922A',11,'middle',true));
-var uses=[['Respiration','#C0272D',0],['Cell wall\n(cellulose)','#2E7D32',72],['Storage\n(starch)','#C8922A',144],['Proteins','#6A1B9A',216],['Transport\n(sucrose)','#1565C0',288]];
-uses.forEach(function(u,i){var a=u[2]*Math.PI/180;var r=110;o.push(T(240+r*Math.cos(a),130+r*Math.sin(a),u[0],u[1],8,'middle',false));o.push(arr(240+50*Math.cos(a),130+50*Math.sin(a),240+90*Math.cos(a),130+90*Math.sin(a),u[1],1.5));});
+var uses=[['Respiration','#C0272D',0],['Cellulose\n(support/structure)','#2E7D32',72],['Storage\n(starch)','#C8922A',144],['Proteins\n(+ nitrate)','#6A1B9A',216],['Sucrose\n(translocation)','#1565C0',288]];
+uses.forEach(function(u,i){var a=u[2]*Math.PI/180;var r=112;o.push(TM(240+r*Math.cos(a),130+r*Math.sin(a),u[0],u[1],8,'middle',false));o.push(arr(240+50*Math.cos(a),130+50*Math.sin(a),240+90*Math.cos(a),130+90*Math.sin(a),u[1],1.5));});
 s.innerHTML=o.join('');}},
 {sl:'Try it',p:''+
 tryItMC(function(){var qs=[
 {question:'What are the raw materials (reactants) for photosynthesis?',options:['Carbon dioxide and water','Glucose and oxygen','Carbon dioxide and glucose','Oxygen and water'],correct:0,working:'Photosynthesis: <b>CO\u2082 + H\u2082O</b> \u2192 glucose + O\u2082. The raw materials are <b>carbon dioxide</b> (from air) and <b>water</b> (from soil through roots).'},
 {question:'In which organelle does photosynthesis take place?',options:['Chloroplast','Mitochondria','Nucleus','Vacuole'],correct:0,working:'Photosynthesis takes place in <b>chloroplasts</b> — organelles containing the green pigment chlorophyll, which absorbs light energy.'},
+{question:'In what form is glucose transported (translocated) around a plant in the phloem?',options:['Sucrose','Starch','Cellulose','Glucose'],correct:0,working:'Glucose is converted to <b>sucrose</b> for translocation in the phloem. Starch is the storage form and cellulose is used for cell walls.'},
 {question:'Which factor limits the rate of photosynthesis on a cold, dim day?',options:['Both light intensity and temperature','Only CO\u2082 concentration','Only water supply','None — photosynthesis stops'],correct:0,working:'On a cold, dim day, <b>both low light intensity and low temperature</b> act as limiting factors. Increasing either would increase the rate of photosynthesis.'}
 ];return rPick(qs);})
 ,draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
@@ -343,16 +356,35 @@ s.innerHTML=o.join('');}}
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push('<path d="M120,150 C100,120 110,80 140,80 C160,80 175,100 165,120 L165,180 C175,200 160,220 140,220 C110,220 100,180 120,150 Z" fill="#e8f5e9" stroke="#2E7D32" stroke-width="2"/>');
 o.push(T(140,155,'Enzyme','#2E7D32',10,'middle',true));
-o.push(R(148,95,20,40,'#fff9c4','#C8922A',1.5,2));o.push(T(158,118,'Active\nsite','#C8922A',7,'middle',false));
+o.push(R(148,95,20,40,'#fff9c4','#C8922A',1.5,2));o.push(TM(158,112,'Active\nsite','#C8922A',7,'middle',false));
 o.push(R(200,85,50,50,'#fde8e8','#C0272D',1.5,3));o.push(T(225,115,'Substrate','#C0272D',8,'middle',false));
 o.push(arr(255,110,175,108,'#555',1.5));o.push(T(275,100,'fits active site','#555',8,'start',false));
 s.innerHTML=o.join('');}},
-{sl:'Temperature and pH effects',p:'Enzymes work best at their <b>optimum temperature and pH</b>.<br><br>\u2022 Too hot: enzyme <b>denatures</b> (active site changes shape permanently)<br>\u2022 Wrong pH: enzyme activity decreases<br><br>Human digestive enzymes work best at body temperature (~37\u00b0C).',
+{sl:'Two models of enzyme action',p:'<b>Lock and key model</b>: the active site is a rigid shape that is exactly <b>complementary</b> to the substrate, like a key fitting a lock.<br><br><b>Induced fit model</b> (the more modern model): the active site is flexible. As the substrate binds, the active site <b>changes shape slightly</b> to mould tightly around it, putting strain on the substrate\u2019s bonds and helping the reaction happen.<br><br><b>Characteristics of enzymes</b>:<br>\u2022 They are proteins<br>\u2022 They are <b>specific</b> — each catalyses one reaction<br>\u2022 They are <b>not used up</b> and can be reused many times<br>\u2022 They work fast, and are needed only in small amounts<br>\u2022 They are affected by temperature and pH (denatured by heat and extreme pH)<br>\u2022 Many reactions they catalyse are reversible',
+draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
+o.push(T(120,25,'Lock and key','#2E7D32',12,'middle',true));o.push(T(360,25,'Induced fit','#1565C0',12,'middle',true));
+o.push(L(240,15,240,285,'#ccc',1,'4,3'));
+// lock and key: rigid rectangular notch, substrate same shape
+o.push('<path d="M40,150 L40,230 L200,230 L200,150 L145,150 L145,180 L95,180 L95,150 Z" fill="#e8f5e9" stroke="#2E7D32" stroke-width="2"/>');
+o.push(R(95,60,50,30,'#fde8e8','#C0272D',1.5,0));o.push(T(120,79,'substrate','#C0272D',8,'middle',false));
+o.push(arr(120,95,120,145,'#555',1.5));o.push(T(120,248,'active site already the exact shape','#2E7D32',8,'middle',false));
+o.push(T(120,215,'enzyme','#2E7D32',9,'middle',true));
+// induced fit: before (rounded site) and after (moulded)
+o.push('<path d="M275,125 L298,125 L305,142 L315,142 L322,125 L345,125 L345,175 L275,175 Z" fill="#e3f2fd" stroke="#1565C0" stroke-width="2"/>');
+o.push(circ(310,80,14,'#fde8e8','#C0272D',1.5));o.push(arr(310,96,310,120,'#555',1.5));
+o.push(T(310,165,'enzyme','#1565C0',8,'middle',false));
+o.push(arr(355,135,385,135,'#555',1.5));
+o.push('<path d="M390,125 L409,125 A16,16 0 0 0 441,125 L460,125 L460,175 L390,175 Z" fill="#e3f2fd" stroke="#1565C0" stroke-width="2"/>');
+o.push(circ(425,125,14,'#fde8e8','#C0272D',1.5));
+o.push(TM(425,190,'enzyme\u2013substrate\ncomplex','#1565C0',8,'middle',false));
+o.push(T(360,235,'active site changes shape to','#1565C0',8,'middle',false));o.push(T(360,247,'fit tightly around the substrate','#1565C0',8,'middle',false));
+s.innerHTML=o.join('');}},
+{sl:'Factors affecting enzyme action',p:'Enzymes work best at their <b>optimum temperature and pH</b>.<br><br>\u2022 <b>Temperature</b>: rate rises as temperature increases up to the optimum (~37\u00b0C for human enzymes). Too hot: the enzyme <b>denatures</b> (active site changes shape permanently). Too cold: enzymes are inactive, not destroyed.<br>\u2022 <b>pH</b>: each enzyme has an optimum pH (pepsin in the stomach ~pH 2; amylase ~pH 7). Extreme pH denatures the enzyme.<br>\u2022 <b>Substrate concentration</b>: more substrate \u2192 faster, until all active sites are busy.<br>\u2022 <b>Enzyme concentration</b>: more enzyme \u2192 faster (if substrate is plentiful).<br>\u2022 <b>Inhibitors</b>: some substances (e.g. heavy metals like lead, some poisons) block or change the active site.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(arr(40,240,440,240,'#555',1.5));o.push(arr(40,240,40,20,'#555',1.5));
 o.push(T(240,265,'Temperature (\u00b0C)','#555',11,'middle',false));o.push(T(20,130,'Activity','#555',9,'middle',false));
 o.push('<path d="M60,230 C100,220 140,160 180,100 C200,80 215,70 240,70 C260,70 275,80 295,100 C330,160 370,230 440,240" fill="none" stroke="#2E7D32" stroke-width="2.5"/>');
-o.push(L(240,70,240,240,'#C8922A',1,'4,3'));o.push(T(250,60,'Optimum\n~37\u00b0C','#C8922A',9,'start',false));
+o.push(L(240,70,240,240,'#C8922A',1,'4,3'));o.push(TM(250,55,'Optimum\n~37\u00b0C','#C8922A',9,'start',false));
 o.push(T(380,200,'Denatured','#C0272D',9,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'Digestion',p:'Digestion breaks down large food molecules into small, soluble ones that can be absorbed.<br><br>\u2022 <b>Amylase</b>: starch \u2192 sugars (in mouth, small intestine)<br>\u2022 <b>Protease</b>: protein \u2192 amino acids (in stomach, small intestine)<br>\u2022 <b>Lipase</b>: fats \u2192 fatty acids + glycerol (in small intestine)',
@@ -363,12 +395,14 @@ s.innerHTML=o.join('');}},
 {sl:'Try it',p:''+
 tryItMC(function(){var qs=[
 {question:'What happens to an enzyme at very high temperatures?',options:['It denatures — active site changes shape permanently','It works faster','It becomes more specific','It dissolves'],correct:0,working:'At high temperatures, the enzyme <b>denatures</b> — the heat disrupts the bonds holding the protein in shape, permanently changing the active site so the substrate can no longer fit.'},
+{question:'In the induced fit model, what happens when the substrate binds?',options:['The active site changes shape slightly to fit tightly around the substrate','The enzyme is used up','The substrate changes into an enzyme','The active site is rigid and does not change'],correct:0,working:'In the <b>induced fit</b> model the active site is flexible: it <b>moulds around the substrate</b> as it binds. (The rigid active site describes the older lock and key model.)'},
+{question:'Which of these does NOT change the rate of an enzyme-controlled reaction?',options:['The colour of the container','pH','Temperature','Substrate concentration'],correct:0,working:'<b>Temperature, pH, substrate concentration, enzyme concentration and inhibitors</b> all affect enzyme activity. The colour of the container does not.'},
 {question:'Which enzyme breaks down starch?',options:['Amylase','Protease','Lipase','Catalase'],correct:0,working:'<b>Amylase</b> is the enzyme that breaks down starch into simpler sugars (maltose). It is produced in the salivary glands (mouth) and pancreas.'},
 {question:'Why do enzymes only work on specific substrates?',options:['The active site has a complementary shape to only one substrate','They are made of the same material','They have the same temperature','They work in the same organ'],correct:0,working:'Each enzyme has an <b>active site</b> with a specific shape that is <b>complementary</b> to only one substrate — the lock and key model. Only the correct substrate can bind and react.'}
 ];return rPick(qs);})
 ,draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(240,30,'Enzyme summary','#2E7D32',12,'middle',true));
-var rows=[['Enzyme','Biological catalyst (protein)'],['Active site','Specific shape fits one substrate'],['Optimum temp','~37\u00b0C for human enzymes'],['Denaturation','Irreversible at high temp or wrong pH'],['Lock & key','Substrate fits enzyme like key in lock']];var cols=['#2E7D32','#1565C0','#C8922A','#C0272D','#6A1B9A'];
+var rows=[['Enzyme','Biological catalyst (protein), not used up'],['Active site','Specific shape fits one substrate'],['Factors','Temp, pH, substrate & enzyme conc., inhibitors'],['Denaturation','Irreversible at high temp or extreme pH'],['Models','Lock & key; induced fit (site moulds to substrate)']];var cols=['#2E7D32','#1565C0','#C8922A','#C0272D','#6A1B9A'];
 rows.forEach(function(r,i){o.push(R(20,58+i*44,440,32,cols[i]+'18',cols[i],1.5,3));o.push(T(130,79+i*44,r[0],cols[i],9,'start',true));o.push(T(320,79+i*44,r[1],'#555',8,'middle',false));});
 s.innerHTML=o.join('');}}
 ]}

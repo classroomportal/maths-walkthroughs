@@ -107,20 +107,22 @@ function tryIt(fn){
   var id='t'+Math.random().toString(36).slice(2);
   ST[id]=fn;return genTry(id,fn());
 }
+var CUR={},SEQ=0;
 function genTry(id,o){
   var h=(o.hints||[]).map(function(x){return '<li>'+x+'</li>';}).join('');
+  var iid=id+'_'+(++SEQ);CUR[iid]=o;
   return '<div class="try" data-tryid="'+id+'">'+
     '<div class="try-t">&#10004; Your Turn</div><p>'+o.question+'</p>'+
-    '<div class="ar"><input type="number" step="any" placeholder="Your answer" id="'+id+'_i"/>'+
-    '<button class="ck" onclick="ck(\''+id+'\')">&#10003; Check</button></div>'+
-    '<div class="fb" id="'+id+'_f"></div>'+
+    '<div class="ar"><input type="number" step="any" placeholder="Your answer" id="'+iid+'_i"/>'+
+    '<button class="ck" onclick="ck(\''+iid+'\')">&#10003; Check</button></div>'+
+    '<div class="fb" id="'+iid+'_f"></div>'+
     '<details class="wk"><summary>Show working</summary><div class="wk-b">'+
     (h?'<ul class="hl">'+h+'</ul>':'')+
     '<div class="wk-ans">'+o.working+'</div></div></details>'+
     '<button class="nq" data-tryid="'+id+'">New question</button></div>';
 }
 function ck(id){
-  var fn=ST[id];var o=typeof fn==='function'?fn():fn;
+  var o=CUR[id];if(!o)return;
   var v=parseFloat(document.getElementById(id+'_i').value);
   var f=document.getElementById(id+'_f');
   if(isNaN(v)){f.className='fb er';f.textContent='Please enter a number.';return;}
@@ -276,8 +278,8 @@ s.innerHTML=o.join('');}},
 {sl:'Energy and waves recap',p:'Energy cannot be created or destroyed — only transferred.<br><br>Sound: <b>longitudinal</b> wave, needs medium, travels fastest in solids.<br>Light: <b>transverse</b> wave, can travel in vacuum at 3\u00d710\u2078 m/s.<br><br>Reflection: angle i = angle r. Refraction: bends toward normal entering denser medium.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(120,25,'Sound (longitudinal)','#1565C0',10,'middle',true));
-var lx2='';for(var i=0;i<=200;i++){lx2+=(20+i)+','+(120+30*Math.sin(i*Math.PI/20))+' ';}
-o.push('<polyline points="'+lx2+'" fill="none" stroke="#1565C0" stroke-width="2"/>');
+var xs=20;while(xs<=220){o.push(L(xs,85,xs,155,'#1565C0',1.5));xs+=4+3*(1-Math.cos((xs-20)*Math.PI/20));}
+o.push(T(63,172,'C','#1565C0',9,'middle',true));o.push(T(86,172,'R','#1565C0',9,'middle',true));o.push(T(120,190,'C = compression, R = rarefaction','#888',8,'middle',false));
 o.push(T(360,25,'Light (transverse)','#2E7D32',10,'middle',true));
 var tx2='';for(var j=0;j<=200;j++){tx2+=(260+j)+','+(120-25*Math.sin(j*Math.PI/25))+' ';}
 o.push('<polyline points="'+tx2+'" fill="none" stroke="#2E7D32" stroke-width="2"/>');
@@ -333,18 +335,24 @@ draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 var pts=['State main idea clearly','Explain the mechanism','Give a specific example','Link back to the question'];
 pts.forEach(function(p,i){o.push(R(60,55+i*52,360,38,['#E65100','#C8922A','#2E7D32','#1565C0'][i]+'22',['#E65100','#C8922A','#2E7D32','#1565C0'][i],1.5,4));o.push(T(240,79+i*52,p,['#E65100','#C8922A','#2E7D32','#1565C0'][i],10,'middle',true));});
 s.innerHTML=o.join('');}},
-{sl:'Final calculation practice',p:'Practice with all three key formulae:<br><br>\u2022 W = m \u00d7 g<br>\u2022 Speed = Distance \u00f7 Time<br>\u2022 V = I \u00d7 R<br><br>Remember to always include <b>units</b> in your answer.',
+{sl:'Final calculation practice',p:'Practise with all three key formulae. Cover the quantity you want in the formula triangle to see how to rearrange:<br><br>\u2022 <b>W = m \u00d7 g</b> &nbsp;(so m = W \u00f7 g)<br>Example: m = 6 kg, g = 10 N/kg \u2192 W = 6 \u00d7 10 = <b>60 N</b><br>\u2022 <b>Speed = Distance \u00f7 Time</b> &nbsp;(so Distance = Speed \u00d7 Time)<br>Example: 5 m/s for 20 s \u2192 Distance = 5 \u00d7 20 = <b>100 m</b><br>\u2022 <b>V = I \u00d7 R</b> &nbsp;(so I = V \u00f7 R)<br>Example: 12 V across 4 \u03a9 \u2192 I = 12 \u00f7 4 = <b>3 A</b><br><br>Always write the formula, substitute, then give the answer with its <b>unit</b>.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(240,40,'Formula triangles','#E65100',12,'middle',true));
-var triangles=[{f:'W',a:'m',b:'g',x:100,c:'#1565C0'},{f:'D',a:'S','b':'T',x:240,c:'#C0272D'},{f:'V',a:'I',b:'R',x:380,c:'#6A1B9A'}];
-triangles.forEach(function(t){o.push('<polygon points="'+t.x+',70 '+(t.x-50)+',170 '+(t.x+50)+',170" fill="'+t.c+'22" stroke="'+t.c+'" stroke-width="2"/>');o.push(T(t.x,115,t.f,t.c,20,'middle',true));o.push(T(t.x-28,160,t.a,t.c,16,'middle',true));o.push(T(t.x+28,160,t.b,t.c,16,'middle',true));});
+var triangles=[{f:'W',a:'m',b:'g',x:100,c:'#1565C0',u:'N = kg \u00d7 N/kg'},{f:'D',a:'S',b:'T',x:240,c:'#C0272D',u:'m = m/s \u00d7 s'},{f:'V',a:'I',b:'R',x:380,c:'#6A1B9A',u:'V = A \u00d7 \u03a9'}];
+triangles.forEach(function(t){o.push('<polygon points="'+t.x+',70 '+(t.x-50)+',170 '+(t.x+50)+',170" fill="'+t.c+'22" stroke="'+t.c+'" stroke-width="2"/>');o.push(L(t.x-33,135,t.x+33,135,t.c,1.5));o.push(L(t.x,135,t.x,170,t.c,1.5));o.push(T(t.x,125,t.f,t.c,20,'middle',true));o.push(T(t.x-22,160,t.a,t.c,16,'middle',true));o.push(T(t.x+22,160,t.b,t.c,16,'middle',true));o.push(T(t.x,195,t.u,'#555',9,'middle',false));});
+o.push(T(240,240,'Top = bottom-left \u00d7 bottom-right;  bottom = top \u00f7 other bottom','#555',9,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'Try it',p:''+
-tryIt(function(){var v=rInt(3,12);var r=rPick([2,3,4,5,6]);return{question:'A resistor has voltage '+v+' V and resistance '+r+' \u03a9. Calculate the current flowing through it.',ans:Math.round(v/r*100)/100,tol:0.05,unit:'A',hints:['I = V \u00f7 R','I = '+v+' \u00f7 '+r],working:'I = V \u00f7 R = '+v+' \u00f7 '+r+' = <b>'+(Math.round(v/r*100)/100)+'</b> A'};})
+tryIt(function(){var k=rInt(0,4),a,b,ans;
+if(k===0){b=rPick([2,3,4,5,6]);ans=rInt(1,6);a=ans*b;return{question:'A '+b+' \u03a9 resistor has a voltage of '+a+' V across it. Calculate the current flowing through it.',ans:ans,tol:0.01,unit:'A',hints:['V = I \u00d7 R, so I = V \u00f7 R','I = '+a+' \u00f7 '+b],working:'I = V \u00f7 R = '+a+' \u00f7 '+b+' = <b>'+ans+'</b> A'};}
+if(k===1){a=rPick([0.5,1.5,2,3]);b=rPick([4,6,8,10,12]);ans=Math.round(a*b*100)/100;return{question:'A current of '+a+' A flows through a '+b+' \u03a9 resistor. Calculate the voltage across it.',ans:ans,tol:0.01,unit:'V',hints:['V = I \u00d7 R','V = '+a+' \u00d7 '+b],working:'V = I \u00d7 R = '+a+' \u00d7 '+b+' = <b>'+ans+'</b> V'};}
+if(k===2){a=rInt(4,25)*2;ans=Math.round(a*1.6*100)/100;return{question:'An astronaut has a mass of '+a+' kg. What is her weight on the Moon, where g = 1.6 N/kg?',ans:ans,tol:0.05,unit:'N',hints:['W = m \u00d7 g','Mass stays the same on the Moon; only g changes','W = '+a+' \u00d7 1.6'],working:'W = m \u00d7 g = '+a+' \u00d7 1.6 = <b>'+ans+'</b> N'};}
+if(k===3){ans=rInt(2,40);a=ans*10;return{question:'A box weighs '+a+' N on Earth (g = 10 N/kg). What is its mass?',ans:ans,tol:0.01,unit:'kg',hints:['W = m \u00d7 g, so m = W \u00f7 g','m = '+a+' \u00f7 10'],working:'m = W \u00f7 g = '+a+' \u00f7 10 = <b>'+ans+'</b> kg'};}
+a=rInt(2,12);b=rInt(2,12)*5;ans=a*b;return{question:'A cyclist rides at a steady '+a+' m/s for '+b+' s. How far does she travel?',ans:ans,tol:0.01,unit:'m',hints:['Speed = Distance \u00f7 Time, so Distance = Speed \u00d7 Time','d = '+a+' \u00d7 '+b],working:'Distance = Speed \u00d7 Time = '+a+' \u00d7 '+b+' = <b>'+ans+'</b> m'};})
 ,draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(240,30,'Well done \u2014 Year 7 Science complete!','#E65100',12,'middle',true));
 var badges=[['Biology','Cells, classification,\nunicellular organisms','#2E7D32'],['Chemistry','Matter, reactions,\nperiodic table','#6A1B9A'],['Physics','Forces, energy,\nelectricity, waves','#1565C0']];
-badges.forEach(function(b,i){o.push(R(20+i*150,70,135,160,b[2]+'22',b[2],2,8));o.push(T(88+i*150,110,'\u2605',b[2],28,'middle',false));o.push(T(88+i*150,140,b[0],b[2],11,'middle',true));o.push(T(88+i*150,155,b[1],'#555',8,'middle',false));});
+badges.forEach(function(b,i){o.push(R(20+i*150,70,135,160,b[2]+'22',b[2],2,8));o.push(T(88+i*150,110,'\u2605',b[2],28,'middle',false));o.push(T(88+i*150,140,b[0],b[2],11,'middle',true));b[1].split('\n').forEach(function(ln,j){o.push(T(88+i*150,158+j*13,ln,'#555',8,'middle',false));});});
 s.innerHTML=o.join('');}}
 ]}
 ];
