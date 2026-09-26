@@ -469,13 +469,13 @@ function dQ8(p){
   o.push('<ellipse cx="'+cx+'" cy="'+cy+'" rx="'+r+'" ry="18" fill="none" stroke="#bbb" stroke-width="1" stroke-dasharray="5,4"/>');
   if(p>=1){o.push(L(cx,cy,cx+r,cy,'#C0272D',2));o.push(T(cx+r/2,cy-10,'r \u2248 8.38 cm','#C0272D',12,'middle',true));}
   o.push(T(cx,cy+r+18,'V = 2463 cm\u00b3','#6b5750',12,'middle',false));
-  if(p>=2){o.push(T(cx,cy+r+36,'SA \u2248 881.8 cm\u00b2','#C0272D',13,'middle',true));}
+  if(p>=2){o.push(T(cx,cy+r+36,'SA \u2248 882.0 cm\u00b2','#C0272D',13,'middle',true));}
   if(p>=1){
     o.push(T(330,100,'r\u00b3 = 3V \u00f7 (4\u03c0)','#241A17',13,'start',true));
-    o.push(T(330,122,'   \u2248 588.1','#241A17',13,'start',false));
-    o.push(T(330,144,'r \u2248 8.376 cm','#241A17',13,'start',false));
+    o.push(T(330,122,'   \u2248 588.0','#241A17',13,'start',false));
+    o.push(T(330,144,'r \u2248 8.378 cm','#241A17',13,'start',false));
   }
-  if(p>=2){o.push(T(330,178,'SA = 4\u03c0r\u00b2','#241A17',13,'start',true));o.push(T(330,200,'   = 4\u03c0 \u00d7 70.16','#241A17',13,'start',false));o.push(T(330,222,'   \u2248 881.8 cm\u00b2','#C0272D',14,'start',true));}
+  if(p>=2){o.push(T(330,178,'SA = 4\u03c0r\u00b2','#241A17',13,'start',true));o.push(T(330,200,'   = 4\u03c0 \u00d7 70.19','#241A17',13,'start',false));o.push(T(330,222,'   \u2248 882.0 cm\u00b2','#C0272D',14,'start',true));}
   o.push(T(200,16,'Surface Area of Sphere from Volume','#C0272D',12,'middle',true));
   s.innerHTML=o.join('');
 }
@@ -526,26 +526,26 @@ var QS=[
     {lb:'The prism',dr:dQ5,ht:'<p>A <b>triangular prism</b> has a triangular cross-section. Volume = area of cross-section \u00d7 length.</p>'},
     {lb:'Cross-sectional area',dr:dQ5,ht:'<div class="fm">A = \u00bd \u00d7 base \u00d7 height = \u00bd \u00d7 10 \u00d7 6 = 30 cm\u00b2</div>'},
     {lb:'Volume',dr:dQ5,ht:'<div class="fm">V = A \u00d7 l = 30 \u00d7 15 = 450 cm\u00b3</div>'},
-    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var l=rnd(6,12),w=rnd(4,8),h=rnd(2,5);var sa=2*(l*h+w*h)+l*w;return{question:'Open box (no lid): base '+l+'×'+w+' cm, height '+h+' cm. Surface area?',hints:['Base + 2 long sides + 2 short sides'],ans:sa,tol:0,unit:'cm²',working:l*w+'+'+2*l*h+'+'+2*w*h+' = '+sa+' cm²'};})}
+    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var b=rnd(4,12),h=rnd(3,9),l=rnd(5,15);var A=0.5*b*h,vol=A*l;return{question:'A triangular prism has a triangular cross-section with base <b>'+b+' cm</b> and height <b>'+h+' cm</b>. The prism is <b>'+l+' cm</b> long. Find its volume.',hints:['Cross-section area = ½ × base × height = ½ × '+b+' × '+h,'Volume = cross-section area × length'],ans:vol,tol:0,unit:'cm³',working:'A = ½ × '+b+' × '+h+' = '+A+' cm², V = '+A+' × '+l+' = '+vol+' cm³'};})}
   ]},
   {ey:'Q6 \u2022 Year 10 \u2022 Foundation',ti:'Circumference and Area of a Circle',su:'Circle with radius 9 cm. Find circumference and area (to 1 d.p.).',steps:[
     {lb:'The formulae',dr:dQ6,ht:'<p>Two key formulae for a circle with radius r:</p><div class="fm">Circumference C = 2\u03c0r</div><div class="fm">Area A = \u03c0r\u00b2</div>'},
     {lb:'Label the radius',dr:dQ6,ht:'<div class="fm">r = 9 cm</div>'},
     {lb:'Circumference',dr:dQ6,ht:'<div class="fm">C = 2\u03c0 \u00d7 9 = 18\u03c0 \u2248 56.5 cm</div>'},
     {lb:'Area',dr:dQ6,ht:'<div class="fm">A = \u03c0 \u00d7 9\u00b2 = 81\u03c0 \u2248 254.5 cm\u00b2</div>'},
-    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var b=rnd(6,12),h=rnd(4,8),l=rnd(5,12);var vol=0.5*b*h*l;return{question:'Triangular prism: triangle base '+b+' cm, height '+h+' cm, length '+l+' cm. Volume?',hints:['V = ½×base×height×length'],ans:vol,tol:0,unit:'cm³',working:'½×'+b+'×'+h+'×'+l+' = '+vol+' cm³'};})}
+    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var r=rnd(3,15);if(Math.random()<0.5){var c=round1(2*Math.PI*r);return{question:'A circle has radius <b>'+r+' cm</b>. Find its <b>circumference</b>, correct to 1 decimal place.',hints:['C = 2πr','C = 2 × π × '+r+' = '+(2*r)+'π'],ans:c,tol:0.1,unit:'cm',working:'C = 2π × '+r+' = '+(2*r)+'π ≈ '+c.toFixed(1)+' cm'};}var a=round1(Math.PI*r*r);return{question:'A circle has radius <b>'+r+' cm</b>. Find its <b>area</b>, correct to 1 decimal place.',hints:['A = πr²','A = π × '+r+'² = '+(r*r)+'π'],ans:a,tol:0.1,unit:'cm²',working:'A = π × '+r+'² = '+(r*r)+'π ≈ '+a.toFixed(1)+' cm²'};})}
   ]},
   {ey:'Q7 \u2022 Year 10 \u2022 Extended',ti:'Volume of a Trapezoidal Prism',su:'Parallel sides a = 10 cm, b = 21 cm, perpendicular height 8 cm, length 20 cm.',steps:[
     {lb:'The solid',dr:dQ7,ht:'<p>A prism has a <b>trapezoidal cross-section</b>. Volume = cross-sectional area \u00d7 length.</p>'},
     {lb:'Area of the trapezium',dr:dQ7,ht:'<div class="fm">A = \u00bd \u00d7 (a + b) \u00d7 h = \u00bd \u00d7 (10 + 21) \u00d7 8 = 124 cm\u00b2</div>'},
     {lb:'Volume',dr:dQ7,ht:'<div class="fm">V = A \u00d7 l = 124 \u00d7 20 = 2480 cm\u00b3</div>'},
-    {lb:'Your turn',dr:dQ7,ht:tryIt(function(){var r=rnd(3,12);var c=round1(2*Math.PI*r);return{question:'Circumference of circle, radius <b>'+r+' cm</b> (1 d.p.).',hints:['C = 2πr'],ans:c,tol:0.2,unit:'cm',working:'2π×'+r+' = '+c+' cm'};})}
+    {lb:'Your turn',dr:dQ7,ht:tryIt(function(){var a=rnd(4,12),b=a+rnd(2,10),h=rnd(3,9),l=rnd(5,20);var A=0.5*(a+b)*h,vol=A*l;return{question:'A prism has a trapezium cross-section with parallel sides <b>'+a+' cm</b> and <b>'+b+' cm</b> and perpendicular height <b>'+h+' cm</b>. The prism is <b>'+l+' cm</b> long. Find its volume.',hints:['Trapezium area = ½ × (a + b) × h = ½ × ('+a+' + '+b+') × '+h,'Volume = cross-section area × length'],ans:vol,tol:0,unit:'cm³',working:'A = ½ × ('+a+' + '+b+') × '+h+' = '+A+' cm², V = '+A+' × '+l+' = '+vol+' cm³'};})}
   ]},
   {ey:'Q8 \u2022 Year 10 \u2022 Extended',ti:'Surface Area of a Sphere from its Volume',su:'A sphere has volume 2463 cm\u00b3. Find its surface area.',steps:[
     {lb:'The problem',dr:dQ8,ht:'<p>We are not given the radius directly. First use <b>V = \u2154\u03c0r\u00b3</b> to find r, then apply <b>SA = 4\u03c0r\u00b2</b>.</p>'},
-    {lb:'Find the radius',dr:dQ8,ht:'<div class="fm">r\u00b3 = 3V \u00f7 (4\u03c0) = 3 \u00d7 2463 \u00f7 (4\u03c0) \u2248 588.1</div><div class="fm">r = \u00b3\u221a588.1 \u2248 8.376 cm</div>'},
-    {lb:'Surface area',dr:dQ8,ht:'<div class="fm">SA = 4\u03c0r\u00b2 = 4\u03c0 \u00d7 70.16 \u2248 881.8 cm\u00b2</div>'},
-    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var a=rnd(6,12),b=rnd(8,16),h=rnd(4,8),l=rnd(5,12);var vol=0.5*(a+b)*h*l;return{question:'Trapezoidal prism: parallel sides '+a+' and '+b+' cm, height '+h+' cm, length '+l+' cm. Volume?',hints:['½(a+b)×h×l'],ans:vol,tol:0,unit:'cm³',working:'½('+a+'+'+b+')×'+h+'×'+l+' = '+vol+' cm³'};})}
+    {lb:'Find the radius',dr:dQ8,ht:'<div class="fm">r\u00b3 = 3V \u00f7 (4\u03c0) = 3 \u00d7 2463 \u00f7 (4\u03c0) \u2248 588.0</div><div class="fm">r = \u00b3\u221a588.0 \u2248 8.378 cm</div>'},
+    {lb:'Surface area',dr:dQ8,ht:'<div class="fm">SA = 4\u03c0r\u00b2 = 4\u03c0 \u00d7 70.19 \u2248 882.0 cm\u00b2</div>'},
+    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var r0=rnd(3,10);var V=Math.round(4/3*Math.PI*Math.pow(r0,3));var r3=3*V/(4*Math.PI),r=Math.cbrt(r3),sa=round1(4*Math.PI*r*r);return{question:'A sphere has volume <b>'+V+' cm³</b>. Find its surface area, correct to 1 decimal place.',hints:['Use V = ⁴⁄₃πr³ to find r: r³ = 3V ÷ (4π)','Then SA = 4πr²'],ans:sa,tol:0.5,unit:'cm²',working:'r³ = 3 × '+V+' ÷ (4π) ≈ '+r3.toFixed(1)+', so r ≈ '+r.toFixed(3)+' cm. SA = 4π × '+r.toFixed(3)+'² ≈ '+sa.toFixed(1)+' cm²'};})}
   ]}
 ];
 

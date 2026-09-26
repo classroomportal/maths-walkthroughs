@@ -137,7 +137,7 @@ function R(x,y,w,h,fill,stroke,sw){return '<rect x="'+x+'" y="'+y+'" width="'+w+
 // Q1 Place value table
 function dQ1(p){var s=g();s.setAttribute('viewBox','0 0 480 260');var o=[];
   var cols=['Millions','Hund. Th.','Ten Th.','Thousands','Hundreds','Tens','Units'];
-  var vals=[0,0,3,4,7,2,6]; // 347,276 displayed partially
+  var vals=[0,3,4,7,2,7,6]; // 347,276
   var cw=66;
   cols.forEach(function(c,i){
     o.push(R(14+i*cw,20,cw,36,'#C0272D','#C0272D',1));
@@ -149,8 +149,8 @@ function dQ1(p){var s=g();s.setAttribute('viewBox','0 0 480 260');var o=[];
       o.push(T(14+i*cw+cw/2,87,v>0?v:'—','#241A17',22,'middle',true));
     }
   });
-  if(p>=2){o.push(T(240,130,'3 in Ten Thousands place = 30,000','#C0272D',13,'middle',true));
-    o.push(T(240,150,'7 in Hundreds place = 700','#1a5a8a',13,'middle',true));}
+  if(p>=2){o.push(T(240,130,'3 in Hundred Thousands place = 300,000','#C0272D',13,'middle',true));
+    o.push(T(240,150,'7 in Thousands place = 7,000   but   7 in Tens place = 70','#1a5a8a',13,'middle',true));}
   if(p>=3){o.push(R(40,168,400,36,'#e8f8ee','#1a7a3a',1.5));
     o.push(T(240,191,'Number = 347,276','#1a7a3a',17,'middle',true));}
   s.innerHTML=o.join('');}
@@ -288,10 +288,12 @@ function dQ10(p){var s=g();s.setAttribute('viewBox','0 0 480 260');var o=[];
   if(p>=4){o.push(T(240,220,'Rounded: 3.88  Truncated: 3.87','#241A17',14,'middle',true));}
   s.innerHTML=o.join('');}
 
-function yt1(){var d=rnd(10000,999999);
-  var digits=String(d).split('');
+function yt1(){var d,digits,pidx,ok=[];
+  // Pick a non-zero digit that appears only once, so the question has one clear answer
+  while(!ok.length){d=rnd(10000,999999);digits=String(d).split('');
+    ok=[];digits.forEach(function(x,i){if(x!=='0'&&digits.indexOf(x)===digits.lastIndexOf(x))ok.push(i);});}
   var places=['millions','hundred thousands','ten thousands','thousands','hundreds','tens','units'];
-  var pidx=rnd(0,digits.length-1);
+  pidx=pick(ok);
   var pval=parseInt(digits[pidx])*Math.pow(10,digits.length-1-pidx);
   return tryIt({question:'What is the value of the digit <b>'+digits[pidx]+'</b> in the number <b>'+d.toLocaleString()+'</b>?',
     hints:['Count place from right','Position: '+(places[7-digits.length+pidx])],
@@ -354,7 +356,7 @@ function yt10(){var n=(rnd(100,999)/100);
 var QS=[
   {ey:'Q1 · Year 8 · Place Value',ti:'Place Value <span class="badge f">F</span>',su:'Identify the value of each digit in 347,276.',steps:[
     {lb:'The place value table',dr:dQ1,ht:'<p>Each position in a number has a value. Moving left, each place is ×10 the one before.</p>'},
-    {lb:'Read each digit',dr:dQ1,ht:'<p>The 3 is in the Ten Thousands column → value = 30,000.<br>The 7 is in the Hundreds column → value = 700.</p>'},
+    {lb:'Read each digit',dr:dQ1,ht:'<p>The 3 is in the Hundred Thousands column → value = 300,000.<br>The 4 is in the Ten Thousands column → value = 40,000.<br>The first 7 is in the Thousands column → value = 7,000, but the second 7 is in the Tens column → value = 70. The same digit has a different value in a different place.</p>'},
     {lb:'Full number',dr:dQ1,ht:'<div class="fm">300,000 + 40,000 + 7,000 + 200 + 70 + 6 = 347,276</div>'},
     {lb:'Your turn',dr:dQ1,ht:yt1}
   ]},

@@ -403,15 +403,19 @@ var QS=[
     })}
   ]},
 
-  {ey:'Q6 \u00b7 Sets \u00b7 Further Maths',ti:'Set Laws — Commutative, Associative, Distributive',su:'Verify the laws of sets using examples and Venn diagrams.',lv:'F',steps:[
+  {ey:'Q6 \u00b7 Sets \u00b7 Further Maths',ti:'Set Laws — Commutative, Associative, Distributive',su:'U = {1, 2, \u2026, 10}, A = {1, 2, 3, 4, 5}, B = {4, 5, 6, 7}, C = {5, 7, 9}. Verify that A \u222a (B \u2229 C) = (A \u222a B) \u2229 (A \u222a C) and that (A \u222a B)\u2032 = A\u2032 \u2229 B\u2032.',lv:'F',steps:[
+    {lb:'The question',dr:dQ6,ht:'<p><b>Question:</b> U = {1, 2, \u2026, 10}, A = {1, 2, 3, 4, 5}, B = {4, 5, 6, 7} and C = {5, 7, 9}.</p><ul class="hl"><li>(a) Show that A \u222a (B \u2229 C) = (A \u222a B) \u2229 (A \u222a C).</li><li>(b) Show that (A \u222a B)\' = A\' \u2229 B\'.</li></ul><p>First we look at the laws of sets, then we check them with these sets.</p>'},
     {lb:'Commutative laws',dr:dQ6,ht:'<p>The <b>commutative laws</b> say that the order of sets does not matter for union or intersection:</p><div class="fm">A \u222a B = B \u222a A</div><div class="fm">A \u2229 B = B \u2229 A</div><p>Think of it like addition: 3+5 = 5+3. Set union and intersection work the same way.</p>'},
     {lb:'Associative laws',dr:dQ6,ht:'<p>The <b>associative laws</b> say grouping does not matter when combining three sets:</p><div class="fm">(A \u222a B) \u222a C = A \u222a (B \u222a C)</div><div class="fm">(A \u2229 B) \u2229 C = A \u2229 (B \u2229 C)</div><p>Like multiplication: (2\u00d73)\u00d74 = 2\u00d7(3\u00d74). You can bracket any way you like.</p>'},
     {lb:'Distributive laws',dr:dQ6,ht:'<p>The <b>distributive laws</b> — union distributes over intersection and vice versa:</p><div class="fm">A \u222a (B \u2229 C) = (A \u222a B) \u2229 (A \u222a C)</div><div class="fm">A \u2229 (B \u222a C) = (A \u2229 B) \u222a (A \u2229 C)</div><p>This is like algebra: a(b+c) = ab+ac — but for sets.</p>'},
     {lb:'De Morgan\'s Laws',dr:dQ6,ht:'<p><b>De Morgan\'s Laws</b> connect complement with union and intersection:</p><div class="fm">(A \u222a B)\' = A\' \u2229 B\'</div><div class="fm">(A \u2229 B)\' = A\' \u222a B\'</div><p>The complement of a union = the intersection of the complements. Very useful for exam problems.</p>'},
+    {lb:'(a) Verify the distributive law',dr:dQ6,ht:'<p>Work out each side separately, listing the elements:</p><div class="fm">Left side: B \u2229 C = {5, 7}<br>A \u222a (B \u2229 C) = {1, 2, 3, 4, 5, 7}</div><div class="fm">Right side: A \u222a B = {1, 2, 3, 4, 5, 6, 7}, &nbsp;A \u222a C = {1, 2, 3, 4, 5, 7, 9}<br>(A \u222a B) \u2229 (A \u222a C) = {1, 2, 3, 4, 5, 7}</div><p>Both sides are {1, 2, 3, 4, 5, 7}, so A \u222a (B \u2229 C) = (A \u222a B) \u2229 (A \u222a C) \u2713</p>'},
+    {lb:'(b) Verify De Morgan\'s law',dr:dQ6,ht:'<div class="fm">Left side: A \u222a B = {1, 2, 3, 4, 5, 6, 7}<br>(A \u222a B)\' = {8, 9, 10}</div><div class="fm">Right side: A\' = {6, 7, 8, 9, 10}, &nbsp;B\' = {1, 2, 3, 8, 9, 10}<br>A\' \u2229 B\' = {8, 9, 10}</div><p>Both sides are {8, 9, 10}, so (A \u222a B)\' = A\' \u2229 B\' \u2713</p>'},
     {lb:'Your turn',dr:dQ6,ht:tryIt(function(){
       // Verify De Morgan numerically
-      var U=rnd(12,20),aS=rnd(4,8),bS=rnd(4,8),both=rnd(1,Math.min(aS,bS)-1);
+      var aS=rnd(4,8),bS=rnd(4,8),both=rnd(1,Math.min(aS,bS)-1);
       var AuB=aS+bS-both;
+      var U=AuB+rnd(1,6); // U must be at least as big as A \u222a B
       var compAuB=U-AuB;
       return {question:'U has '+U+' elements. |A|='+aS+', |B|='+bS+', |A\u2229B|='+both+'. Find |(A\u222aB)\'|.',
         hints:['|(A\u222aB)\'| = |U| \u2212 |A\u222aB|','|A\u222aB| = |A|+|B|\u2212|A\u2229B| = '+aS+'+'+bS+'\u2212'+both],
@@ -446,15 +450,21 @@ function dQ6(p){
     {y:220,lbl:"De Morgan's",txt:"(A \u222a B)' = A' \u2229 B'",col:'#C8922A'}
   ];
   laws.forEach(function(lw,i){
-    if(p>=i){
+    if(p>=i+1){
       o.push(R(40,lw.y-18,396,32,'#fff',lw.col,1.5));
       o.push(T(90,lw.y,''+lw.lbl+':','#888',10,'start',true));
       o.push(T(200,lw.y,lw.txt,lw.col,12,'start',true));
     }
   });
-  if(p>=3){
+  if(p>=5){
     o.push(R(40,252,396,28,'#e8f8ee','#1a7a3a',1.5));
     o.push(T(238,270,'All laws can be verified using Venn diagrams \u2713','#1a7a3a',11,'middle',false));
+  }
+  if(p===0){
+    o.push(T(240,90,'U = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10}','#C0272D',15,'middle',true));
+    o.push(T(240,130,'A = {1, 2, 3, 4, 5}','#241A17',15,'middle',true));
+    o.push(T(240,165,'B = {4, 5, 6, 7}','#241A17',15,'middle',true));
+    o.push(T(240,200,'C = {5, 7, 9}','#241A17',15,'middle',true));
   }
   s.innerHTML=o.join('');
 }
