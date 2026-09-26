@@ -1285,6 +1285,7 @@
 
   let allStudents = [], allProgress = [], allTopics = [], allPeople = [];
   let mySchoolId = null;
+  let myUserId = null;
   let allStaffActiveMap = {};
 
   let isAbcSchool = true; // default true; set precisely once branding loads
@@ -1396,6 +1397,7 @@
     }
 
     mySchoolId = profile.school_id;
+    myUserId = profile.id;
 
     const [students, teachers, topics, progress] = await Promise.all([
       loadAllPaginated('profiles', '*', q => q.eq('role', 'student').eq('active', true).eq('school_id', mySchoolId).order('last_name').order('first_name')),
@@ -3028,6 +3030,7 @@
     allReviews.forEach(r => {
       if (allStaffActiveMap.hasOwnProperty(r.reviewer_id) && allStaffActiveMap[r.reviewer_id] === false) return; // skip archived staff
       if (new Date(r.reviewed_at) < PAY_POLICY_CUTOFF) return; // skip pre-cutoff reviews, already settled
+      if (r.reviewer_id === myUserId) return; // the super admin's own reviews are not paid
       if (!teacherMap[r.reviewer_id]) teacherMap[r.reviewer_id] = { name: r.profiles?.full_name || '—', count: 0, topics: new Set(), rows: [] };
       teacherMap[r.reviewer_id].topics.add(r.topic_id);
       teacherMap[r.reviewer_id].count++;
@@ -3036,7 +3039,10 @@
 
     const COMMENT_MIN_CHARS = 10;
     const RAPID_SECONDS = 1.2;
-    const PAY_PER_QUESTION = 100;
+    // Option A pay: a base fee per properly completed walkthrough, plus a bonus when the
+    // reviewer raised at least one real issue on it (raises_issue, set per comment).
+    const PAY_PER_WALKTHROUGH = 200;
+    const PAY_ISSUE_BONUS = 1500;
     const MIN_SECONDS_PER_WALKTHROUGH = 180; // 18s/question across a 10-question walkthrough
 
     const summaryEl = document.getElementById('review-teacher-summary');
@@ -3060,19 +3066,21 @@
           if (shortComment && rapid) flagged++;
         });
 
-        // Pay: N100 per question, but only for walkthroughs where time from first to
+        // Pay: base fee + issue bonus per walkthrough, but only where time from first to
         // last review meets the minimum — walkthroughs finished too fast earn nothing.
         const byTopic = {};
         rows.forEach(r => {
           if (!byTopic[r.topic_id]) byTopic[r.topic_id] = [];
           byTopic[r.topic_id].push(r);
         });
-        let pay = 0, paidQuestions = 0, rejectedWalkthroughs = 0;
+        let pay = 0, paidQuestions = 0, rejectedWalkthroughs = 0, issueWalkthroughs = 0;
         Object.values(byTopic).forEach(topicRows => {
           const times = topicRows.map(r => new Date(r.reviewed_at).getTime());
           const durationSec = (Math.max(...times) - Math.min(...times)) / 1000;
           if (durationSec >= MIN_SECONDS_PER_WALKTHROUGH) {
-            pay += topicRows.length * PAY_PER_QUESTION;
+            const raisedIssue = topicRows.some(r => r.raises_issue);
+            pay += PAY_PER_WALKTHROUGH + (raisedIssue ? PAY_ISSUE_BONUS : 0);
+            if (raisedIssue) issueWalkthroughs++;
             paidQuestions += topicRows.length;
           } else {
             rejectedWalkthroughs++;
@@ -3089,6 +3097,7 @@
           <td style="padding:8px 12px;text-align:right">${t.count}</td>
           <td style="padding:8px 12px;text-align:right${flagged > 0 ? ';color:#C0272D;font-weight:700' : ''}">${flagged}</td>
           <td style="padding:8px 12px;text-align:right${rejectedWalkthroughs > 0 ? ';color:#C0272D;font-weight:700' : ''}">${rejectedWalkthroughs}</td>
+          <td style="padding:8px 12px;text-align:right">${issueWalkthroughs}</td>
           <td style="padding:8px 12px;text-align:right">₦${pay.toLocaleString()}</td>
         </tr>`;
       }).join('');
@@ -3112,7 +3121,7 @@
             <div style="font-size:1.4rem;font-weight:700">₦${totalPay.toLocaleString()}</div>
           </div>
         </div>
-        <div style="font-size:0.78rem;color:#888;margin-bottom:12px">₦${PAY_PER_QUESTION}/question · walkthroughs completed in under ${MIN_SECONDS_PER_WALKTHROUGH}s (first to last review) earn ₦0</div>
+        <div style="font-size:0.78rem;color:#888;margin-bottom:12px">₦${PAY_PER_WALKTHROUGH} per walkthrough + ₦${PAY_ISSUE_BONUS.toLocaleString()} bonus where a real issue was raised · walkthroughs completed in under ${MIN_SECONDS_PER_WALKTHROUGH}s (first to last review) earn ₦0</div>
         <div style="overflow-x:auto">
           <table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #eee;border-radius:6px;overflow:hidden">
             <thead>
@@ -3122,6 +3131,7 @@
                 <th style="padding:8px 12px;text-align:right;background:#C0272D;color:#fff;font-size:0.8rem">Questions</th>
                 <th style="padding:8px 12px;text-align:right;background:#C0272D;color:#fff;font-size:0.8rem">Flagged</th>
                 <th style="padding:8px 12px;text-align:right;background:#C0272D;color:#fff;font-size:0.8rem">Rejected</th>
+                <th style="padding:8px 12px;text-align:right;background:#C0272D;color:#fff;font-size:0.8rem">Issues raised</th>
                 <th style="padding:8px 12px;text-align:right;background:#C0272D;color:#fff;font-size:0.8rem">Pay</th>
               </tr>
             </thead>
