@@ -243,11 +243,11 @@ function dQ9(p){var s=g();s.setAttribute('viewBox','0 0 480 260');var o=[];
   s.innerHTML=o.join('');}
 
 function dQ10(p){var s=g();s.setAttribute('viewBox','0 0 480 260');var o=[];
-  o.push(T(240,22,'Solve:  4x \u2212 3(2x) + 2 = 0','#C0272D',16,'middle',true));
-  if(p>=1){o.push(T(240,52,'Note: 4x = (2\u00b2)x = (2x)\u00b2','#1a5a8a',14,'middle',true));o.push(T(240,72,'Let u = 2x','#241A17',13));}
+  o.push(T(240,22,'Solve:  4\u02e3 \u2212 3(2\u02e3) + 2 = 0','#C0272D',16,'middle',true));
+  if(p>=1){o.push(T(240,52,'Note: 4\u02e3 = (2\u00b2)\u02e3 = (2\u02e3)\u00b2','#1a5a8a',14,'middle',true));o.push(T(240,72,'Let u = 2\u02e3','#241A17',13));}
   if(p>=2){o.push(R(60,82,360,46,'#fff5f0','#C0272D',1.5));o.push(T(240,101,'u\u00b2 \u2212 3u + 2 = 0','#C0272D',16,'middle',true));o.push(T(240,121,'Now it\'s a quadratic in u','#888',11));}
   if(p>=3){o.push(T(240,150,'(u\u22121)(u\u22122)=0  \u2192  u=1 or u=2','#241A17',14));}
-  if(p>=4){o.push(T(240,180,'2x=1  \u2192  x=0     2x=2  \u2192  x=1','#1a5a8a',14,'middle',true));o.push(R(100,200,280,42,'#e8f8ee','#1a7a3a',2));o.push(T(240,226,'x = 0  or  x = 1','#1a7a3a',17,'middle',true));}
+  if(p>=4){o.push(T(240,180,'2\u02e3=1  \u2192  x=0     2\u02e3=2  \u2192  x=1','#1a5a8a',14,'middle',true));o.push(R(100,200,280,42,'#e8f8ee','#1a7a3a',2));o.push(T(240,226,'x = 0  or  x = 1','#1a7a3a',17,'middle',true));}
   s.innerHTML=o.join('');}
 var QS=[
   {ey:'Q1 \u00b7 Variation \u00b7 WAEC',ti:'Direct Variation',su:'y is directly proportional to x. When x=4, y=12. Find y when x=10.',lv:'F',steps:[
@@ -556,11 +556,11 @@ var QS=[
   };
 })}
   ]},
-  {ey:'Q10 \u00b7 Indices & Equations \u00b7 WAEC',ti:'Exponential Equation by Substitution',su:'Solve 4x \u2212 3(2x) + 2 = 0.',lv:'E',steps:[
-    {lb:'Spot the hidden quadratic',dr:dQ10,ht:'<span class="lt le">Extended</span><p>Notice that 4x = (2\u00b2)x = (2x)\u00b2. Let <b>u = 2x</b> to convert this into a quadratic.</p>'},
-    {lb:'Substitute u = 2x',dr:dQ10,ht:'<div class="fm"><div class="eqs"><div class="rw"><span class="l">u<sup>2</sup> \u2212 3u + 2</span><span class="o">=</span><span class="r">0</span></div></div></div>'},
+  {ey:'Q10 \u00b7 Indices & Equations \u00b7 WAEC',ti:'Exponential Equation by Substitution',su:'Solve 4\u02e3 \u2212 3(2\u02e3) + 2 = 0.',lv:'E',steps:[
+    {lb:'Spot the hidden quadratic',dr:dQ10,ht:'<span class="lt le">Extended</span><p>Notice that 4<sup>x</sup> = (2\u00b2)<sup>x</sup> = (2<sup>x</sup>)\u00b2. Let <b>u = 2<sup>x</sup></b> to convert this into a quadratic.</p>'},
+    {lb:'Substitute u = 2\u02e3',dr:dQ10,ht:'<div class="fm"><div class="eqs"><div class="rw"><span class="l">u<sup>2</sup> \u2212 3u + 2</span><span class="o">=</span><span class="r">0</span></div></div></div>'},
     {lb:'Factorise and solve for u',dr:dQ10,ht:'<div class="fm"><div class="eqs"><div class="rw"><span class="l">(u\u22121)(u\u22122)</span><span class="o">=</span><span class="r">0  \u2192  u = 1  or  u = 2</span></div></div></div>'},
-    {lb:'Reverse the substitution',dr:dQ10,ht:'<div class="fm"><div class="eqs"><div class="rw"><span class="l">2x</span><span class="o">=</span><span class="r">1 = 2\u2070  \u2192  x = 0</span></div></div></div><div class="fm"><div class="eqs"><div class="rw"><span class="l">2x</span><span class="o">=</span><span class="r">2 = 2\u00b9  \u2192  x = 1</span></div></div></div>'},
+    {lb:'Reverse the substitution',dr:dQ10,ht:'<div class="fm"><div class="eqs"><div class="rw"><span class="l">2<sup>x</sup></span><span class="o">=</span><span class="r">1 = 2\u2070  \u2192  x = 0</span></div></div></div><div class="fm"><div class="eqs"><div class="rw"><span class="l">2<sup>x</sup></span><span class="o">=</span><span class="r">2 = 2\u00b9  \u2192  x = 1</span></div></div></div>'},
     {lb:'Your turn',dr:dQ10,ht:tryIt(function(){
   // Pick a base b, and two exponents p < q for the roots
   // Equation: b^(2x) - (p+q)*b^x + p*q = 0
@@ -588,15 +588,15 @@ var QS=[
   return {
     question: 'Solve ' + b2 + '<sup>x</sup> − ' + sumPQ + '(' + b + '<sup>x</sup>) + ' + prodPQ + ' = 0. What is the larger solution?',
     hints: [
-      b2 + 'x = (' + b + 'x)². Let u = ' + b + 'x',
+      b2 + '<sup>x</sup> = (' + b + '<sup>x</sup>)². Let u = ' + b + '<sup>x</sup>',
       'u² − ' + sumPQ + 'u + ' + prodPQ + ' = 0',
       '(u − ' + p + ')(u − ' + q + ') = 0  →  u = ' + p + ' or u = ' + q,
-      b + 'x = ' + q + ' = ' + b + (e2 === 1 ? '' : e2) + '  →  x = ' + e2
+      b + '<sup>x</sup> = ' + q + ' = ' + b + '<sup>' + e2 + '</sup>  →  x = ' + e2
     ],
     ans: ans,
     tol: 0,
     unit: '',
-    working: 'u = ' + p + ': ' + b + 'x = ' + p + ' → x = ' + e1 + '. u = ' + q + ': ' + b + 'x = ' + q + ' → x = ' + e2 + '. Larger solution = ' + e2
+    working: 'u = ' + p + ': ' + b + '<sup>x</sup> = ' + p + ' = ' + b + '<sup>' + e1 + '</sup> → x = ' + e1 + '. u = ' + q + ': ' + b + '<sup>x</sup> = ' + q + ' = ' + b + '<sup>' + e2 + '</sup> → x = ' + e2 + '. Larger solution = ' + e2
   };
 })}
   ]},

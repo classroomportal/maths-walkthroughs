@@ -107,20 +107,22 @@ function tryIt(fn){
   var id='t'+Math.random().toString(36).slice(2);
   ST[id]=fn;return genTry(id,fn());
 }
+var CUR={},SEQ=0;
 function genTry(id,o){
   var h=(o.hints||[]).map(function(x){return '<li>'+x+'</li>';}).join('');
+  var iid=id+'_'+(++SEQ);CUR[iid]=o;
   return '<div class="try" data-tryid="'+id+'">'+
     '<div class="try-t">&#10004; Your Turn</div><p>'+o.question+'</p>'+
-    '<div class="ar"><input type="number" step="any" placeholder="Your answer" id="'+id+'_i"/>'+
-    '<button class="ck" onclick="ck(\''+id+'\')">&#10003; Check</button></div>'+
-    '<div class="fb" id="'+id+'_f"></div>'+
+    '<div class="ar"><input type="number" step="any" placeholder="Your answer" id="'+iid+'_i"/>'+
+    '<button class="ck" onclick="ck(\''+iid+'\')">&#10003; Check</button></div>'+
+    '<div class="fb" id="'+iid+'_f"></div>'+
     '<details class="wk"><summary>Show working</summary><div class="wk-b">'+
     (h?'<ul class="hl">'+h+'</ul>':'')+
     '<div class="wk-ans">'+o.working+'</div></div></details>'+
     '<button class="nq" data-tryid="'+id+'">New question</button></div>';
 }
 function ck(id){
-  var fn=ST[id];var o=typeof fn==='function'?fn():fn;
+  var o=CUR[id];if(!o)return;
   var v=parseFloat(document.getElementById(id+'_i').value);
   var f=document.getElementById(id+'_f');
   if(isNaN(v)){f.className='fb er';f.textContent='Please enter a number.';return;}

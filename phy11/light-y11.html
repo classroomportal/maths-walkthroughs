@@ -105,10 +105,10 @@ document.addEventListener('click',function(e){
   var el=e.target;
   if(el.classList.contains('try-new')){
     var id=el.getAttribute('data-tryid');var entry=ST[id];if(!entry)return;
-    var o=entry.genFn();entry.o=o;
+    var o=entry.genFn();var nid='t'+Math.random().toString(36).slice(2);
     var wrap=el.closest?el.closest('.try'):document.querySelector('.try[data-tryid="'+id+'"]');if(!wrap)return;
-    var tmp=document.createElement('div');tmp.innerHTML=buildTry(id,o);
-    wrap.parentNode.replaceChild(tmp.firstChild,wrap);ST[id]={o:o,genFn:entry.genFn};return;
+    var tmp=document.createElement('div');tmp.innerHTML=buildTry(nid,o);
+    wrap.parentNode.replaceChild(tmp.firstChild,wrap);ST[nid]={o:o,genFn:entry.genFn};return;
   }
   if(el.classList.contains('try-ck')){
     var id=el.getAttribute('data-tryid');var entry=ST[id];if(!entry)return;var o=entry.o;
@@ -116,7 +116,7 @@ document.addEventListener('click',function(e){
     var fb=document.querySelector('.try-fb[data-tryid="'+id+'"]');if(!inp||!fb)return;
     var v=parseFloat(inp.value);
     if(isNaN(v)){fb.className='try-fb er';fb.textContent='Enter a number.';return;}
-    if(Math.abs(v-o.ans)<=(o.tol!=null?o.tol:0.05)){fb.className='try-fb ok';fb.innerHTML='&#10003; Correct! &nbsp;'+o.working;}
+    if(Math.abs(v-o.ans)<=(o.tol!=null?Math.abs(o.tol):0.05)){fb.className='try-fb ok';fb.innerHTML='&#10003; Correct! &nbsp;'+o.working;}
     else{fb.className='try-fb er';fb.textContent='Not quite — check your working and try again.';}
   }
 });
@@ -190,7 +190,7 @@ var QS=[
 ]},
 {ey:'Q5 \u2022 Y11 Physics \u2022 Light',ti:'Lens Power and Defects of Vision',su:'Calculate lens power. Describe short and long sight corrections.',steps:[
   {lb:'Defects of vision',dr:dQ5,ht:'<p><b>Short sight (myopia):</b> image forms in front of retina. Corrected by diverging (concave) lens (negative power).<br><b>Long sight (hyperopia):</b> image forms behind retina. Corrected by converging (convex) lens (positive power).</p><div class="fm">P = 1/f (dioptres)</div>'},
-  {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var f=pick([-0.25,-0.5,0.25,0.5,0.33,0.2]);var P=parseFloat((1/f).toFixed(1));return{question:'Corrective lens focal length = <b>'+f+' m</b>. Find power.',hints:['P = 1/f'],ans:P,tol:P*0.02,unit:'D',working:'P = 1/'+f+' = '+P+' D ('+((P>0)?'converging':'diverging')+')'};})},
+  {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var f=pick([-0.25,-0.5,-0.4,-2,0.25,0.5,0.4,0.2,2]);var P=Math.round(1/f*100)/100;return{question:'A corrective lens has focal length <b>'+f+' m</b>'+(f<0?' (a diverging lens, so f is negative)':' (a converging lens)')+'. Find its power in dioptres. Include the sign.',hints:['P = 1/f, with f in metres','A diverging lens has negative focal length and negative power'],ans:P,tol:Math.max(0.05,Math.abs(P)*0.02),unit:'D',working:'P = 1/f = 1/('+f+') = <b>'+(P>0?'+':'')+P+' D</b> ('+((P>0)?'converging: corrects long sight':'diverging: corrects short sight')+')'};})},
 ]},
 {ey:'Q6 \u2022 Y11 Physics \u2022 Light',ti:'Magnifying Glass',su:'Explain how a magnifying glass produces a virtual image.',steps:[
   {lb:'Magnifying glass',dr:dQ6,ht:'<p>Object placed inside focal length of converging lens. Image is: virtual (behind the lens), upright, magnified. The eye looks through the lens and sees the enlarged virtual image. Angular magnification = image angle / object angle.</p>'},

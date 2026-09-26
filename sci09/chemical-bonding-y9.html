@@ -107,20 +107,22 @@ function tryIt(fn){
   var id='t'+Math.random().toString(36).slice(2);
   ST[id]=fn;return genTry(id,fn());
 }
+var CUR={},SEQ=0;
 function genTry(id,o){
   var h=(o.hints||[]).map(function(x){return '<li>'+x+'</li>';}).join('');
+  var iid=id+'_'+(++SEQ);CUR[iid]=o;
   return '<div class="try" data-tryid="'+id+'">'+
     '<div class="try-t">&#10004; Your Turn</div><p>'+o.question+'</p>'+
-    '<div class="ar"><input type="number" step="any" placeholder="Your answer" id="'+id+'_i"/>'+
-    '<button class="ck" onclick="ck(\''+id+'\')">&#10003; Check</button></div>'+
-    '<div class="fb" id="'+id+'_f"></div>'+
+    '<div class="ar"><input type="number" step="any" placeholder="Your answer" id="'+iid+'_i"/>'+
+    '<button class="ck" onclick="ck(\''+iid+'\')">&#10003; Check</button></div>'+
+    '<div class="fb" id="'+iid+'_f"></div>'+
     '<details class="wk"><summary>Show working</summary><div class="wk-b">'+
     (h?'<ul class="hl">'+h+'</ul>':'')+
     '<div class="wk-ans">'+o.working+'</div></div></details>'+
     '<button class="nq" data-tryid="'+id+'">New question</button></div>';
 }
 function ck(id){
-  var fn=ST[id];var o=typeof fn==='function'?fn():fn;
+  var o=CUR[id];if(!o)return;
   var v=parseFloat(document.getElementById(id+'_i').value);
   var f=document.getElementById(id+'_f');
   if(isNaN(v)){f.className='fb er';f.textContent='Please enter a number.';return;}
@@ -187,20 +189,67 @@ function arr(x1,y1,x2,y2,c,w){
   return L(x1,y1,x2,y2,c,w)+'<polygon points="'+x2+','+y2+' '+p1x.toFixed(1)+','+p1y.toFixed(1)+' '+p2x.toFixed(1)+','+p2y.toFixed(1)+'" fill="'+c+'"/>';
 }
 
+// ---- dot-and-cross helpers ----
+function eDot(o,x,y,c){o.push('<circle cx="'+x.toFixed(1)+'" cy="'+y.toFixed(1)+'" r="3" fill="'+(c||'#333')+'"/>');}
+function eX(o,x,y,c){c=c||'#333';o.push(L((x-3.2).toFixed(1),(y-3.2).toFixed(1),(x+3.2).toFixed(1),(y+3.2).toFixed(1),c,1.6));o.push(L((x-3.2).toFixed(1),(y+3.2).toFixed(1),(x+3.2).toFixed(1),(y-3.2).toFixed(1),c,1.6));}
+function eMark(o,x,y,k,c){if(k==='d')eDot(o,x,y,c);else if(k==='x')eX(o,x,y,c);}
+// electrons on a shell as 4 pairs (top, right, bottom, left); slots = array of up to 8 of 'd','x' or ''
+function shell8(o,cx,cy,r,slots,c){[-90,0,90,180].forEach(function(b,p){[-13,13].forEach(function(off,k){var a=(b+off)*Math.PI/180;eMark(o,cx+r*Math.cos(a),cy+r*Math.sin(a),slots[p*2+k],c);});});}
+// electron pair on a shell at angle ang (degrees), both marks of kind k
+function pairAt(o,cx,cy,r,ang,k1,k2,c){[-11,11].forEach(function(off,i){var a=(ang+off)*Math.PI/180;eMark(o,cx+r*Math.cos(a),cy+r*Math.sin(a),i?k2:k1,c);});}
+function brackets(o,cx,cy,h,w,charge,c){var l=cx-w,rr=cx+w;o.push('<path d="M'+(l+7)+','+(cy-h)+' L'+l+','+(cy-h)+' L'+l+','+(cy+h)+' L'+(l+7)+','+(cy+h)+'" fill="none" stroke="'+c+'" stroke-width="2"/>');o.push('<path d="M'+(rr-7)+','+(cy-h)+' L'+rr+','+(cy-h)+' L'+rr+','+(cy+h)+' L'+(rr-7)+','+(cy+h)+'" fill="none" stroke="'+c+'" stroke-width="2"/>');o.push(T(rr+4,cy-h+6,charge,c,14,'start',true));}
+// diatomic covalent molecule: n shared pairs, lone pairs given as angle lists for each atom
+function diatomic(o,cx,cy,r,s1,s2,n,lone1,lone2,c1,c2){var d=r*1.35,x1=cx-d/2,x2=cx+d/2;
+  o.push(circ(x1,cy,r,c1+'14',c1,1.5));o.push(circ(x2,cy,r,c2+'14',c2,1.5));
+  o.push(T(x1-r*0.35,cy+5,s1,c1,13,'middle',true));o.push(T(x2+r*0.35,cy+5,s2,c2,13,'middle',true));
+  var ys=n===1?[0]:n===2?[-9,9]:[-15,0,15];ys.forEach(function(dy){eDot(o,cx-4,cy+dy,c1);eX(o,cx+4,cy+dy,c2);});
+  lone1.forEach(function(a){pairAt(o,x1,cy,r,a,'d','d',c1);});lone2.forEach(function(a){pairAt(o,x2,cy,r,a,'x','x',c2);});}
+// ---- simple 3D projection helpers ----
+function P3(p,rx,ry,sc,ox,oy){var cy=Math.cos(ry),sy=Math.sin(ry),cx=Math.cos(rx),sx=Math.sin(rx);var x=p[0]*cy+p[2]*sy,z=-p[0]*sy+p[2]*cy,y=p[1]*cx-z*sx,z2=p[1]*sx+z*cx;return [ox+x*sc,oy-y*sc,z2];}
+function draw3D(o,atoms,bonds,rx,ry,sc,ox,oy,style){var pr=atoms.map(function(a){return P3(a.p,rx,ry,sc,ox,oy);});
+  var items=[];bonds.forEach(function(b){items.push({z:(pr[b[0]][2]+pr[b[1]][2])/2-0.01,f:function(){o.push(L(pr[b[0]][0].toFixed(1),pr[b[0]][1].toFixed(1),pr[b[1]][0].toFixed(1),pr[b[1]][1].toFixed(1),b[2]||style.bond,b[3]||style.bw,b[4]));}});});
+  atoms.forEach(function(a,i){items.push({z:pr[i][2],f:function(){var st=a.st||style;o.push('<circle cx="'+pr[i][0].toFixed(1)+'" cy="'+pr[i][1].toFixed(1)+'" r="'+(a.r||style.r)+'" fill="'+(a.fill||style.fill)+'" stroke="'+(a.stroke||style.stroke)+'" stroke-width="1.2"/>');if(a.lab)o.push(T(pr[i][0].toFixed(1),(pr[i][1]+4).toFixed(1),a.lab,a.lc||'#fff',a.ls||10,'middle',true));}});});
+  items.sort(function(a,b){return b.z-a.z;}).forEach(function(it){it.f();});}
+// 3D NaCl lattice, n ions per edge
+function naclLattice(o,n,rx,ry,sc,ox,oy){var atoms=[],idx={},bonds=[];var h=(n-1)/2;
+  for(var i=0;i<n;i++)for(var j=0;j<n;j++)for(var k=0;k<n;k++){var na=(i+j+k)%2===0;idx[i+','+j+','+k]=atoms.length;atoms.push({p:[i-h,j-h,k-h],r:na?7:11,fill:na?'#9575cd':'#66bb6a',stroke:na?'#4527a0':'#1b5e20',lab:na?'+':'−',ls:na?9:11});}
+  for(var i=0;i<n;i++)for(var j=0;j<n;j++)for(var k=0;k<n;k++){var a=idx[i+','+j+','+k];if(i<n-1)bonds.push([a,idx[(i+1)+','+j+','+k]]);if(j<n-1)bonds.push([a,idx[i+','+(j+1)+','+k]]);if(k<n-1)bonds.push([a,idx[i+','+j+','+(k+1)]]);}
+  draw3D(o,atoms,bonds,rx,ry,sc,ox,oy,{bond:'#bbb',bw:1.2,r:8,fill:'#fff',stroke:'#333'});}
+// diamond: all C atoms within a cube of side 4 (units a/4); bonds at sqrt(3)
+function diamond3D(o,rx,ry,sc,ox,oy){var atoms=[];for(var x=-4;x<=4;x++)for(var y=-4;y<=4;y++)for(var z=-4;z<=4;z++){var m=((x%4)+4)%4,sum=(((x+y+z)%4)+4)%4;var ev=(x&1)===0&&(y&1)===0&&(z&1)===0,od=(x&1)===1&&(y&1)===1&&(z&1)===1;if(((ev&&sum===0)||(od&&sum===3))&&x*x+y*y+z*z<=8)atoms.push({p:[x,y,z]});}
+  var bonds=[];for(var i=0;i<atoms.length;i++)for(var j=i+1;j<atoms.length;j++){var a=atoms[i].p,b=atoms[j].p;var d=(a[0]-b[0])*(a[0]-b[0])+(a[1]-b[1])*(a[1]-b[1])+(a[2]-b[2])*(a[2]-b[2]);if(d===3)bonds.push([i,j]);}
+  draw3D(o,atoms,bonds,rx,ry,sc,ox,oy,{bond:'#1565C0',bw:2,r:6,fill:'#90caf9',stroke:'#0D47A1'});}
+// graphite: 3 hexagonal layers (ABA stacking) joined by dashed weak forces
+function graphite3D(o,rx,ry,sc,ox,oy){var atoms=[],bonds=[];var s3=Math.sqrt(3);
+  for(var L3=0;L3<3;L3++){var start=atoms.length;var sh=(L3===1)?1:0;
+    for(var i=-3;i<=3;i++)for(var j=-3;j<=3;j++){var ax=i*1.5,az=i*s3/2+j*s3;[[0,0],[1,0]].forEach(function(q){var x=ax+q[0]+sh-0.5,z=az;if(Math.abs(x)<=2.3&&Math.abs(z)<=1.8)atoms.push({p:[x,(L3-1)*2.6,z]});});}
+    for(var p=start;p<atoms.length;p++)for(var q=p+1;q<atoms.length;q++){var A=atoms[p].p,B=atoms[q].p;var d=Math.hypot(A[0]-B[0],A[2]-B[2]);if(Math.abs(d-1)<0.01)bonds.push([p,q]);}}
+  for(var p=0;p<atoms.length;p++)for(var q=0;q<atoms.length;q++){var A=atoms[p].p,B=atoms[q].p;if(Math.abs(B[1]-A[1]-2.6)<0.01&&Math.abs(A[0]-B[0])<0.01&&Math.abs(A[2]-B[2])<0.01&&Math.abs(A[0])<1.6&&Math.abs(A[2])<1.8)bonds.push([p,q,'#9e9e9e',1,'3,3']);}
+  draw3D(o,atoms,bonds,rx,ry,sc,ox,oy,{bond:'#424242',bw:1.6,r:3.5,fill:'#757575',stroke:'#212121'});}
+// deterministic pseudo-random for irregular electron positions
+function seeded(n){var x=n;return function(){x=(x*9301+49297)%233280;return x/233280;};}
+
 
 var QS=[
 {ey:'Y9 Chemistry \u2022 Q1',ti:'Ionic Bonding Revisited',su:'Electron transfer and dot-cross diagrams',steps:[
 {sl:'Dot-and-cross diagrams',p:'<b>Dot-and-cross diagrams</b> show electron transfer in ionic bonding. Electrons from one atom are shown as dots, the other as crosses, so you can track where each electron came from.<br><br>Only the <b>outer shell</b> electrons are shown.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(T(140,25,'Na','#1565C0',16,'middle',true));
-o.push(circ(140,120,40,'none','#1565C0',1.5));
-o.push(T(140,160,'[Na]\u207a','#1565C0',11,'middle',true));
-o.push(T(340,25,'Cl','#2E7D32',16,'middle',true));
-o.push(circ(340,120,40,'none','#2E7D32',1.5));
-for(var i=0;i<7;i++){var a=i*(360/8)*Math.PI/180;o.push(T(340+33*Math.cos(a),120+33*Math.sin(a),'\u2022','#2E7D32',14,'middle',true));}
-o.push(T(340+33*Math.cos(7*45*Math.PI/180),120+33*Math.sin(7*45*Math.PI/180),'\u00d7','#1565C0',14,'middle',true));
-o.push(T(340,160,'[Cl]\u207b','#2E7D32',11,'middle',true));
-o.push(T(240,220,'Na loses 1 electron (\u00d7) \u2192 Cl gains it','#555',10,'middle',true));
+o.push(T(40,82,'Atoms','#555',10,'start',true));o.push(T(40,212,'Ions','#555',10,'start',true));
+// atoms (outer shells only)
+o.push(circ(150,80,32,'none','#1565C0',1.5));o.push(T(150,85,'Na','#1565C0',14,'middle',true));
+shell8(o,150,80,32,['','','x','','','','',''],'#1565C0');
+o.push(circ(330,80,32,'none','#2E7D32',1.5));o.push(T(330,85,'Cl','#2E7D32',14,'middle',true));
+shell8(o,330,80,32,['d','d','d','d','d','d','d',''],'#2E7D32');
+o.push('<path d="M186,73 Q240,40 292,78" fill="none" stroke="#C0272D" stroke-width="1.5"/>');o.push('<polygon points="292,78 283,76 288,69" fill="#C0272D"/>');
+o.push(T(240,45,'1 electron transferred','#C0272D',9,'middle',false));
+o.push(arr(240,122,240,160,'#555',2));
+// ions in square brackets
+o.push(circ(150,210,32,'none','#1565C0',1.5));o.push(T(150,215,'Na','#1565C0',14,'middle',true));
+shell8(o,150,210,32,['x','x','x','x','x','x','x','x'],'#1565C0');brackets(o,150,210,44,46,'+','#1565C0');
+o.push(circ(330,210,32,'none','#2E7D32',1.5));o.push(T(330,215,'Cl','#2E7D32',14,'middle',true));
+shell8(o,330,210,32,['d','d','d','d','d','d','d',''],'#2E7D32');eX(o,330+32*Math.cos(193*Math.PI/180),210+32*Math.sin(193*Math.PI/180),'#1565C0');brackets(o,330,210,44,46,'\u2212','#2E7D32');
+o.push(T(150,272,'Na\u207a (2,8)','#1565C0',10,'middle',true));o.push(T(330,272,'Cl\u207b (2,8,8)','#2E7D32',10,'middle',true));
+o.push(T(240,292,'Outer shells only: \u00d7 = electrons from Na, \u2022 = electrons from Cl','#555',9,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'Ionic compound formulae',p:'The formula of an ionic compound balances the charges so the overall charge is zero:<br><br>Na\u207a + Cl\u207b \u2192 NaCl (1:1 ratio)<br>Mg\u00b2\u207a + 2Cl\u207b \u2192 MgCl\u2082 (1:2 ratio, since Mg loses 2 electrons but Cl only takes 1)<br>Ca\u00b2\u207a + O\u00b2\u207b \u2192 CaO (1:1, charges already balance)',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
@@ -209,12 +258,17 @@ examples.forEach(function(e,i){o.push(R(20,30+i*60,440,45,e[2]+'18',e[2],1.5,4))
 s.innerHTML=o.join('');}},
 {sl:'Properties from structure',p:'Ionic compounds have a <b>giant ionic lattice</b> structure:<br><br>\u2022 <b>High melting/boiling points</b>: strong electrostatic forces between ions in all directions<br>\u2022 <b>Conduct electricity</b> when molten/dissolved (ions free to move)<br>\u2022 <b>Brittle</b>: layers shift under force, like-charges align and repel, shattering the lattice',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(T(140,22,'Undisturbed lattice','#2E7D32',10,'middle',true));
-for(var r=0;r<4;r++)for(var c=0;c<4;c++){var isPos=(r+c)%2===0;o.push(circ(40+c*35,50+r*30,12,isPos?'#fde8e8':'#e8f5e9',isPos?'#C0272D':'#2E7D32',1));}
-o.push(T(360,22,'Force applied: layer shifts','#C0272D',10,'middle',true));
-for(var r2=0;r2<4;r2++)for(var c2=0;c2<4;c2++){var isPos2=(r2+c2)%2===0;var shift=(r2>=2)?20:0;o.push(circ(260+c2*35+shift,50+r2*30,12,isPos2?'#fde8e8':'#e8f5e9',isPos2?'#C0272D':'#2E7D32',1));}
-o.push(arr(310,180,310,210,'#C0272D',2));o.push(T(310,225,'force','#C0272D',9,'middle',false));
-o.push(T(360,260,'Like charges align \u2192 repel \u2192 shatters','#C0272D',9,'middle',false));
+o.push(T(125,22,'Giant ionic lattice (3D), e.g. NaCl','#2E7D32',10,'middle',true));
+naclLattice(o,3,0.45,0.6,48,125,150);
+o.push(circ(40,270,7,'#9575cd','#4527a0',1.2));o.push(T(52,274,'Na\u207a','#4527a0',9,'start',true));
+o.push(circ(110,270,11,'#66bb6a','#1b5e20',1.2));o.push(T(126,274,'Cl\u207b','#1b5e20',9,'start',true));
+o.push(T(365,22,'Force applied: layer shifts','#C0272D',10,'middle',true));
+for(var r2=0;r2<4;r2++)for(var c2=0;c2<4;c2++){var isPos2=(r2+c2)%2===0;var shift=(r2<2)?28:0;o.push(circ(290+c2*28+shift,70+r2*28,12,isPos2?'#9575cd':'#66bb6a',isPos2?'#4527a0':'#1b5e20',1));o.push(T(290+c2*28+shift,74+r2*28,isPos2?'+':'\u2212','#fff',10,'middle',true));}
+o.push(arr(250,84,285,84,'#C0272D',2));o.push(T(250,76,'force','#C0272D',9,'middle',false));
+o.push(L(280,112,420,112,'#C0272D',1.5,'4,3'));
+o.push(T(365,200,'Top layers move by one ion:','#C0272D',9,'middle',false));
+o.push(T(365,214,'+ sits next to + and \u2212 next to \u2212','#C0272D',9,'middle',false));
+o.push(T(365,228,'\u2192 like charges repel \u2192 lattice shatters','#C0272D',9,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Try it',p:''+tryItMC(function(){var qs=[{question:'What is the formula for the ionic compound formed between Mg\u00b2\u207a and Cl\u207b?',options:['MgCl\u2082','MgCl','Mg\u2082Cl','MgCl\u2083'],correct:0,working:'Magnesium loses 2 electrons (Mg\u00b2\u207a) but each chloride ion only gains 1 (Cl\u207b). To balance the charge, you need <b>2 chloride ions</b> for every magnesium ion: <b>MgCl\u2082</b>.'},{question:'Why are ionic compounds brittle?',options:['When force is applied, layers shift so like-charged ions align and repel, shattering the lattice','Ionic bonds are inherently weak','The ions are too heavy','Ionic compounds have no internal structure'],correct:0,working:'Applying force shifts layers of ions. This can bring <b>same-charged ions next to each other</b>, causing strong repulsion that shatters the lattice along that plane \u2014 making ionic solids brittle.'},{question:'In a dot-and-cross diagram, what do the dots and crosses represent?',options:['Electrons from each different atom, tracked to show their origin','Protons and neutrons','Different elements','The charge of each ion'],correct:0,working:'Dots and crosses both represent <b>electrons</b>, but using different symbols allows you to track which atom each electron originally came from during the bonding process.'},{question:'How does an ionic bond form between a metal and a non-metal?',options:['The metal atom loses electrons to form a positive ion, and the non-metal gains them to form a negative ion; opposite charges attract','Both atoms share electrons equally','Both atoms lose electrons','Neither atom\'s electron arrangement changes'],correct:0,working:'In <b>ionic bonding</b>, metal atoms lose outer electrons to become positive ions (cations), and non-metal atoms gain those electrons to become negative ions (anions). The oppositely charged ions attract strongly.'},{question:'Why do ionic compounds have high melting and boiling points?',options:['Strong electrostatic forces of attraction between oppositely charged ions require a lot of energy to overcome','Ionic compounds have weak forces between molecules','Ionic bonds are easily broken with little energy','Ionic compounds contain no charged particles'],correct:0,working:'Ionic compounds form a <b>giant ionic lattice</b> held together by strong electrostatic attraction between oppositely charged ions in all directions, requiring a lot of energy to break — hence high melting/boiling points.'},{question:'Why do ionic compounds conduct electricity when molten or dissolved, but not when solid?',options:['Ions are free to move and carry charge when molten/dissolved, but are fixed in place in the solid lattice','Ionic compounds never conduct electricity in any state','Solid ionic compounds always conduct electricity','Ions disappear when the compound is solid'],correct:0,working:'In the solid state, ions are held in fixed positions in the <b>lattice</b> and cannot move to carry charge. When molten or dissolved in water, the ions become free to move, allowing the compound to <b>conduct electricity</b>.'},{question:'What is the formula for the ionic compound formed between Na⁺ and O²⁻?',options:['Na₂O','NaO','Na₂O₂','NaO₂'],correct:0,working:'To balance charges: two Na⁺ ions (+2 total) balance one O²⁻ ion (−2), giving the formula <b>Na₂O</b>.'},{question:'What is the formula for the ionic compound formed between Al³⁺ and O²⁻?',options:['Al₂O₃','AlO','Al₃O₂','AlO₃'],correct:0,working:'To balance charges, the lowest common multiple of 3 and 2 is 6: two Al³⁺ ions (+6) balance three O²⁻ ions (−6), giving <b>Al₂O₃</b>.'}];return rPick(qs);}),draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(240,30,'Ionic bonding summary','#6A1B9A',12,'middle',true));
@@ -226,39 +280,37 @@ s.innerHTML=o.join('');}}
 {sl:'Covalent dot-and-cross diagrams',p:'Covalent dot-and-cross diagrams show <b>shared</b> pairs of electrons between two non-metal atoms.<br><br>Each shared pair sits in the overlap of the two atoms\' outer shells, with one electron (dot) from each atom.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(240,22,'Water (H\u2082O)','#1565C0',12,'middle',true));
-o.push(circ(240,150,45,'none','#2E7D32',1.5));
-o.push(circ(190,120,28,'none','#1565C0',1.5));
-o.push(circ(290,120,28,'none','#1565C0',1.5));
-// shared pairs at overlaps
-o.push(T(213,133,'\u2022\u00d7','#333',12,'middle',true));
-o.push(T(267,133,'\u2022\u00d7','#333',12,'middle',true));
-// O lone pairs
-o.push(T(240,108,'\u2022\u2022','#2E7D32',12,'middle',true));
-o.push(T(240,195,'\u2022\u2022','#2E7D32',12,'middle',true));
+o.push(circ(240,150,45,'#2E7D3214','#2E7D32',1.5));o.push(T(240,160,'O','#2E7D32',18,'middle',true));
+[[-1,180],[1,0]].forEach(function(hh){var hx=240+hh[0]*46,hy=114;o.push(circ(hx,hy,26,'#1565C014','#1565C0',1.5));o.push(T(hx+hh[0]*6,hy-2,'H','#1565C0',14,'middle',true));
+  // shared pair on the line between the centres, in the overlap
+  var dx=hx-240,dy=hy-150,d=Math.sqrt(dx*dx+dy*dy),ux=dx/d,uy=dy/d,m=(45+(d-26))/2;var px=240+ux*m,py=150+uy*m;eDot(o,px-uy*5,py+ux*5,'#2E7D32');eX(o,px+uy*5,py-ux*5,'#1565C0');});
+// two lone pairs on oxygen
+pairAt(o,240,150,45,125,'d','d','#2E7D32');pairAt(o,240,150,45,55,'d','d','#2E7D32');
+o.push(T(420,200,'\u2022 = O electron','#2E7D32',9,'middle',false));o.push(T(420,214,'\u00d7 = H electron','#1565C0',9,'middle',false));
 o.push(T(240,260,'O shares 2 pairs (one with each H)','#555',10,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Single, double and triple covalent bonds',p:'\u2022 <b>Single bond</b>: 1 shared pair (e.g. H-H, C-H)<br>\u2022 <b>Double bond</b>: 2 shared pairs (e.g. O=O, C=O)<br>\u2022 <b>Triple bond</b>: 3 shared pairs (e.g. N\u2261N)<br><br>More shared pairs = <b>shorter and stronger</b> bond.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(T(80,22,'Single (H-H)','#1565C0',9,'middle',true));
-o.push(circ(60,120,25,'#e3f2fd','#1565C0',1.5));o.push(circ(100,120,25,'#e3f2fd','#1565C0',1.5));o.push(L(85,120,75,120,'#555',2));
-o.push(T(240,22,'Double (O=O)','#2E7D32',9,'middle',true));
-o.push(circ(210,120,28,'#e8f5e9','#2E7D32',1.5));o.push(circ(270,120,28,'#e8f5e9','#2E7D32',1.5));o.push(L(238,115,242,115,'#555',2));o.push(L(238,125,242,125,'#555',2));
-o.push(T(400,22,'Triple (N\u2261N)','#6A1B9A',9,'middle',true));
-o.push(circ(370,120,26,'#f3e5f5','#6A1B9A',1.5));o.push(circ(430,120,26,'#f3e5f5','#6A1B9A',1.5));o.push(L(396,112,404,112,'#555',2));o.push(L(396,120,404,120,'#555',2));o.push(L(396,128,404,128,'#555',2));
+o.push(T(80,40,'Single: H\u2013H','#1565C0',10,'middle',true));
+diatomic(o,80,120,26,'H','H',1,[],[],'#1565C0','#1565C0');
+o.push(T(80,175,'1 shared pair','#1565C0',9,'middle',false));
+o.push(T(240,40,'Double: O=O','#2E7D32',10,'middle',true));
+diatomic(o,240,120,32,'O','O',2,[130,230],[50,-50],'#2E7D32','#2E7D32');
+o.push(T(240,175,'2 shared pairs','#2E7D32',9,'middle',false));
+o.push(T(400,40,'Triple: N\u2261N','#6A1B9A',10,'middle',true));
+diatomic(o,400,120,30,'N','N',3,[180],[0],'#6A1B9A','#6A1B9A');
+o.push(T(400,175,'3 shared pairs','#6A1B9A',9,'middle',false));
 o.push(T(240,210,'More shared pairs = stronger, shorter bond','#555',10,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'Giant covalent structures',p:'Some covalent substances form <b>giant covalent (macromolecular) structures</b> instead of simple molecules \u2014 e.g. diamond, graphite, silicon dioxide.<br><br>These have very <b>high melting points</b> because all atoms are covalently bonded throughout the structure (not just within small molecules).',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(T(120,22,'Diamond','#1565C0',12,'middle',true));
-var pts=[[80,70],[160,70],[120,120],[60,150],[180,150],[120,200]];
-var edges=[[0,2],[1,2],[2,3],[2,4],[3,5],[4,5],[0,1]];
-edges.forEach(function(e){o.push(L(pts[e[0]][0],pts[e[0]][1],pts[e[1]][0],pts[e[1]][1],'#1565C0',1.5));});
-pts.forEach(function(p){o.push(circ(p[0],p[1],10,'#e3f2fd','#1565C0',1.5));});
-o.push(T(120,235,'Each C bonded to 4 others','#555',9,'middle',false));
-o.push(T(360,22,'Graphite','#555',12,'middle',true));
-for(var r=0;r<3;r++){var y=70+r*60;for(var c=0;c<3;c++){o.push(circ(300+c*40,y,8,'#e0e0e0','#555',1.5));}}
-for(var r2=0;r2<3;r2++)o.push(L(300,70+r2*60,380,70+r2*60,'#555',1.5));
-o.push(L(300,70,300,190,'#888',1,'4,2'));o.push(T(360,235,'Layers slide (lubricant)','#555',9,'middle',false));
+o.push(T(120,22,'Diamond (3D)','#1565C0',12,'middle',true));
+diamond3D(o,0.35,0.55,26,120,135);
+o.push(T(120,250,'Each C bonded to 4 others (tetrahedral),','#555',9,'middle',false));o.push(T(120,263,'giant 3D network of strong covalent bonds','#555',9,'middle',false));
+o.push(T(360,22,'Graphite (3D)','#555',12,'middle',true));
+graphite3D(o,0.35,0.3,27,360,130);
+o.push(T(360,250,'Each C bonded to 3 others in flat hexagonal layers;','#555',9,'middle',false));o.push(T(360,263,'weak forces between layers (dashed) let layers slide','#555',9,'middle',false));
+o.push(L(240,30,240,240,'#ddd',1,'4,3'));
 s.innerHTML=o.join('');}},
 {sl:'Try it',p:''+tryItMC(function(){var qs=[{question:'How many electron pairs are shared in a triple covalent bond?',options:['3','1','2','4'],correct:0,working:'A <b>triple bond</b> involves 3 shared pairs of electrons (6 electrons total) \u2014 found in molecules like N\u2261N (nitrogen gas), which is why nitrogen gas is so unreactive.'},{question:'Why does diamond have an extremely high melting point?',options:['It is a giant covalent structure with strong covalent bonds throughout, requiring huge energy to break','Diamond is the heaviest substance','Diamond molecules are very large but weakly bonded','Diamond has metallic bonding'],correct:0,working:'Diamond is a <b>giant covalent structure</b> where every carbon atom is covalently bonded to 4 others in a continuous 3D network. Breaking it requires breaking many strong covalent bonds, requiring enormous energy.'},{question:'Why can graphite conduct electricity while diamond cannot?',options:['Graphite has delocalised electrons that can move between layers; diamond has all electrons in fixed covalent bonds','Graphite is a metal','Diamond has more carbon atoms','Graphite has ionic bonds'],correct:0,working:'In graphite, each carbon only bonds to 3 others, leaving one <b>delocalised electron per atom</b> that can move freely between layers, allowing electrical conduction. In diamond, all 4 electrons are used in fixed covalent bonds.'},{question:'What is a covalent bond?',options:['A shared pair of electrons between two non-metal atoms','The complete transfer of electrons from one atom to another','A bond only found between metal atoms','An attraction between a positive and negative ion'],correct:0,working:'A <b>covalent bond</b> forms when two non-metal atoms share a pair of electrons, with both atoms attracted to the shared pair, holding the atoms together.'},{question:'How many electrons are shared in a single covalent bond?',options:['2 (one pair)','4 (two pairs)','6 (three pairs)','1'],correct:0,working:'A <b>single covalent bond</b> consists of one shared pair of electrons — 2 electrons in total, one contributed by each atom.'},{question:'Why do simple covalent (molecular) substances, like water, have low melting and boiling points?',options:['The weak intermolecular forces between molecules require little energy to overcome, even though the covalent bonds within molecules are strong','The covalent bonds within the molecule are very weak','There are no forces at all between molecules','Simple molecular substances are always giant structures'],correct:0,working:'In simple molecular substances, the covalent bonds within each molecule are strong, but the <b>forces between separate molecules</b> are much weaker, requiring little energy to overcome — giving low melting/boiling points.'},{question:'Why is diamond used in cutting tools despite being a form of carbon?',options:['Its rigid giant covalent structure with strong bonds in all directions makes it extremely hard','Diamond has weak bonds that make it flexible','Diamond conducts electricity, making it useful for cutting','Diamond has a layered structure like graphite'],correct:0,working:'Diamond\'s giant covalent lattice has strong covalent bonds in <b>all directions</b> (unlike graphite\'s layers), making it extremely hard — ideal for cutting tools and drill tips.'},{question:'What do diamond and graphite have in common, despite their very different properties?',options:['Both are giant covalent structures made entirely of carbon atoms','Both conduct electricity equally well','Both are soft and slippery','Both have low melting points'],correct:0,working:'Diamond and graphite are both <b>allotropes of carbon</b> — different structural forms of the same element — but their different bonding arrangements give them very different properties.'}];return rPick(qs);}),draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(240,30,'Covalent structures summary','#6A1B9A',12,'middle',true));
@@ -269,8 +321,13 @@ s.innerHTML=o.join('');}}
 {ey:'Y9 Chemistry \u2022 Q3',ti:'Metallic Bonding',su:'Sea of delocalised electrons',steps:[
 {sl:'The metallic bonding model',p:'<b>Metallic bonding</b> consists of a <b>lattice of positive metal ions</b> surrounded by a "sea" of <b>delocalised electrons</b> that are free to move throughout the structure.<br><br>The strong electrostatic attraction between positive ions and the negative electron sea holds the metal together.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-for(var r=0;r<4;r++)for(var c=0;c<6;c++)o.push(circ(60+c*60,60+r*60,18,'#fde8e8','#C0272D',1.5));
-for(var i=0;i<25;i++)o.push(circ(40+rInt(0,400),40+rInt(0,220),3,'#1565C0','#1565C0',0.5));
+o.push(R(46,36,388,212,'#e3f2fd','#90caf9',1,10));
+var rnd=seeded(7);
+for(var r=0;r<4;r++)for(var c=0;c<8;c++){o.push(circ(80+c*46,65+r*46,23,'#fde8e8','#C0272D',1.5));o.push(T(80+c*46,70+r*46,'+','#C0272D',14,'middle',true));}
+// delocalised electrons: scattered irregularly in the spaces between and around the ions (never inside them)
+for(var r=0;r<5;r++)for(var c=0;c<9;c++){var n=rnd()<0.35?2:1;if(rnd()<0.15)n=0;for(var e=0;e<n;e++){var ex=57+c*46+(rnd()-0.5)*9,ey=42+r*46+(rnd()-0.5)*9;o.push('<circle cx="'+ex.toFixed(1)+'" cy="'+ey.toFixed(1)+'" r="2.6" fill="#1565C0"/>');}}
+o.push('<circle cx="150" cy="266" r="2.6" fill="#1565C0"/>');o.push(T(158,269,'= delocalised electron','#1565C0',9,'start',false));
+o.push(circ(310,266,7,'#fde8e8','#C0272D',1));o.push(T(322,269,'= positive metal ion','#C0272D',9,'start',false));
 o.push(T(240,290,'Positive ion lattice + sea of delocalised electrons','#555',9,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Properties of metals explained',p:'Metallic bonding explains metal properties:<br><br>\u2022 <b>Conduct electricity</b>: delocalised electrons carry charge<br>\u2022 <b>Conduct heat</b>: free electrons transfer kinetic energy quickly<br>\u2022 <b>Malleable/ductile</b>: layers of ions can slide without breaking bonds (electron sea adjusts)<br>\u2022 <b>High melting points</b> (usually): strong metallic bonds throughout',
@@ -280,11 +337,13 @@ props.forEach(function(p,i){o.push(R(20,30+i*60,440,46,p[2]+'18',p[2],1.5,4));o.
 s.innerHTML=o.join('');}},
 {sl:'Why metals are malleable',p:'In metals, layers of positive ions can <b>slide over each other</b> when force is applied, because the delocalised electron sea is not fixed to any particular ion \u2014 it simply readjusts and keeps holding the structure together.<br><br>This is different from ionic compounds, where shifting layers causes like-charges to repel and shatter.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
+function mlayer(x0,y0,shiftTop){var rnd=seeded(3);for(var r=0;r<3;r++)for(var c=0;c<4;c++){var x=x0+c*30+(r===0?shiftTop:0),y=y0+r*30;o.push(circ(x,y,15,'#fde8e8','#C0272D',1.2));o.push(T(x,y+4,'+','#C0272D',11,'middle',true));}
+  for(var r=0;r<4;r++)for(var c=0;c<5;c++){if(rnd()<0.2)continue;var sx=(r===0?shiftTop:0);o.push('<circle cx="'+(x0-15+c*30+sx+(rnd()-0.5)*6).toFixed(1)+'" cy="'+(y0-15+r*30+(rnd()-0.5)*6).toFixed(1)+'" r="2.4" fill="#1565C0"/>');}}
 o.push(T(120,22,'Before force','#555',11,'middle',true));
-for(var r=0;r<3;r++)for(var c=0;c<3;c++)o.push(circ(60+c*35,60+r*35,12,'#fde8e8','#C0272D',1));
-o.push(arr(170,130,210,130,'#555',2));o.push(T(190,118,'force','#555',9,'middle',false));
+mlayer(75,70,0);
+o.push(arr(185,70,225,70,'#555',2));o.push(T(205,58,'force','#555',9,'middle',false));
 o.push(T(360,22,'After force (slides, no break)','#2E7D32',11,'middle',true));
-for(var r2=0;r2<3;r2++)for(var c2=0;c2<3;c2++){var shift=(r2>=1)?25:0;o.push(circ(300+c2*35+shift,60+r2*35,12,'#fde8e8','#C0272D',1));}
+mlayer(300,70,30);
 o.push(T(240,250,'Electron sea readjusts \u2014 bonding remains intact','#555',10,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Try it',p:''+tryItMC(function(){var qs=[{question:'What is the structure of a metal according to the metallic bonding model?',options:['A lattice of positive ions surrounded by a sea of delocalised electrons','A lattice of neutral atoms','A lattice of negative ions with positive electrons','Individual molecules held by weak forces'],correct:0,working:'Metallic bonding consists of a <b>regular lattice of positive metal ions</b> with delocalised (free-moving) electrons spread throughout, like a "sea" surrounding the ions.'},{question:'Why do metals conduct electricity?',options:['The delocalised electrons are free to move and carry electrical charge through the structure','Metal ions carry the current','Metals have no electrons','Electricity passes through gaps in the lattice'],correct:0,working:'The <b>delocalised electrons</b> in the "sea" are not bound to any particular ion, so they can move freely throughout the metal, carrying electrical current when a voltage is applied.'},{question:'Why are metals malleable (can be hammered into shape) but ionic compounds are brittle?',options:['In metals, layers of ions slide without breaking bonds (electron sea adjusts); in ionic compounds, shifting causes like-charges to repel and shatter','Metals are softer materials overall','Ionic compounds have stronger bonds','Metals have fewer electrons'],correct:0,working:'In metals, the non-directional electron sea means ion layers can <b>slide past each other</b> without breaking the metallic bond. In ionic lattices, shifting layers brings <b>like-charged ions together</b>, causing repulsion and fracturing.'},{question:'Why do metals have high melting and boiling points?',options:['Strong electrostatic attraction between positive metal ions and the sea of delocalised electrons requires a lot of energy to overcome','Metallic bonds are very weak','Metals have no bonding between atoms','Delocalised electrons repel the metal ions, weakening the structure'],correct:0,working:'<b>Metallic bonding</b> involves strong electrostatic attraction between positive metal ions and delocalised electrons, requiring significant energy to break — giving metals generally high melting/boiling points.'},{question:'Why are metals good conductors of heat?',options:['Delocalised electrons can move freely, transferring thermal energy quickly through the structure','Metal ions vibrate but cannot transfer energy','Metals have no free-moving particles','Heat cannot pass through metallic structures'],correct:0,working:'The <b>delocalised electrons</b> in a metal can move freely and transfer kinetic (thermal) energy quickly throughout the structure, making metals good conductors of heat.'},{question:'Why is pure iron softer than the alloy steel?',options:['Pure iron\'s atoms are all the same size, arranged in regular layers that slide easily; carbon atoms in steel disrupt this','Pure iron has stronger covalent bonds than steel','Steel has no delocalised electrons','Pure iron has no metallic bonding at all'],correct:0,working:'Pure iron has atoms of a uniform size arranged in <b>regular layers</b> that can slide over each other relatively easily. Adding carbon (making steel) disrupts this regularity, making the layers harder to slide, so steel is harder.'},{question:'What gives metals their shiny (lustrous) appearance?',options:['Delocalised electrons at the surface reflect light','Metals absorb all light, appearing shiny','Metallic ions are transparent','Metals have no interaction with light'],correct:0,working:'The sea of <b>delocalised electrons</b> at a metal\'s surface reflects light effectively, giving metals their characteristic shiny, lustrous appearance.'},{question:'What is the structure of a metal, in terms of ions and electrons?',options:['A lattice of positive metal ions surrounded by a sea of delocalised (free) electrons','A lattice of neutral atoms with no charged particles','Individual molecules held by weak forces','Alternating positive and negative ions'],correct:0,working:'Metals consist of a regular lattice of <b>positive metal ions</b>, with their outer electrons delocalised — free to move throughout the whole structure rather than belonging to one atom.'}];return rPick(qs);}),draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
@@ -318,7 +377,10 @@ s.innerHTML=o.join('');}}
 {sl:'The giant ionic lattice',p:'Ionic compounds form a <b>giant lattice</b> — a regular, repeating 3D arrangement of alternating positive and negative ions, held together by strong electrostatic forces in every direction.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(240,25,'Giant ionic lattice (e.g. NaCl)','#C0272D',11,'middle',true));
-for(var i=0;i<5;i++){for(var j=0;j<5;j++){var pos=(i+j)%2===0;o.push('<circle cx="'+(60+j*75)+'" cy="'+(60+i*45)+'" r="16" fill="'+(pos?'#C0272D':'#2E7D32')+'" opacity="0.8"/>');}}
+naclLattice(o,3,0.45,0.6,62,210,155);
+o.push(circ(380,120,7,'#9575cd','#4527a0',1.2));o.push(T(394,124,'Na\u207a','#4527a0',10,'start',true));
+o.push(circ(380,150,11,'#66bb6a','#1b5e20',1.2));o.push(T(398,154,'Cl\u207b','#1b5e20',10,'start',true));
+o.push(T(240,290,'Each ion is surrounded by 6 oppositely charged ions in 3D','#555',9,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'Why ionic compounds are brittle',p:'When a force is applied, layers of ions can <b>shift</b>. If like-charged ions end up next to each other, they repel strongly, causing the lattice to shatter along that plane — this is why ionic solids are brittle.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];

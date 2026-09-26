@@ -169,6 +169,7 @@ function newQ(id){
   ST[id]={o:o,genFn:e.genFn};
 }
 
+function hcf2(a,b){a=Math.abs(a);b=Math.abs(b);while(b){var t=b;b=a%b;a=t;}return a;}
 function ckById(id){
   var e=ST[id]; if(!e)return;
   var o=e.o;
@@ -261,38 +262,38 @@ var QS=[
     {lb:'Find the HCF',dr:dQ1,ht:'<p>Factorising is the REVERSE of expanding. Find the HCF (highest common factor) of the coefficients first.</p>',speak:'Factorising is the reverse of expanding. Find the HCF, or highest common factor, of the coefficients first.'},
     {lb:'Divide each term',dr:dQ1,ht:'<div class="fm"><div class="eqs"><div class="rw"><span class="l">6x \u00f7 3</span><span class="o">=</span><span class="r">2x</span></div></div></div><div class="fm"><div class="eqs"><div class="rw"><span class="l">9 \u00f7 3</span><span class="o">=</span><span class="r">3</span></div></div></div>',speak:'6x divided by 3 equals 2x. 9 divided by 3 equals 3.'},
     {lb:'Write the factorised form',dr:dQ1,ht:'<div class="fm"><div class="terms">3(2x + 3)</div></div><p>Check: 3\u00d72x + 3\u00d73 = 6x + 9 \u2713</p>',speak:'The factorised form is 3 times the bracket 2x plus 3. Check: 3 times 2x, plus 3 times 3, equals 6x plus 9, correct.'},
-    {lb:'Your turn',dr:dQ1,ht:tryIt(function(){var f=pick([2,3,4,5,6]),a=rInt(2,6),b=rInt(1,5);var fa=f*a,fb=f*b;return{question:'Factorise <b>'+fa+'x + '+fb+'</b>. What is the HCF (the factor outside the bracket)?',hints:['Find HCF of '+fa+' and '+fb],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f+'. Answer: '+f+'('+a+'x + '+b+')'};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
+    {lb:'Your turn',dr:dQ1,ht:tryIt(function(){var f=pick([2,3,4,5,6]),a=rInt(2,6),b=rInt(1,5);while(hcf2(a,b)!==1){a=rInt(2,6);b=rInt(1,5);}var fa=f*a,fb=f*b;return{question:'Factorise <b>'+fa+'x + '+fb+'</b>. What is the HCF (the factor outside the bracket)?',hints:['Find HCF of '+fa+' and '+fb],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f+'. Answer: '+f+'('+a+'x + '+b+')'};}),speak:'Now it\u2019s your turn \u2014 have a go at the question below.'},
   ]},
   {ey:'Q2 \u00b7 Year 8 \u00b7 Factorising \u2014 Common Factor',ti:'A Larger HCF',su:'Factorise 12x + 18.',steps:[
     {lb:'The problem',dr:dQ2,ht:'<p>Factorise 12x + 18.</p>',speak:'Factorise 12x plus 18.'},
     {lb:'Find the HCF',dr:dQ2,ht:'<div class="fm">HCF of 12 and 18 = 6</div>',speak:'The HCF of 12 and 18 is 6.'},
     {lb:'Factorise',dr:dQ2,ht:'<div class="fm">= 6(2x + 3)</div>',speak:'That factorises to 6 times the bracket 2x plus 3.'},
-    {lb:'Your turn',dr:dQ2,ht:tryIt(function(){var f=pick([4,6,8,9]),a=rInt(2,5),b=rInt(1,5);var fa=f*a,fb=f*b;return{question:'Factorise <b>'+fa+'x + '+fb+'</b>. What is the HCF?',hints:['Find HCF of '+fa+' and '+fb],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f};}),speak:'Now it\u2019s your turn \u2014 find the HCF.'},
+    {lb:'Your turn',dr:dQ2,ht:tryIt(function(){var f=pick([4,6,8,9]),a=rInt(2,5),b=rInt(1,5);while(hcf2(a,b)!==1){a=rInt(2,5);b=rInt(1,5);}var fa=f*a,fb=f*b;return{question:'Factorise <b>'+fa+'x + '+fb+'</b>. What is the HCF?',hints:['Find HCF of '+fa+' and '+fb],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f};}),speak:'Now it\u2019s your turn \u2014 find the HCF.'},
   ]},
   {ey:'Q3 \u00b7 Year 8 \u00b7 Factorising \u2014 Common Factor',ti:'Factorising with Subtraction',su:'Factorise 10x \u2212 15.',steps:[
     {lb:'A minus sign this time',dr:dQ3,ht:'<p>Factorise 10x \u2212 15 \u2014 the same method with subtraction.</p>',speak:'Factorise 10x minus 15 \u2014 the same method with subtraction.'},
     {lb:'Find the HCF',dr:dQ3,ht:'<div class="fm">HCF = 5</div>',speak:'The HCF is 5.'},
     {lb:'Factorise',dr:dQ3,ht:'<div class="fm">= 5(2x \u2212 3)</div>',speak:'That factorises to 5 times the bracket 2x minus 3.'},
-    {lb:'Your turn',dr:dQ3,ht:tryIt(function(){var f=pick([2,3,4,5]),a=rInt(2,6),b=rInt(1,5);var fa=f*a,fb=f*b;return{question:'Factorise <b>'+fa+'x \u2212 '+fb+'</b>. What is the HCF?',hints:['Find HCF of '+fa+' and '+fb],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f+'. Answer: '+f+'('+a+'x \u2212 '+b+')'};}),speak:'Now it\u2019s your turn \u2014 factorise with subtraction.'},
+    {lb:'Your turn',dr:dQ3,ht:tryIt(function(){var f=pick([2,3,4,5]),a=rInt(2,6),b=rInt(1,5);while(hcf2(a,b)!==1){a=rInt(2,6);b=rInt(1,5);}var fa=f*a,fb=f*b;return{question:'Factorise <b>'+fa+'x \u2212 '+fb+'</b>. What is the HCF?',hints:['Find HCF of '+fa+' and '+fb],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f+'. Answer: '+f+'('+a+'x \u2212 '+b+')'};}),speak:'Now it\u2019s your turn \u2014 factorise with subtraction.'},
   ]},
   {ey:'Q4 \u00b7 Year 8 \u00b7 Factorising \u2014 Common Factor',ti:'A Common Mistake',su:'Factorise 8x + 12 \u2014 avoiding a classic error.',steps:[
     {lb:'A partial-factorising trap',dr:dQ4,ht:'<p>Factorise 8x + 12. It\u2019s easy to use a common factor that\u2019s not the HIGHEST one.</p>',speak:'Factorise 8x plus 12. It\u2019s easy to use a common factor that\u2019s not the highest one.'},
     {lb:'The mistake',dr:dQ4,ht:'<div class="fm">WRONG: 2(4x+6) (not fully factorised!)</div>',speak:'A common mistake: 2 times the bracket 4x plus 6 \u2014 this isn\u2019t fully factorised, since 4x plus 6 still shares a common factor of 2.'},
     {lb:'The correct way',dr:dQ4,ht:'<div class="fm">RIGHT: 4(2x+3)</div>',speak:'The correct way: 4 times the bracket 2x plus 3.'},
     {lb:'Always use the HCF',dr:dQ4,ht:'<p>ALWAYS use the HIGHEST common factor, not just any common factor.</p>',speak:'Always use the highest common factor, not just any common factor.'},
-    {lb:'Your turn',dr:dQ4,ht:tryIt(function(){var f=pick([4,6,8,10]),a=rInt(2,5),b=rInt(1,4);var fa=f*a,fb=f*b;return{question:'Factorise <b>'+fa+'x + '+fb+'</b> fully. What is the HIGHEST common factor?',hints:['Don\u2019t stop at a smaller common factor!'],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f+' (the highest, not 2 or 4)'};}),speak:'Now it\u2019s your turn \u2014 find the fully-reduced HCF.'},
+    {lb:'Your turn',dr:dQ4,ht:tryIt(function(){var f=pick([4,6,8,10]),a=rInt(2,5),b=rInt(1,4);while(hcf2(a,b)!==1){a=rInt(2,5);b=rInt(1,4);}var fa=f*a,fb=f*b;return{question:'Factorise <b>'+fa+'x + '+fb+'</b> fully. What is the HIGHEST common factor?',hints:['Don\u2019t stop at a smaller common factor!'],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f+' (the highest common factor, not a smaller one). Answer: '+f+'('+a+'x + '+b+')'};}),speak:'Now it\u2019s your turn \u2014 find the fully-reduced HCF.'},
   ]},
   {ey:'Q5 \u00b7 Year 8 \u00b7 Factorising \u2014 Common Factor',ti:'Factorising, Then Checking',su:'Factorise 15x + 20, then verify by expanding.',steps:[
     {lb:'The problem',dr:dQ5,ht:'<p>Factorise 15x + 20, then verify your answer by expanding it back.</p>',speak:'Factorise 15x plus 20, then verify your answer by expanding it back.'},
     {lb:'Factorise',dr:dQ5,ht:'<div class="fm">= 5(3x + 4)</div>',speak:'That factorises to 5 times the bracket 3x plus 4.'},
     {lb:'Check by expanding',dr:dQ5,ht:'<div class="fm">Check: 5\u00d73x+5\u00d74=15x+20 \u2713</div>',speak:'Check: 5 times 3x, plus 5 times 4, equals 15x plus 20, correct.'},
-    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var f=pick([3,5,7]),a=rInt(2,5),b=rInt(1,5);var fa=f*a,fb=f*b;return{question:'Factorise <b>'+fa+'x + '+fb+'</b>, then check by expanding. What is the HCF?',hints:['Find the HCF, then verify'],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f};}),speak:'Now it\u2019s your turn \u2014 factorise, then check your work.'},
+    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var f=pick([3,5,7]),a=rInt(2,5),b=rInt(1,5);while(hcf2(a,b)!==1){a=rInt(2,5);b=rInt(1,5);}var fa=f*a,fb=f*b;return{question:'Factorise <b>'+fa+'x + '+fb+'</b>, then check by expanding. What is the HCF?',hints:['Find the HCF, then verify'],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f};}),speak:'Now it\u2019s your turn \u2014 factorise, then check your work.'},
   ]},
   {ey:'Q6 \u00b7 Year 8 \u00b7 Factorising \u2014 Common Factor',ti:'Real Life: Sharing Out a Total',su:'A cost expression 20x+30 can be split into equal groups. Factorise it.',steps:[
     {lb:'The scenario',dr:dQ6,ht:'<p>A cost expression 20x+30 needs to be split into equal groups. Factorise it.</p>',speak:'A cost expression, 20x plus 30, needs to be split into equal groups. Factorise it.'},
     {lb:'Find the HCF',dr:dQ6,ht:'<div class="fm">HCF of 20 and 30 = 10</div>',speak:'The HCF of 20 and 30 is 10.'},
     {lb:'Factorise',dr:dQ6,ht:'<div class="fm">= 10(2x + 3)</div>',speak:'That factorises to 10 times the bracket 2x plus 3.'},
-    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var f=pick([5,10,15]),a=rInt(2,5),b=rInt(1,5);var fa=f*a,fb=f*b;return{question:'A cost expression '+fa+'x+'+fb+' needs to split into equal groups. Factorise it. What is the HCF?',hints:['Find HCF of '+fa+' and '+fb],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f};}),speak:'Now it\u2019s your turn \u2014 factorise this real-life expression.'},
+    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var f=pick([5,10,15]),a=rInt(2,5),b=rInt(1,5);while(hcf2(a,b)!==1){a=rInt(2,5);b=rInt(1,5);}var fa=f*a,fb=f*b;return{question:'A cost expression '+fa+'x+'+fb+' needs to split into equal groups. Factorise it. What is the HCF?',hints:['Find HCF of '+fa+' and '+fb],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f};}),speak:'Now it\u2019s your turn \u2014 factorise this real-life expression.'},
   ]},
   {ey:'Q7 \u00b7 Year 8 \u00b7 Factorising \u2014 Common Factor',ti:'Factorising with a Variable HCF',su:'Factorise x\u00b2 + 5x.',steps:[
     {lb:'x can be a common factor too',dr:dQ7,ht:'<p>Factorise x\u00b2 + 5x \u2014 not every common factor is a number.</p>',speak:'Factorise x squared plus 5x \u2014 not every common factor is a number.'},
@@ -317,7 +318,7 @@ var QS=[
     {lb:'Step 1: find the HCF',dr:dQ10,ht:'<p>Find the HCF of the coefficients.</p>',speak:'Step 1: find the HCF of the coefficients.'},
     {lb:'Step 2: divide and write',dr:dQ10,ht:'<p>Divide each term by the HCF, and write it outside the bracket.</p>',speak:'Step 2: divide each term by the HCF, and write it outside the bracket.'},
     {lb:'Worked example',dr:dQ10,ht:'<div class="fm">9x+12 = 3(3x + 4)</div>',speak:'For example: 9x plus 12 equals 3 times the bracket 3x plus 4.'},
-    {lb:'Your turn',dr:dQ10,ht:tryIt(function(){var f=pick([2,3,4,5,6,7]),a=rInt(2,6),b=rInt(1,5);var fa=f*a,fb=f*b;return{question:'Factorise <b>'+fa+'x + '+fb+'</b>. What is the HCF?',hints:['Find HCF of '+fa+' and '+fb],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f+'. Answer: '+f+'('+a+'x + '+b+')'};}),speak:'Now it\u2019s your turn \u2014 one final factorising question.'},
+    {lb:'Your turn',dr:dQ10,ht:tryIt(function(){var f=pick([2,3,4,5,6,7]),a=rInt(2,6),b=rInt(1,5);while(hcf2(a,b)!==1){a=rInt(2,6);b=rInt(1,5);}var fa=f*a,fb=f*b;return{question:'Factorise <b>'+fa+'x + '+fb+'</b>. What is the HCF?',hints:['Find HCF of '+fa+' and '+fb],ans:f,tol:0,unit:'(HCF)',working:'HCF = '+f+'. Answer: '+f+'('+a+'x + '+b+')'};}),speak:'Now it\u2019s your turn \u2014 one final factorising question.'},
   ]},
 
 ];

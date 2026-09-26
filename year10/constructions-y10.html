@@ -66,7 +66,7 @@ header{background:var(--red);color:#fff;height:56px;display:flex;align-items:cen
 .wk-b{margin-top:8px;font-size:14px;line-height:1.6;color:#3a2a24;}
 .click-stage{display:flex;justify-content:center;margin:10px 0 4px;}
 .click-svg{width:100%;max-width:480px;height:auto;background:#fff;border:1px solid var(--line);border-radius:6px;touch-action:manipulation;}
-.tphit{transition:opacity .1s;}
+.tphit{transition:opacity .1s;cursor:pointer;pointer-events:all;}
 .tphit:hover{fill:rgba(200,146,42,.18);}
 .click-hint{font-size:13px;color:#6b5750;margin-top:2px;}
 @media(max-width:640px){.layout{flex-direction:column;}.sb{width:100%;flex-direction:row;flex-wrap:wrap;}.qb{flex:1;min-width:80px;}}
@@ -134,7 +134,8 @@ document.addEventListener('click',function(e){
     var o=e2.o;var pt=null;for(var i=0;i<o.points.length;i++){if(o.points[i].label===lbl){pt=o.points[i];break;}}
     if(!pt)return;
     var fb=document.querySelector('.try-fb[data-tpid="'+id+'"]');if(!fb)return;
-    e2.answered=true;
+    // Only lock the widget once the correct point is tapped, so a wrong tap can be retried
+    if(pt.correct)e2.answered=true;
     var svg=el.closest('svg');
     var circles=svg.querySelectorAll('circle[r="7"]');
     circles.forEach(function(c){
@@ -144,7 +145,7 @@ document.addEventListener('click',function(e){
       }
     });
     if(pt.correct){fb.className='try-fb fb ok';fb.innerHTML='\u2713 Correct! '+(pt.explain||'');}
-    else{fb.className='try-fb fb er';fb.innerHTML='Not quite \u2014 '+(pt.explain||'')+' '+(o.correctExplain?'The correct point '+o.correctExplain:'');}
+    else{fb.className='try-fb fb er';fb.innerHTML='Not quite \u2014 '+(pt.explain||'')+' '+(o.correctExplain?'The correct point '+o.correctExplain:'')+' Try another point.';}
     return;
   }
   if(el.classList.contains('tap-new')){newTapPoints(el.getAttribute('data-tpid'));return;}
@@ -177,10 +178,11 @@ document.addEventListener('click',function(e){
   }
 });
 function g(){return document.getElementById('dg');}
+var D=Math.PI/180; // degrees to radians (used by the Q2, Q4, Q6 and Q7 diagrams)
 function Txt(x,y,t,c,sz,a,b){c=c||'#241A17';sz=sz||12;a=a||'middle';return '<text x="'+x+'" y="'+y+'" font-size="'+sz+'" font-family="Arial" fill="'+c+'" text-anchor="'+a+'" font-weight="'+(b?700:400)+'">'+t+'</text>';}
 function Ln(x1,y1,x2,y2,c,w,d){c=c||'#241A17';w=w||1.5;return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+c+'" stroke-width="'+w+'" '+(d?'stroke-dasharray="'+d+'"':'')+'/>';}
 function Rc(x,y,w,h,fill,stroke,sw){fill=fill||'#fff5f0';stroke=stroke||'#C0272D';sw=sw||1.5;return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'" rx="2"/>';}
-function Ci(cx,cy,r,fill,stroke,sw){fill=fill||'none';stroke=stroke||'#C0272D';sw=sw||1.5;return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"/>';}
+function Ci(cx,cy,r,fill,stroke,sw,dash){fill=fill||'none';stroke=stroke||'#C0272D';sw=sw||1.5;return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+sw+'"'+(dash?' stroke-dasharray="'+dash+'"':'')+'/>';}
 function Arc(cx,cy,r,a1deg,a2deg,col,sw,dash){
   col=col||'#C0272D';sw=sw||1.5;
   var a1=a1deg*Math.PI/180,a2=a2deg*Math.PI/180;
@@ -202,9 +204,10 @@ function findPoint(pred,xr,yr){
 }
 function buildTapPoints(id,o){
   var ctx=typeof o.svgExtra==='function'?o.svgExtra():(o.svgExtra||'');
+  o.points.forEach(function(pt){pt.x=Math.round(pt.x*10)/10;pt.y=Math.round(pt.y*10)/10;});
   var ptsSvg=o.points.map(function(pt){
     return Ci(pt.x,pt.y,7,'#C8922A','#7a5a10',1.5)+Txt(pt.x,pt.y-13,pt.label,'#7a5a10',12,'middle',true)
-      +'<circle class="tphit" data-tpid="'+id+'" data-lbl="'+pt.label+'" cx="'+pt.x+'" cy="'+pt.y+'" r="16" fill="transparent"/>';
+      +'<circle class="tphit" data-tpid="'+id+'" data-lbl="'+pt.label+'" cx="'+pt.x+'" cy="'+pt.y+'" r="18" fill="transparent" style="cursor:pointer"/>';
   }).join('');
   return '<div class="try" data-tpid="'+id+'">'
     +'<div class="try-t">\u2714 Your Turn</div>'
@@ -718,9 +721,12 @@ var QS=[
           explain:'This point is '+(m<1?'closer to':'further from')+' P than '+rCm+' cm.'});
       });
       return{
-        question:'The locus of points exactly '+rCm+' cm from P is a circle. Tap the labelled point that lies <b>exactly '+rCm+' cm from P</b>.',
+        question:'The locus of points exactly '+rCm+' cm from P is a circle (shown dashed). Tap the labelled point that lies <b>exactly '+rCm+' cm from P</b>.',
         points:pts,
-        svgExtra:function(){return Ci(cx,cy,5,'#C0272D','#C0272D',0)+Txt(cx+10,cy-10,'P','#C0272D',13,'start',true);}
+        svgExtra:function(){return Ci(cx,cy,r,'none','#1a5a8a',1.5,'5,4')
+          +Ci(cx,cy,5,'#C0272D','#C0272D',0)+Txt(cx+10,cy-10,'P','#C0272D',13,'start',true)
+          +Ln(20,285,20+pxPerCm,285,'#241A17',2)+Ln(20,280,20,290,'#241A17',1.5)+Ln(20+pxPerCm,280,20+pxPerCm,290,'#241A17',1.5)
+          +Txt(20+pxPerCm+8,289,'= 1 cm','#241A17',11,'start',false);}
       };
     })}
   ]},

@@ -146,7 +146,7 @@ var q2=(function(){var a=rnd(2,8),b=rnd(3,9),c=rnd(2,6);
   return{expr:'('+a+' + '+b+') \u00d7 '+c, bracket:a+b, ans:(a+b)*c};})();
 // Q3: division before add
 var q3=(function(){var a=rnd(2,6),b=rnd(2,5),mul=rnd(3,7),c=rnd(2,8);
-  return{expr:a*mul+' \u00f7 '+a+' + '+b+mul, step1:a*mul+'\u00f7'+a+'='+mul, ans:mul+b*mul, a:a, b:b, mul:mul, amul:a*mul, bmul:b*mul};})();
+  return{expr:a*mul+' \u00f7 '+a+' + '+b*mul, step1:a*mul+'\u00f7'+a+'='+mul, ans:mul+b*mul, a:a, b:b, mul:mul, amul:a*mul, bmul:b*mul};})();
 // Q4: power (indices) in BODMAS
 var q4=(function(){var b=rnd(2,5),e=2,a=rnd(2,6);
   return{expr:b+'\u00b2 + '+a, bsq:b*b, ans:b*b+a, b:b, a:a};})();
@@ -218,7 +218,7 @@ function dQ3(p){var s=g();s.setAttribute('viewBox','0 0 480 260');var o=[];
     o.push(T(240,84,'Division before Addition: do '+q3.amul+' \u00f7 '+q3.a+' = '+q3.mul+' first.','#1a5a8a',12,'middle',false));
   }
   if(p>=2){
-    o.push(T(240,118,'Then: '+q3.mul+' + '+q3.b+q3.mul+' = '+q3.ans,'#888',12,'middle',false));
+    o.push(T(240,118,'Then: '+q3.mul+' + '+q3.bmul+' = '+q3.ans,'#888',12,'middle',false));
     o.push(R(150,130,180,44,'#e8f8ee','#1a7a3a',2));
     o.push(T(240,158,q3.ans,'#1a7a3a',24,'middle',true));
   }
@@ -349,7 +349,7 @@ function yt1(){var a=rnd(2,8),b=rnd(3,9),c=rnd(2,6),d=rnd(2,5),ans=a+b*c-d;
 function yt2(){var a=rnd(2,8),b=rnd(3,9),c=rnd(2,6),ans=(a+b)*c;
   return tryIt({question:'Calculate <b>('+a+' + '+b+') \u00d7 '+c+'</b>.',hints:['Brackets first: '+a+' + '+b+' = '+(a+b),'Then multiply by '+c],ans:ans,tol:0,unit:'',working:'('+a+'+'+b+')×'+c+'='+(a+b)+'×'+c+'='+ans});}
 function yt3(){var a=rnd(2,6),b=rnd(2,4),mul=rnd(3,7),c=rnd(2,8),ans=mul+b*mul;
-  return tryIt({question:'Calculate <b>'+a*mul+' \u00f7 '+a+' + '+b+mul+'</b>.',hints:['Division before addition: '+a*mul+' \u00f7 '+a+' = '+mul+' first'],ans:ans,tol:0,unit:'',working:a*mul+'÷'+a+'='+mul+', '+mul+'+'+b*mul+'='+ans});}
+  return tryIt({question:'Calculate <b>'+a*mul+' \u00f7 '+a+' + '+b*mul+'</b>.',hints:['Division before addition: '+a*mul+' \u00f7 '+a+' = '+mul+' first'],ans:ans,tol:0,unit:'',working:a*mul+'÷'+a+'='+mul+', '+mul+'+'+b*mul+'='+ans});}
 function yt4(){var b=rnd(2,6),a=rnd(2,8),ans=b*b+a;
   return tryIt({question:'Calculate <b>'+b+'\u00b2 + '+a+'</b>.',hints:['Powers before addition: '+b+'\u00b2 = '+b*b+' first'],ans:ans,tol:0,unit:'',working:b+'²='+b*b+', '+b*b+'+'+a+'='+ans});}
 function yt5(){var a=rnd(2,6),b=rnd(2,4),c=rnd(4,8),ans=(a+b)*(c-a);

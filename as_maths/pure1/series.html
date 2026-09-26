@@ -178,7 +178,7 @@ header{background:linear-gradient(120deg,var(--dark) 0%,var(--red) 45%,var(--gol
 var ST={};
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
-function shuffleMC(o){var idxs=o.options.map(function(_,i){return i;});for(var i=idxs.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=idxs[i];idxs[i]=idxs[j];idxs[j]=t;}var newOptions=idxs.map(function(i){return o.options[i];});return{question:o.question,options:newOptions,correct:idxs.indexOf(o.correct),working:o.working};}
+function shuffleMC(o){var seen={},opts=[],corr=0;o.options.forEach(function(op,i){var k=String(op);if(seen[k]){if(i===o.correct)corr=seen[k]-1;return;}seen[k]=opts.length+1;if(i===o.correct)corr=opts.length;opts.push(op);});o={question:o.question,options:opts,correct:corr,working:o.working};var idxs=o.options.map(function(_,i){return i;});for(var i=idxs.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=idxs[i];idxs[i]=idxs[j];idxs[j]=t;}var newOptions=idxs.map(function(i){return o.options[i];});return{question:o.question,options:newOptions,correct:idxs.indexOf(o.correct),working:o.working};}
 function tryItMC(genFn){var id='t'+Math.random().toString(36).slice(2);var o=shuffleMC(genFn());ST[id]={o:o,genFn:genFn};return buildTryMC(id,o);}
 function buildTryMC(id,o){
   var opts=(o.options||[]).map(function(opt,i){return '<button class="mc-opt" data-tryid="'+id+'" data-idx="'+i+'">'+opt+'</button>';}).join('');
@@ -322,7 +322,7 @@ function dQ5(p){var s=g();s.setAttribute('viewBox','0 0 480 260');var o=[];
   if(p>=1){o.push(wrap(p===1,'an-fade',T(240,36,'S = a + (a+d) + (a+2d) + ... + l   (l = last term)','#241A17',12,'middle',true)));}
   if(p>=2){o.push(wrap(p===2,'an-fade',T(240,64,'Write it again, backwards:','#241A17',11.5,'middle',false)+T(240,82,'S = l + (l\u2212d) + (l\u22122d) + ... + a','#241A17',12,'middle',true)));}
   if(p>=3){o.push(wrap(p===3,'an-fade',T(240,110,'Add the two lines \u2014 every pair sums to the SAME thing, (a+l):','#241A17',11.5,'middle',false)+T(240,128,'2S = n \u00d7 (a + l)   (n pairs, all equal to a+l)','#1a5a8a',12.5,'middle',true)));}
-  if(p>=4){o.push(wrap(p===4,'an-pop',R(30,144,420,34,'#e8f8ee','#1a7a3a',2)+T(240,166,'S\u2099 = \u2079\u2044\u2082(a + l) = \u2079\u2044\u2082(2a + (n\u22121)d)','#1a7a3a',13,'middle',true)));}
+  if(p>=4){o.push(wrap(p===4,'an-pop',R(30,144,420,34,'#e8f8ee','#1a7a3a',2)+T(240,166,'S\u2099 = \u207f\u2044\u2082(a + l) = \u207f\u2044\u2082(2a + (n\u22121)d)','#1a7a3a',13,'middle',true)));}
   if(p>=5){o.push(wrap(p===5,'an-fade',T(240,196,'both versions are useful \u2014 use whichever you\u2019re given (l, or d and n).','#888',10,'middle',false)));}
   s.innerHTML=o.join('');}
 
@@ -428,17 +428,15 @@ var Q=[
      +tryItMC(function(){
        var n=pick([3,4,5]);
        var row=[];for(var r=0;r<=n;r++){row.push(nCr(n,r));}
-       var terms=row.map(function(c,i){
-         var aPow=n-i, bPow=i;
-         var aStr = aPow===0?'':(aPow===1?'a':'a^('+aPow+')');
-         var bStr = bPow===0?'':(bPow===1?'b':'b^('+bPow+')');
-         var coefStr = c===1?'':String(c);
-         return coefStr+aStr+bStr;
-       });
+       function pw(v,k){return k===0?'':(k===1?v:v+'^('+k+')');}
+       function term(c,aPow,bPow){return (c===1?'':String(c))+pw('a',aPow)+pw('b',bPow);}
+       var correctT=row.map(function(c,i){return term(c,n-i,i);});
+       var noCoefT=row.map(function(c,i){return term(1,n-i,i);});
+       var badPowT=row.map(function(c,i){return term(c,n-i,(i===0?0:(i===n?n:1)));});
        return {question:'What is the expansion of (a+b)'+'^('+n+')'+'?',
-         options:[terms.join('+'), terms.slice().reverse().join('+').replace(/a/g,'X').replace(/b/g,'a').replace(/X/g,'b'), terms.map(function(t){return t.replace(/\d+/,'');}).join('+'), 'a^('+n+')+b^('+n+')'],
+         options:[correctT.join(' + '), noCoefT.join(' + '), badPowT.join(' + '), 'a^('+n+') + b^('+n+')'],
          correct:0,
-         working:'Coefficients from row '+n+' of Pascal\u2019s triangle, with powers of a counting down and powers of b counting up.'};
+         working:'Coefficients from row '+n+' of Pascal\u2019s triangle ('+row.join(', ')+'), with powers of a counting down and powers of b counting up: (a+b)^('+n+') = '+correctT.join(' + ')+'.'};
      }),
     speak:'The coefficients are exactly row 4 of Pascal\u2019s triangle from Checkpoint 1. Now it\u2019s your turn.'}
   ]},
@@ -610,7 +608,7 @@ function render(){
   var pn=document.getElementById('pn');
   pn.innerHTML=pp.html;
   if (qi===Q.length-1 && pi===qq.panels.length-1) {
-    pn.innerHTML += '<div class="test-link-row"><a class="test-link-btn" href="test.html?topic='+(window.__testTopicId||759)+'">\ud83d\udcdd Optional: take the test on this topic</a></div>';
+    pn.innerHTML += '<div class="test-link-row"><a class="test-link-btn" href="../../test.html?topic='+(window.__testTopicId||759)+'">\ud83d\udcdd Optional: take the test on this topic</a></div>';
   }
   pn.classList.remove('fi');void pn.offsetWidth;pn.classList.add('fi');
   document.getElementById('pb').disabled=(qi===0&&pi===0);

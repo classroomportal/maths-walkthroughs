@@ -106,10 +106,10 @@ document.addEventListener('click',function(e){
   var el=e.target;
   if(el.classList.contains('try-new')){
     var id=el.getAttribute('data-tryid');var entry=ST[id];if(!entry)return;
-    var o=entry.genFn();entry.o=o;
+    var o=entry.genFn();var nid='t'+Math.random().toString(36).slice(2);
     var wrap=el.closest('.try');if(!wrap)return;
-    var tmp=document.createElement('div');tmp.innerHTML=buildTry(id,o);
-    wrap.parentNode.replaceChild(tmp.firstChild,wrap);ST[id]={o:o,genFn:entry.genFn};return;
+    var tmp=document.createElement('div');tmp.innerHTML=buildTry(nid,o);
+    wrap.parentNode.replaceChild(tmp.firstChild,wrap);ST[nid]={o:o,genFn:entry.genFn};return;
   }
   if(el.classList.contains('try-ck')){
     var id=el.getAttribute('data-tryid');var entry=ST[id];if(!entry)return;var o=entry.o;
@@ -117,7 +117,7 @@ document.addEventListener('click',function(e){
     var fb=document.querySelector('.try-fb[data-tryid="'+id+'"]');if(!inp||!fb)return;
     var v=parseFloat(inp.value);
     if(isNaN(v)){fb.className='try-fb er';fb.textContent='Enter a number.';return;}
-    if(Math.abs(v-o.ans)<=(o.tol!=null?o.tol:0.05*Math.abs(o.ans)||0.05)){fb.className='try-fb ok';fb.innerHTML='&#10003; Correct! &nbsp;'+o.working;}
+    if(Math.abs(v-o.ans)<=(o.tol!=null?Math.abs(o.tol):0.05*Math.abs(o.ans)||0.05)){fb.className='try-fb ok';fb.innerHTML='&#10003; Correct! &nbsp;'+o.working;}
     else{fb.className='try-fb er';fb.textContent='Not quite \u2014 check your working and try again.';}
   }
 });
@@ -202,7 +202,7 @@ var QS=[
   {lb:'Alpha decay by tunnelling',dr:dQ8,ht:'<p>Alpha particle forms in nucleus; nuclear potential energy well. Outside nucleus: electrostatic repulsion from protons. Classically: not enough energy to escape. Quantum: wave function tunnels through the Coulomb barrier. T \u221d e^(-G) where G = Gamow factor. High-energy alphas: tunnels faster; shorter T\u00bd. Low-energy alphas: slower tunnelling; longer T\u00bd. Geiger-Nuttall law: log(T\u00bd) inversely proportional to \u221aE_\u03b1.</p>'},
   {lb:'Scanning tunnelling microscope (STM)',dr:dQ8,ht:'<p>STM: sharp metal tip brought very close to surface (~0.5 nm). Voltage applied; electrons tunnel across gap. Tunnelling current I \u221d e^(-kd) very sensitive to distance d. Feedback: maintain constant current by adjusting tip height; maps surface topography at atomic resolution. Room temperature operation possible. Invented 1981 (Binnig & Rohrer; Nobel 1986). Can image AND move individual atoms.</p>'},
   {lb:'Nuclear fusion and tunnelling',dr:dQ8,ht:'<p>Proton-proton fusion in Sun: temperature ~1.5\u00d710\u2077 K; thermal KE far below Coulomb barrier. Classical: fusion impossible. Quantum tunnelling: small but non-zero probability; \u00d7 enormous number of protons = significant rate. Gamow peak: narrow energy range where combination of Boltzmann factor and tunnelling probability is maximum. Sun would stop shining without quantum tunnelling.</p>'},
-  {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var type=pick(['tunnel_concept','STM_current','alpha_energy']);if(type==='tunnel_concept'){return{question:'In quantum tunnelling, what happens to the probability as barrier width increases?',hints:['T\u221de^(-2kL); wider barrier: lower T'],ans:0,tol:0,unit:'(1=increases; 0=decreases)',working:'Transmission probability T \u221d e^(-2kL): increases exponentially as L decreases. Answer: 0 (decreases)'};} if(type==='STM_current'){return{question:'STM: tip 1nm from surface current 1nA. At 0.8nm, by roughly what factor does current change?',hints:['I\u221de^(-kd); exponentially sensitive to d'],ans:7,tol:5,unit:'times larger',working:'I \u221d e^(-kd); roughly doubles per 0.1nm decrease; 0.2nm \u2248 4x; approx 7x increase'};} var E=rnd(40,80)/10,logT_half=parseFloat((-10/E).toFixed(1));return{question:'Higher E_\u03b1 means shorter or longer T\u00bd?',hints:['Higher E\u2192less tunnelling suppression\u2192faster decay\u2192shorter T\u00bd'],ans:1,tol:0,unit:'(1=shorter; 2=longer)',working:'Higher E_\u03b1 \u2192 less Gamow suppression \u2192 shorter half-life. Answer: 1'};})},
+  {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var type=pick(['tunnel_concept','STM_current','alpha_energy']);if(type==='tunnel_concept'){return{question:'In quantum tunnelling, what happens to the transmission probability as the barrier width increases?<br><small>1: It increases &nbsp; 2: It decreases &nbsp; 3: It stays the same</small>',hints:['T ∝ e^(−2κL): a wider barrier gives a smaller T'],ans:2,tol:0,unit:'enter 1, 2 or 3',working:'Transmission probability T ∝ e^(−2κL), so it <b>decreases</b> exponentially as the width L increases. Answer: <b>2</b>'};} if(type==='STM_current'){var dd=pick([0.05,0.1,0.15,0.2]);var d2=Math.round((1-dd)*100)/100;var fac=Math.round(Math.exp(20*dd)*10)/10;return{question:'In an STM the tunnelling current is I = I₀e^(−2κd) with 2κ = 20 nm⁻¹. The tip is moved from 1.00 nm to '+d2+' nm from the surface. By what factor does the current increase?',hints:['I₂/I₁ = e^(2κ(d₁ − d₂))','d₁ − d₂ = '+dd+' nm'],ans:fac,tol:Math.max(0.1,fac*0.03),unit:'times larger',working:'I₂/I₁ = e^(20 × '+dd+') = e^'+(Math.round(20*dd*10)/10)+' ≈ <b>'+fac+'</b>. The current is exponentially sensitive to the gap, which is why an STM can resolve individual atoms.'};} return{question:'For alpha decay, does a higher alpha-particle energy E_α mean a shorter or longer half-life T½?<br><small>1: Shorter &nbsp; 2: Longer &nbsp; 3: No effect</small>',hints:['Higher E → the alpha particle meets a thinner, lower part of the barrier → tunnelling more likely'],ans:1,tol:0,unit:'enter 1, 2 or 3',working:'Higher E_α → thinner effective barrier → higher tunnelling probability → faster decay → <b>shorter</b> half-life (Geiger–Nuttall law). Answer: <b>1</b>'};})},
 ]},
 {ey:'Q9 \u2022 Y12 Physics \u2022 Quantum',ti:'The Compton Effect',su:'Apply Compton scattering formula. Explain X-ray wavelength shift.',steps:[
   {lb:'Compton scattering',dr:dQ9,ht:'<p>Compton (1922): X-rays scattered by electrons; scattered \u03bb longer than incident \u03bb. Classical: scattered frequency should equal incident frequency (wave model). Compton explained using photon model: photon collides elastically with electron; transfers some momentum; photon loses energy; \u03bb increases. Proved photon momentum p = h/\u03bb. Nobel Prize 1927.</p>'},

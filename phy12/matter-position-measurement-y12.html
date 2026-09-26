@@ -106,10 +106,10 @@ document.addEventListener('click',function(e){
   var el=e.target;
   if(el.classList.contains('try-new')){
     var id=el.getAttribute('data-tryid');var entry=ST[id];if(!entry)return;
-    var o=entry.genFn();entry.o=o;
+    var o=entry.genFn();var nid='t'+Math.random().toString(36).slice(2);
     var wrap=el.closest('.try');if(!wrap)return;
-    var tmp=document.createElement('div');tmp.innerHTML=buildTry(id,o);
-    wrap.parentNode.replaceChild(tmp.firstChild,wrap);ST[id]={o:o,genFn:entry.genFn};return;
+    var tmp=document.createElement('div');tmp.innerHTML=buildTry(nid,o);
+    wrap.parentNode.replaceChild(tmp.firstChild,wrap);ST[nid]={o:o,genFn:entry.genFn};return;
   }
   if(el.classList.contains('try-ck')){
     var id=el.getAttribute('data-tryid');var entry=ST[id];if(!entry)return;var o=entry.o;
@@ -117,7 +117,7 @@ document.addEventListener('click',function(e){
     var fb=document.querySelector('.try-fb[data-tryid="'+id+'"]');if(!inp||!fb)return;
     var v=parseFloat(inp.value);
     if(isNaN(v)){fb.className='try-fb er';fb.textContent='Enter a number.';return;}
-    if(Math.abs(v-o.ans)<=(o.tol!=null?o.tol:0.05*Math.abs(o.ans)||0.05)){fb.className='try-fb ok';fb.innerHTML='&#10003; Correct! &nbsp;'+o.working;}
+    if(Math.abs(v-o.ans)<=(o.tol!=null?Math.abs(o.tol):0.05*Math.abs(o.ans)||0.05)){fb.className='try-fb ok';fb.innerHTML='&#10003; Correct! &nbsp;'+o.working;}
     else{fb.className='try-fb er';fb.textContent='Not quite \u2014 check your working and try again.';}
   }
 });
@@ -187,7 +187,15 @@ var QS=[
   {lb:'Checking equations',dr:dQ4,ht:'<p>Check v\u00b2=u\u00b2+2as: LHS [L\u00b2T\u207b\u00b2]; RHS [L\u00b2T\u207b\u00b2]+[LT\u207b\u00b2][L]=[L\u00b2T\u207b\u00b2]. \u2713 Consistent. Cannot find dimensionless constants (2, \u03c0, \u00bd) this way.</p>'},
   {lb:'Deriving relationships',dr:dQ4,ht:'<p>Pendulum: T depends on L, m, g. [T]=[L]^a[M]^b[LT\u207b\u00b2]^c. Equating: c=-\u00bd, a=\u00bd, b=0. So T\u221d\u221a(L/g). Dimensionless constant (2\u03c0) from experiment.</p>'},
   {lb:'Electrical dimensions',dr:dQ4,ht:'<p>Voltage [V]=[ML\u00b2T\u207b\u00b3I\u207b\u00b9]. Resistance [R]=[ML\u00b2T\u207b\u00b3I\u207b\u00b2]. Charge [Q]=[IT]. Capacitance [C]=[M\u207b\u00b9L\u207b\u00b2T\u2074I\u00b2]. Electric field [E]=[MLT\u207b\u00b3I\u207b\u00b9]. These appear in WAEC and Cambridge papers.</p>'},
-  {lb:'Your turn',dr:dQ4,ht:tryIt(function(){var qs=[{q:'Dimensions of pressure (p=F/A)?',a:1,w:'[F]/[A]=[MLT\u207b\u00b2]/[L\u00b2]=[ML\u207b\u00b9T\u207b\u00b2]. Choose: 1=[ML\u207b\u00b9T\u207b\u00b2], 2=[ML\u00b2T\u207b\u00b2]'},{q:'Dimensions of energy (E=\u00bdmv\u00b2)?',a:2,w:'[M][L\u00b2T\u207b\u00b2]=[ML\u00b2T\u207b\u00b2]. Choose: 1=[MLT\u207b\u00b2], 2=[ML\u00b2T\u207b\u00b2]'},{q:'Dimensions of acceleration?',a:1,w:'[a]=[LT\u207b\u00b9]/[T]=[LT\u207b\u00b2]. Choose: 1=[LT\u207b\u00b2], 2=[LT\u207b\u00b3]'}];var qq=pick(qs);return{question:qq.q,hints:['Use [M],[L],[T]'],ans:qq.a,tol:0,unit:'(1 or 2)',working:qq.w};})},
+  {lb:'Your turn',dr:dQ4,ht:tryIt(function(){var qs=[
+{q:'What are the dimensions of pressure (p = F/A)?',o:['[MLT⁻²]','[ML⁻¹T⁻²]','[ML²T⁻²]','[ML⁻²T⁻²]'],a:2,w:'[p] = [F]/[A] = [MLT⁻²]/[L²] = <b>[ML⁻¹T⁻²]</b>'},
+{q:'What are the dimensions of energy (E = ½mv²)?',o:['[ML²T⁻²]','[MLT⁻²]','[ML²T⁻³]','[MLT⁻¹]'],a:1,w:'[E] = [M][LT⁻¹]² = <b>[ML²T⁻²]</b> (the ½ has no dimensions)'},
+{q:'What are the dimensions of acceleration?',o:['[LT⁻¹]','[LT⁻³]','[MLT⁻²]','[LT⁻²]'],a:4,w:'[a] = [velocity]/[time] = [LT⁻¹]/[T] = <b>[LT⁻²]</b>'},
+{q:'What are the dimensions of power (P = W/t)?',o:['[ML²T⁻²]','[MLT⁻³]','[ML²T⁻³]','[ML⁻¹T⁻³]'],a:3,w:'[P] = [energy]/[time] = [ML²T⁻²]/[T] = <b>[ML²T⁻³]</b>'},
+{q:'What are the dimensions of momentum (p = mv)?',o:['[MLT⁻¹]','[MLT⁻²]','[ML²T⁻¹]','[MT⁻¹]'],a:1,w:'[p] = [M][LT⁻¹] = <b>[MLT⁻¹]</b>'},
+{q:'What are the dimensions of density (ρ = m/V)?',o:['[ML³]','[ML⁻²]','[M⁻¹L³]','[ML⁻³]'],a:4,w:'[ρ] = [M]/[L³] = <b>[ML⁻³]</b>'},
+{q:'What are the dimensions of force (F = ma)?',o:['[ML²T⁻²]','[MLT⁻²]','[MLT⁻¹]','[ML⁻¹T⁻²]'],a:2,w:'[F] = [M][LT⁻²] = <b>[MLT⁻²]</b>'}
+];var qq=pick(qs);return{question:qq.q+'<br><small>1: '+qq.o[0]+' &nbsp; 2: '+qq.o[1]+' &nbsp; 3: '+qq.o[2]+' &nbsp; 4: '+qq.o[3]+'</small>',hints:['Write each quantity in terms of [M], [L] and [T]','Numbers such as ½ have no dimensions'],ans:qq.a,tol:0,unit:'enter 1, 2, 3 or 4',working:qq.w+' — option <b>'+qq.a+'</b>'};})},
 ]},
 {ey:'Q5 \u2022 Y12 Physics \u2022 Measurement',ti:'Graphs and Data Analysis',su:'Plot best-fit lines. Calculate gradient, intercept and uncertainty.',steps:[
   {lb:'Best-fit lines',dr:dQ5,ht:'<p>Rules: label axes (quantity and unit); scale \u226550% of grid; plot accurately as \u00d7 or \u25cb; draw best-fit line (NOT connect-the-dots); circle anomalous points, exclude from fit; line may pass through none of the data points.</p>'},

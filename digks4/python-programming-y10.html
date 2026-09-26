@@ -147,7 +147,7 @@ function makeDiagram(title, points){
 var dQ1=makeDiagram('Reviewing and Extending Python',['SS1 Python builds on JS3 foundations with more advanced structures and…','Programs now combine multiple functions, data structures, and control …','Good coding style (clear names, comments, consistent formatting) becom…','This unit prepares students for more advanced software development wor…']);
 var dQ2=makeDiagram('Working with Strings',['Strings can be sliced, concatenated, and searched using built-in metho…','Common string methods include .upper(), .lower(), .split(), and .repla…','String formatting (like f-strings) makes combining text and variables …','Careful string handling is essential for processing user input and tex…']);
 var dQ3=makeDiagram('Lists and List Methods',['Lists can be modified using methods like .append(), .remove(), and .so…','List slicing lets you access a subset of items, e.g. my_list[1:3].','List comprehensions provide a concise way to build new lists from exis…','Mastering lists is essential for handling collections of data efficien…']);
-var dQ4=makeDiagram('Dictionaries',['A dictionary stores data as key-value pairs, e.g. {{"name": "Ada"}}.','Values are accessed using their corresponding key, not a numeric index…','Dictionaries are useful for representing structured, labelled data.','Understanding dictionaries prepares students for more advanced data ha…']);
+var dQ4=makeDiagram('Dictionaries',['A dictionary stores data as key-value pairs, e.g. {"name": "Ada"}.','Values are accessed using their corresponding key, not a numeric index…','Dictionaries are useful for representing structured, labelled data.','Understanding dictionaries prepares students for more advanced data ha…']);
 var dQ5=makeDiagram('Functions and Scope',['Functions can return multiple values and accept default parameter valu…','Variable scope determines where in a program a variable can be accesse…','Local variables exist only within their function; global variables exi…','Understanding scope prevents confusing bugs related to variable access…']);
 var dQ6=makeDiagram('Error Handling with Try/Except',['"Try/except" blocks let a program handle errors gracefully instead of …','Common exceptions include ValueError, TypeError, and ZeroDivisionError…','Handling errors properly improves the reliability and user experience …','Good error handling anticipates likely problems, like invalid user inp…']);
 var dQ7=makeDiagram('File Handling in Python',['Python can read from and write to files using functions like open(), .…','Files should be properly closed after use, or opened using a "with" st…','File handling enables programs to save and load data between sessions.','Understanding file modes (read, write, append) is essential for correc…']);
@@ -162,10 +162,10 @@ var QS=[
   {lb:'How it works',dr:dQ1,ht:'<p>Good coding style (clear names, comments, consistent formatting) becomes increasingly important.</p>'},
   {lb:'Why it matters',dr:dQ1,ht:'<p>This unit prepares students for more advanced software development work ahead.</p>'},
   {lb:'Your turn',dr:dQ1,ht:tryItMC(function(){var qs=[
-      {q:'What does SS1 Python programming build on?',o:['JS3 Python foundations, with more advanced structures','Nothing — it starts completely from scratch','Only Scratch block programming','Only spreadsheet formulas'],a:0,w:'SS1 Python content extends the foundational Python concepts introduced in JS3 with more advanced structures and problem-solving.'},
-      {q:'What does SS1 Python programming build on?',o:['Only Scratch block programming','JS3 Python foundations, with more advanced structures','Nothing — it starts completely from scratch','Only spreadsheet formulas'],a:1,w:'SS1 Python content extends the foundational Python concepts introduced in JS3 with more advanced structures and problem-solving.'},
-      {q:'According to what you just learned: what does SS1 Python programming build on?',o:['JS3 Python foundations, with more advanced structures','Nothing — it starts completely from scratch','Only Scratch block programming','Only spreadsheet formulas'],a:0,w:'SS1 Python content extends the foundational Python concepts introduced in JS3 with more advanced structures and problem-solving.'},
-      {q:'Check your understanding — what does SS1 Python programming build on?',o:['Only Scratch block programming','Nothing — it starts completely from scratch','JS3 Python foundations, with more advanced structures','Only spreadsheet formulas'],a:2,w:'SS1 Python content extends the foundational Python concepts introduced in JS3 with more advanced structures and problem-solving.'}
+      {q:'What does SS1 Python programming build on?',o:['Only Scratch block programming','Only spreadsheet formulas','JS3 Python foundations, with more advanced structures','Nothing — it starts completely from scratch'],a:2,w:'SS1 Python content extends the foundational Python concepts introduced in JS3 with more advanced structures and problem-solving.'},
+      {q:'Which variable name follows good Python style?',o:['total_score','x1','TotalScoreOfTheStudentInTheClass2','ts'],a:0,w:'Python style (PEP 8) uses clear, descriptive, lower_case_with_underscores names such as total_score.'},
+      {q:'What does a line starting with # do in Python?',o:['It creates a variable','It stops the program','It prints a heading','It is a comment and is ignored when the program runs'],a:3,w:'Comments start with #. Python ignores them; they explain the code to human readers.'},
+      {q:'What is printed by: for i in range(3): print(i)',o:['0, 1, 2, 3','0, 1, 2 (each on a new line)','3 only','1, 2, 3'],a:1,w:'range(3) produces 0, 1 and 2. It starts at 0 and stops before 3.'}
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q2 \u2022 Digital Technologies \u2022 Programming & Algorithms',ti:'Working with Strings',su:'Learn about Working with Strings and test your understanding.',steps:[
@@ -174,10 +174,10 @@ var QS=[
   {lb:'How it works',dr:dQ2,ht:'<p>String formatting (like f-strings) makes combining text and variables easier.</p>'},
   {lb:'Why it matters',dr:dQ2,ht:'<p>Careful string handling is essential for processing user input and text data.</p>'},
   {lb:'Your turn',dr:dQ2,ht:tryItMC(function(){var qs=[
-      {q:'Which Python method converts a string to uppercase?',o:['.upper()','.split()','.replace()','.lower()'],a:0,w:'The .upper() method converts all characters in a string to uppercase.'},
-      {q:'Which Python method converts a string to uppercase?',o:['.lower()','.split()','.replace()','.upper()'],a:3,w:'The .upper() method converts all characters in a string to uppercase.'},
-      {q:'According to what you just learned: which Python method converts a string to uppercase?',o:['.split()','.replace()','.lower()','.upper()'],a:3,w:'The .upper() method converts all characters in a string to uppercase.'},
-      {q:'Check your understanding — which Python method converts a string to uppercase?',o:['.upper()','.replace()','.split()','.lower()'],a:0,w:'The .upper() method converts all characters in a string to uppercase.'}
+      {q:'Which Python method converts a string to uppercase?',o:['.upper()','.replace()','.lower()','.split()'],a:0,w:'The .upper() method converts all characters in a string to uppercase.'},
+      {q:'What does "Lagos".upper() return?',o:['"lagos"','"LAGOS"','"L"','"Lagos"'],a:1,w:'.upper() returns a copy of the string with every letter in capitals.'},
+      {q:'What is the value of "Abuja"[1:3]?',o:['"buj"','"bj"','"bu"','"Ab"'],a:2,w:'Slicing [1:3] takes the characters at index 1 and 2 (the end index is not included): b and u.'},
+      {q:'What does "red,green,blue".split(",") return?',o:['3','["red,green,blue"]','"red green blue"','["red", "green", "blue"]'],a:3,w:'.split(",") breaks the string at each comma and returns a list of the parts.'}
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q3 \u2022 Digital Technologies \u2022 Programming & Algorithms',ti:'Lists and List Methods',su:'Learn about Lists and List Methods and test your understanding.',steps:[
@@ -186,22 +186,22 @@ var QS=[
   {lb:'How it works',dr:dQ3,ht:'<p>List comprehensions provide a concise way to build new lists from existing ones.</p>'},
   {lb:'Why it matters',dr:dQ3,ht:'<p>Mastering lists is essential for handling collections of data efficiently.</p>'},
   {lb:'Your turn',dr:dQ3,ht:tryItMC(function(){var qs=[
-      {q:'Which method adds an item to the end of a Python list?',o:['.append()','.remove()','.sort()','.pop()'],a:0,w:'The .append() method adds a new item to the end of a Python list.'},
-      {q:'Which method adds an item to the end of a Python list?',o:['.append()','.pop()','.sort()','.remove()'],a:0,w:'The .append() method adds a new item to the end of a Python list.'},
-      {q:'According to what you just learned: which method adds an item to the end of a Python list?',o:['.sort()','.append()','.pop()','.remove()'],a:1,w:'The .append() method adds a new item to the end of a Python list.'},
-      {q:'Check your understanding — which method adds an item to the end of a Python list?',o:['.sort()','.pop()','.append()','.remove()'],a:2,w:'The .append() method adds a new item to the end of a Python list.'}
+      {q:'Which method adds an item to the end of a Python list?',o:['.remove()','.sort()','.pop()','.append()'],a:3,w:'The .append() method adds a new item to the end of a Python list.'},
+      {q:'nums = [4, 1, 3]. After nums.append(7), what is nums?',o:['[7, 4, 1, 3]','[1, 3, 4, 7]','[4, 1, 3, 7]','[4, 1, 3]'],a:2,w:'.append() adds one item to the end of the list.'},
+      {q:'What is [10, 20, 30, 40, 50][1:3]?',o:['[20, 30]','[10, 20, 30]','[10, 20]','[20, 30, 40]'],a:0,w:'The slice starts at index 1 (20) and stops before index 3, so it gives 20 and 30.'},
+      {q:'What does [x * 2 for x in [1, 2, 3]] produce?',o:['6','[2, 4, 6]','[1, 4, 9]','[1, 2, 3, 1, 2, 3]'],a:1,w:'This list comprehension multiplies each item by 2, building a new list.'}
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q4 \u2022 Digital Technologies \u2022 Programming & Algorithms',ti:'Dictionaries',su:'Learn about Dictionaries and test your understanding.',steps:[
-  {lb:'The basics',dr:dQ4,ht:'<p>A dictionary stores data as key-value pairs, e.g. {{"name": "Ada"}}.</p>'},
+  {lb:'The basics',dr:dQ4,ht:'<p>A dictionary stores data as key-value pairs, e.g. {"name": "Ada"}.</p>'},
   {lb:'Key details',dr:dQ4,ht:'<p>Values are accessed using their corresponding key, not a numeric index.</p>'},
   {lb:'How it works',dr:dQ4,ht:'<p>Dictionaries are useful for representing structured, labelled data.</p>'},
   {lb:'Why it matters',dr:dQ4,ht:'<p>Understanding dictionaries prepares students for more advanced data handling, like JSON.</p>'},
   {lb:'Your turn',dr:dQ4,ht:tryItMC(function(){var qs=[
-      {q:'How is data accessed in a Python dictionary?',o:['Using its corresponding key','Using only a numeric index','Randomly','It cannot be accessed'],a:0,w:'Dictionary values are accessed using their associated key, rather than a numeric index like in a list.'},
-      {q:'How is data accessed in a Python dictionary?',o:['Using only a numeric index','It cannot be accessed','Using its corresponding key','Randomly'],a:2,w:'Dictionary values are accessed using their associated key, rather than a numeric index like in a list.'},
-      {q:'According to what you just learned: how is data accessed in a Python dictionary?',o:['Using only a numeric index','Using its corresponding key','It cannot be accessed','Randomly'],a:1,w:'Dictionary values are accessed using their associated key, rather than a numeric index like in a list.'},
-      {q:'Check your understanding — how is data accessed in a Python dictionary?',o:['It cannot be accessed','Randomly','Using only a numeric index','Using its corresponding key'],a:3,w:'Dictionary values are accessed using their associated key, rather than a numeric index like in a list.'}
+      {q:'How is data accessed in a Python dictionary?',o:['Using only a numeric index','Using its corresponding key','It cannot be accessed','Randomly'],a:1,w:'Dictionary values are accessed using their associated key, rather than a numeric index like in a list.'},
+      {q:'student = {"name": "Ada", "age": 15}. What does student["age"] give?',o:['"Ada"','"age"','15','1'],a:2,w:'A dictionary value is looked up by its key. The key "age" maps to 15.'},
+      {q:'How do you add a new key "class" with value "SS1" to the dictionary student?',o:['student["class"] = "SS1"','student.append("SS1")','student[2] = "SS1"','add(student, "SS1")'],a:0,w:'Assigning to a new key creates that key-value pair in the dictionary.'},
+      {q:'prices = {"pen": 100, "book": 500}. What does len(prices) return?',o:['4','600','"pen"','2'],a:3,w:'len() of a dictionary counts its key-value pairs. There are two.'}
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q5 \u2022 Digital Technologies \u2022 Programming & Algorithms',ti:'Functions and Scope',su:'Learn about Functions and Scope and test your understanding.',steps:[
@@ -210,10 +210,10 @@ var QS=[
   {lb:'How it works',dr:dQ5,ht:'<p>Local variables exist only within their function; global variables exist throughout the program.</p>'},
   {lb:'Why it matters',dr:dQ5,ht:'<p>Understanding scope prevents confusing bugs related to variable access.</p>'},
   {lb:'Your turn',dr:dQ5,ht:tryItMC(function(){var qs=[
-      {q:'What does variable "scope" determine?',o:['Where in a program a variable can be accessed','The colour of the variable','The exact value of a variable at all times','How fast the CPU runs'],a:0,w:'Scope determines the region of a program where a particular variable can be accessed or modified.'},
-      {q:'What does variable "scope" determine?',o:['The colour of the variable','Where in a program a variable can be accessed','How fast the CPU runs','The exact value of a variable at all times'],a:1,w:'Scope determines the region of a program where a particular variable can be accessed or modified.'},
-      {q:'According to what you just learned: what does variable "scope" determine?',o:['Where in a program a variable can be accessed','How fast the CPU runs','The colour of the variable','The exact value of a variable at all times'],a:0,w:'Scope determines the region of a program where a particular variable can be accessed or modified.'},
-      {q:'Check your understanding — what does variable "scope" determine?',o:['The exact value of a variable at all times','Where in a program a variable can be accessed','How fast the CPU runs','The colour of the variable'],a:1,w:'Scope determines the region of a program where a particular variable can be accessed or modified.'}
+      {q:'What does variable "scope" determine?',o:['The colour of the variable','How fast the CPU runs','Where in a program a variable can be accessed','The exact value of a variable at all times'],a:2,w:'Scope determines the region of a program where a particular variable can be accessed or modified.'},
+      {q:'def area(w, h=2): return w * h. What does area(5) return?',o:['5','10','7','An error'],a:1,w:'h has a default value of 2, so area(5) calculates 5 * 2 = 10.'},
+      {q:'A variable is created inside a function. Where can it be used?',o:['Nowhere','Anywhere in the program','Only in other files','Only inside that function (it is local)'],a:3,w:'Variables created inside a function are local and disappear when the function finishes.'},
+      {q:'def stats(a, b): return a + b, a * b. What does stats(2, 3) return?',o:['(5, 6)','5','(2, 3)','6'],a:0,w:'A Python function can return several values as a tuple: 2 + 3 = 5 and 2 * 3 = 6.'}
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q6 \u2022 Digital Technologies \u2022 Programming & Algorithms',ti:'Error Handling with Try/Except',su:'Learn about Error Handling with Try/Except and test your understanding.',steps:[
@@ -222,10 +222,10 @@ var QS=[
   {lb:'How it works',dr:dQ6,ht:'<p>Handling errors properly improves the reliability and user experience of a program.</p>'},
   {lb:'Why it matters',dr:dQ6,ht:'<p>Good error handling anticipates likely problems, like invalid user input.</p>'},
   {lb:'Your turn',dr:dQ6,ht:tryItMC(function(){var qs=[
-      {q:'What does a try/except block help a program do?',o:['Handle errors gracefully instead of crashing','Run faster automatically','Delete all variables','Connect to a network'],a:0,w:'Try/except blocks allow a program to catch and handle errors gracefully, rather than crashing unexpectedly.'},
-      {q:'What does a try/except block help a program do?',o:['Handle errors gracefully instead of crashing','Delete all variables','Connect to a network','Run faster automatically'],a:0,w:'Try/except blocks allow a program to catch and handle errors gracefully, rather than crashing unexpectedly.'},
-      {q:'According to what you just learned: what does a try/except block help a program do?',o:['Delete all variables','Handle errors gracefully instead of crashing','Connect to a network','Run faster automatically'],a:1,w:'Try/except blocks allow a program to catch and handle errors gracefully, rather than crashing unexpectedly.'},
-      {q:'Check your understanding — what does a try/except block help a program do?',o:['Run faster automatically','Connect to a network','Handle errors gracefully instead of crashing','Delete all variables'],a:2,w:'Try/except blocks allow a program to catch and handle errors gracefully, rather than crashing unexpectedly.'}
+      {q:'What does a try/except block help a program do?',o:['Handle errors gracefully instead of crashing','Connect to a network','Delete all variables','Run faster automatically'],a:0,w:'Try/except blocks allow a program to catch and handle errors gracefully, rather than crashing unexpectedly.'},
+      {q:'Which exception does int("hello") raise?',o:['TypeError','KeyError','ZeroDivisionError','ValueError'],a:3,w:'"hello" cannot be converted to a whole number, so Python raises a ValueError.'},
+      {q:'What error does 10 / 0 cause?',o:['NameError','IndexError','ZeroDivisionError','ValueError'],a:2,w:'Dividing by zero is not allowed, so Python raises ZeroDivisionError.'},
+      {q:'A program asks for an age and the user types "ten". What is the best way to stop the program crashing?',o:['Turn the computer off and on','Wrap int(input()) in try/except ValueError and ask again','Delete the input line','Use print() instead of input()'],a:1,w:'try/except catches the ValueError so the program can show a friendly message and ask again.'}
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q7 \u2022 Digital Technologies \u2022 Programming & Algorithms',ti:'File Handling in Python',su:'Learn about File Handling in Python and test your understanding.',steps:[
@@ -234,10 +234,10 @@ var QS=[
   {lb:'How it works',dr:dQ7,ht:'<p>File handling enables programs to save and load data between sessions.</p>'},
   {lb:'Why it matters',dr:dQ7,ht:'<p>Understanding file modes (read, write, append) is essential for correct file handling.</p>'},
   {lb:'Your turn',dr:dQ7,ht:tryItMC(function(){var qs=[
-      {q:'What Python statement helps ensure a file is properly closed after use?',o:['A "with" statement','A "print" statement','A "for" loop','An "import" statement'],a:0,w:'Using a "with" statement automatically ensures a file is properly closed after its block of code finishes.'},
-      {q:'What Python statement helps ensure a file is properly closed after use?',o:['A "with" statement','A "for" loop','An "import" statement','A "print" statement'],a:0,w:'Using a "with" statement automatically ensures a file is properly closed after its block of code finishes.'},
-      {q:'According to what you just learned: what Python statement helps ensure a file is properly closed after use?',o:['A "with" statement','An "import" statement','A "print" statement','A "for" loop'],a:0,w:'Using a "with" statement automatically ensures a file is properly closed after its block of code finishes.'},
-      {q:'Check your understanding — what Python statement helps ensure a file is properly closed after use?',o:['A "for" loop','A "with" statement','A "print" statement','An "import" statement'],a:1,w:'Using a "with" statement automatically ensures a file is properly closed after its block of code finishes.'}
+      {q:'What Python statement helps ensure a file is properly closed after use?',o:['A "for" loop','A "with" statement','A "print" statement','An "import" statement'],a:1,w:'Using a "with" statement automatically ensures a file is properly closed after its block of code finishes.'},
+      {q:'Which file mode adds new text to the end of a file without deleting what is already there?',o:['"r" (read)','"x" (create only)','"a" (append)','"w" (write)'],a:2,w:'Mode "a" appends. Mode "w" would empty the file first.'},
+      {q:'Why is with open("data.txt") as f: recommended?',o:['It closes the file automatically when the block ends','It deletes the file afterwards','It encrypts the file','It makes the file bigger'],a:0,w:'The with statement guarantees the file is closed, even if an error happens.'},
+      {q:'What happens if you open an existing file in "w" mode and write to it?',o:['Nothing is written','The file is made read-only','The new text is added to the end','The old contents are replaced'],a:3,w:'"w" mode truncates (empties) the file before writing.'}
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q8 \u2022 Digital Technologies \u2022 Programming & Algorithms',ti:'Object-Oriented Programming: Introduction',su:'Learn about Object-Oriented Programming: Introduction and test your understanding.',steps:[
@@ -247,9 +247,9 @@ var QS=[
   {lb:'Why it matters',dr:dQ8,ht:'<p>This introduces the object-oriented concepts explored more deeply in SS2.</p>'},
   {lb:'Your turn',dr:dQ8,ht:tryItMC(function(){var qs=[
       {q:'What is a "class" in Python?',o:['A blueprint for creating objects','A type of loop','A type of file','A type of error message'],a:0,w:'A class defines a blueprint — the structure and behaviour — from which individual objects can be created.'},
-      {q:'What is a "class" in Python?',o:['A type of file','A type of error message','A blueprint for creating objects','A type of loop'],a:2,w:'A class defines a blueprint — the structure and behaviour — from which individual objects can be created.'},
-      {q:'According to what you just learned: what is a "class" in Python?',o:['A blueprint for creating objects','A type of file','A type of error message','A type of loop'],a:0,w:'A class defines a blueprint — the structure and behaviour — from which individual objects can be created.'},
-      {q:'Check your understanding — what is a "class" in Python?',o:['A type of file','A type of loop','A type of error message','A blueprint for creating objects'],a:3,w:'A class defines a blueprint — the structure and behaviour — from which individual objects can be created.'}
+      {q:'class Dog: ... then rex = Dog(). What is rex?',o:['A class','A function','An object (instance) of the Dog class','A module'],a:2,w:'Calling Dog() creates a new object from the Dog blueprint; rex refers to that object.'},
+      {q:'In a Car class, which of these would be a method (a behaviour)?',o:['speed','number_of_doors','colour','drive()'],a:3,w:'Methods are actions an object can perform. Attributes such as colour store data.'},
+      {q:'A BankAccount class stores balance. What is balance?',o:['A class','An attribute','A loop','A method'],a:1,w:'Attributes hold an object\'s data, such as its balance.'}
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q9 \u2022 Digital Technologies \u2022 Programming & Algorithms',ti:'Algorithms: Searching and Sorting in Python',su:'Learn about Algorithms: Searching and Sorting in Python and test your understanding.',steps:[
@@ -258,10 +258,10 @@ var QS=[
   {lb:'How it works',dr:dQ9,ht:'<p>Comparing algorithm performance introduces the idea of computational efficiency.</p>'},
   {lb:'Why it matters',dr:dQ9,ht:'<p>This connects programming practice directly to earlier computational thinking work.</p>'},
   {lb:'Your turn',dr:dQ9,ht:tryItMC(function(){var qs=[
-      {q:'Which Python search algorithm requires the data to already be sorted?',o:['Binary search','Linear search','Neither requires sorted data','Both require sorted data'],a:0,w:'A binary search requires the data to be sorted, since it works by repeatedly halving the search range.'},
-      {q:'Which Python search algorithm requires the data to already be sorted?',o:['Binary search','Linear search','Both require sorted data','Neither requires sorted data'],a:0,w:'A binary search requires the data to be sorted, since it works by repeatedly halving the search range.'},
-      {q:'According to what you just learned: which Python search algorithm requires the data to already be sorted?',o:['Neither requires sorted data','Binary search','Linear search','Both require sorted data'],a:1,w:'A binary search requires the data to be sorted, since it works by repeatedly halving the search range.'},
-      {q:'Check your understanding — which Python search algorithm requires the data to already be sorted?',o:['Binary search','Neither requires sorted data','Both require sorted data','Linear search'],a:0,w:'A binary search requires the data to be sorted, since it works by repeatedly halving the search range.'}
+      {q:'Which Python search algorithm requires the data to already be sorted?',o:['Linear search','Binary search','Neither requires sorted data','Both require sorted data'],a:1,w:'A binary search requires the data to be sorted, since it works by repeatedly halving the search range.'},
+      {q:'Binary search requires the list to be:',o:['Only strings','Unsorted','Sorted','Shorter than 10 items'],a:2,w:'Binary search repeatedly halves a sorted list, so it only works when the data is in order.'},
+      {q:'Roughly how many checks does binary search need at most for 1,000 sorted items?',o:['1','About 500','1,000','About 10'],a:3,w:'Each check halves the list: 2^10 = 1024, so about 10 checks are enough. Linear search could need 1,000.'},
+      {q:'After one full pass of bubble sort on [5, 1, 4, 2], what is the list?',o:['[1, 4, 2, 5]','[1, 5, 4, 2]','[1, 2, 4, 5]','[5, 4, 2, 1]'],a:0,w:'Compare and swap neighbours: 5&gt;1 swap, 5&gt;4 swap, 5&gt;2 swap. The largest value (5) moves to the end.'}
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q10 \u2022 Digital Technologies \u2022 Programming & Algorithms',ti:'Building a Complete Python Program',su:'Learn about Building a Complete Python Program and test your understanding.',steps:[
@@ -270,10 +270,10 @@ var QS=[
   {lb:'How it works',dr:dQ10,ht:'<p>Testing thoroughly, including edge cases, ensures reliability.</p>'},
   {lb:'Why it matters',dr:dQ10,ht:'<p>This prepares students for the more advanced OOP and web development work ahead.</p>'},
   {lb:'Your turn',dr:dQ10,ht:tryItMC(function(){var qs=[
-      {q:'What remains valuable even for larger, more advanced Python projects?',o:['Planning with pseudocode or flowcharts','Skipping all testing','Avoiding all functions','Ignoring error handling entirely'],a:0,w:'Careful planning, such as using pseudocode or flowcharts, remains valuable even as Python projects become more advanced and complex.'},
-      {q:'What remains valuable even for larger, more advanced Python projects?',o:['Planning with pseudocode or flowcharts','Ignoring error handling entirely','Skipping all testing','Avoiding all functions'],a:0,w:'Careful planning, such as using pseudocode or flowcharts, remains valuable even as Python projects become more advanced and complex.'},
-      {q:'According to what you just learned: what remains valuable even for larger, more advanced Python projects?',o:['Avoiding all functions','Skipping all testing','Planning with pseudocode or flowcharts','Ignoring error handling entirely'],a:2,w:'Careful planning, such as using pseudocode or flowcharts, remains valuable even as Python projects become more advanced and complex.'},
-      {q:'Check your understanding — what remains valuable even for larger, more advanced Python projects?',o:['Skipping all testing','Planning with pseudocode or flowcharts','Avoiding all functions','Ignoring error handling entirely'],a:1,w:'Careful planning, such as using pseudocode or flowcharts, remains valuable even as Python projects become more advanced and complex.'}
+      {q:'What remains valuable even for larger, more advanced Python projects?',o:['Skipping all testing','Planning with pseudocode or flowcharts','Ignoring error handling entirely','Avoiding all functions'],a:1,w:'Careful planning, such as using pseudocode or flowcharts, remains valuable even as Python projects become more advanced and complex.'},
+      {q:'Your function works for normal marks. Which test is an edge case for a mark between 0 and 100?',o:['Testing with 55','Testing with the same value twice','Testing only once','Testing with exactly 0 and 100'],a:3,w:'Edge (boundary) cases test the limits of valid input, where bugs often hide.'},
+      {q:'Before writing a large program, what helps plan its logic?',o:['Pseudocode or a flowchart','Writing the whole thing in one line','Skipping testing','Choosing a font'],a:0,w:'Pseudocode and flowcharts let you design and check the logic before writing Python.'},
+      {q:'A quiz program stores questions and answers. Which data structure fits best?',o:['A boolean','One very long string','A dictionary mapping each question to its answer','A single integer'],a:2,w:'A dictionary gives a clear key-value link between each question and its answer.'}
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]}
 ];

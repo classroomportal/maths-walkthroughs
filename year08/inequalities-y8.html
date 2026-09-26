@@ -304,7 +304,7 @@ var QS=[
     {lb:'Watch the sign flip',dr:dQ3,ht:'<div class="fm">Divide by \u22122... FLIP the sign!</div>',speak:'Divide by negative 2, and flip the sign.'},
     {lb:'Result',dr:dQ3,ht:'<div class="fm">x < \u22124</div>',speak:'x is less than negative 4.'},
     {lb:'The essential rule',dr:dQ3,ht:'<p>Dividing (or multiplying) by a negative REVERSES the inequality sign.</p>',speak:'Dividing, or multiplying, by a negative reverses the inequality sign.'},
-    {lb:'Your turn',dr:dQ3,ht:tryIt(function(){var a=rInt(2,6),x=rInt(2,10);var rhs=-a*x;return{question:'Solve <b>\u2212'+a+'x > '+rhs+'</b>. Find x. (Remember to flip the sign!)',hints:['Divide by \u2212'+a+', flip the sign'],ans:x-1,tol:0,unit:'(largest integer below the boundary)',working:'x < '+x};}),speak:'Now it\u2019s your turn \u2014 remember to flip the sign.'},
+    {lb:'Your turn',dr:dQ3,ht:tryIt(function(){var a=rInt(2,6),x=rInt(-8,10);while(x===0)x=rInt(-8,10);var rhs=-a*x;var rhsS=(rhs<0?'\u2212'+Math.abs(rhs):rhs);return{question:'Solve <b>\u2212'+a+'x > '+rhsS+'</b>. Your answer will look like x < n (remember to flip the sign!). Enter the number n.',hints:['Divide both sides by \u2212'+a+' and flip the sign: > becomes <'],ans:x,tol:0,unit:'the number n',working:'\u2212'+a+'x > '+rhsS+' \u2192 x < '+rhsS+' \u00f7 (\u2212'+a+') \u2192 x < '+(x<0?'\u2212'+Math.abs(x):x)};}),speak:'Now it\u2019s your turn \u2014 remember to flip the sign.'},
   ]},
   {ey:'Q4 \u00b7 Year 8 \u00b7 Inequalities',ti:'Finding Integer Solutions',su:'Solve 2x < 9. What is the LARGEST integer solution?',steps:[
     {lb:'The problem',dr:dQ4,ht:'<p>Solve 2x < 9. What is the LARGEST integer solution?</p>',speak:'Solve 2x is less than 9. What is the largest integer solution?'},

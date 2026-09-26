@@ -33,6 +33,11 @@ header{background:var(--red);color:#fff;height:56px;display:flex;align-items:cen
 .sl{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--gold);font-weight:700;margin-bottom:6px;}
 .pnl p{font-size:16px;line-height:1.55;margin:0 0 8px;}
 .fm{font-family:'Cambria Math',Georgia,serif;font-size:17px;background:var(--cream);border-left:4px solid var(--red);padding:9px 13px;margin:8px 0;display:block;}
+.frac{display:inline-flex;flex-direction:column;align-items:center;vertical-align:middle;margin:0 3px;line-height:1.2;}
+.frac>span{padding:0 4px;text-align:center;}
+.frac>span:first-child{border-bottom:1.5px solid currentColor;}
+.pp{font-size:1.4em;font-weight:700;line-height:1;vertical-align:-0.08em;}
+.paper{line-height:2.1;}
 .ctrl{width:100%;max-width:760px;display:flex;justify-content:space-between;align-items:center;margin-top:16px;}
 .btn{font-size:14px;font-weight:600;padding:9px 18px;border-radius:3px;border:1px solid var(--red);background:#fff;color:var(--red);cursor:pointer;transition:.15s;font-family:inherit;}
 .btn.p{background:var(--red);color:#fff;}
@@ -118,7 +123,7 @@ document.addEventListener('click',function(e){
 });
 
 function g(){return document.getElementById('dg');}
-function T(x,y,t,c,sz,a,b){c=c||'#241A17';sz=sz||13;a=a||'middle';return '<text x="'+x+'" y="'+y+'" font-size="'+sz+'" font-family="Arial" fill="'+c+'" text-anchor="'+a+'"'+(b?' font-weight="700"':'')+'>'+t+'</text>';}
+function T(x,y,t,c,sz,a,b){c=c||'#241A17';sz=sz||13;a=a||'middle';t=String(t).replace(/∝/g,'<tspan font-size="'+Math.round(sz*1.4)+'" font-weight="700">∝</tspan>');return '<text x="'+x+'" y="'+y+'" font-size="'+sz+'" font-family="Arial" fill="'+c+'" text-anchor="'+a+'"'+(b?' font-weight="700"':'')+'>'+t+'</text>';}
 function R(x,y,w,h,fill,stroke,sw){return '<rect x="'+x+'" y="'+y+'" width="'+w+'" height="'+h+'" fill="'+fill+'" stroke="'+(stroke||'none')+'" stroke-width="'+(sw||0)+'" rx="2"/>';}
 function L(x1,y1,x2,y2,c,w){return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+(c||'#ccc')+'" stroke-width="'+(w||1)+'"/>';}
 
@@ -126,12 +131,12 @@ function propDiag(p,type,pairs,label){
   var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
   o.push(R(0,0,480,300,'#fdf7f4'));
   o.push(R(20,20,440,48,'#fff5f0','#C0272D',1.5));
-  o.push(T(240,50,label,'#C0272D',15,'middle',true));
+  o.push(RT(240,50,label,'#C0272D',15,true));
   if(p>=1){
     o.push(R(20,82,440,36,'#e8f4ff','#1a5a8a',1.5));
     o.push(T(80,105,'x','#1a5a8a',14,'middle',true));
     o.push(T(240,105,'y','#1a5a8a',14,'middle',true));
-    o.push(T(380,105,'k = y/x  or  y/x²  etc.','#888',12,'middle'));
+    o.push(T(380,105,'k','#888',14,'middle',true));
   }
   pairs.forEach(function(pr,i){
     if(p>=i+2){
@@ -145,6 +150,74 @@ function propDiag(p,type,pairs,label){
   s.innerHTML=o.join('');
 }
 
+/* HTML stacked fraction, written as it would be on paper */
+function fr(n,d){return '<span class="frac"><span>'+n+'</span><span>'+d+'</span></span>';}
+/* SVG text with stacked fractions. Write a fraction as {numerator|denominator}. */
+function RT(cx,y,str,col,sz,bold){
+  col=col||'#241A17';sz=sz||14;
+  var parts=[],re=/\{([^|}]*)\|([^}]*)\}/g,m,last=0;
+  while((m=re.exec(str))){if(m.index>last)parts.push({t:str.slice(last,m.index)});parts.push({n:m[1],d:m[2]});last=re.lastIndex;}
+  if(last<str.length)parts.push({t:str.slice(last)});
+  var cw=sz*0.56,fs=Math.round(sz*0.85),fcw=fs*0.56;
+  function tw(str,size){var w=0;for(var i=0;i<str.length;i++){var ch=str[i];w+=(ch===' '||'il.:,;|!\'()'.indexOf(ch)>=0)?0.28:('mwMW'.indexOf(ch)>=0?0.83:(ch==='∝'?0.9:(/[A-Z]/.test(ch)?0.67:(/[0-9]/.test(ch)?0.56:0.5))));}return w*size*(bold?1.07:1);}
+  function wid(pt){return pt.t!=null?tw(pt.t,sz):Math.max(tw(pt.n,fs),tw(pt.d,fs))+8;}
+  var total=parts.reduce(function(a,pt){return a+wid(pt);},0),x=cx-total/2,o='';
+  var fw=bold?' font-weight="700"':'';
+  parts.forEach(function(pt){
+    var w=wid(pt);
+    if(pt.t!=null){o+='<text x="'+x+'" y="'+y+'" font-size="'+sz+'" font-family="Arial" fill="'+col+'" text-anchor="start" xml:space="preserve"'+fw+'>'+pt.t.replace(/∝/g,'<tspan font-size="'+Math.round(sz*1.4)+'" font-weight="700">∝</tspan>')+'</text>';}
+    else{var bar=y-sz*0.32,mx=x+w/2;
+      o+='<text x="'+mx+'" y="'+(bar-3)+'" font-size="'+fs+'" font-family="Arial" fill="'+col+'" text-anchor="middle"'+fw+'>'+pt.n+'</text>';
+      o+='<line x1="'+(x+2)+'" y1="'+bar+'" x2="'+(x+w-2)+'" y2="'+bar+'" stroke="'+col+'" stroke-width="1.5"/>';
+      o+='<text x="'+mx+'" y="'+(bar+fs*0.85+1)+'" font-size="'+fs+'" font-family="Arial" fill="'+col+'" text-anchor="middle"'+fw+'>'+pt.d+'</text>';}
+    x+=w;
+  });
+  return o;
+}
+/* Simple graph: axes from 0, a curve y=fn(x), labelled points, optional line y = x */
+function graphDiag(opt){
+  var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
+  o.push(R(0,0,480,300,'#fdf7f4'));
+  var X0=64,Y0=258,W=380,H=210,xm=opt.xmax,ym=opt.ymax;
+  function px(x){return X0+x/xm*W;} function py(y){return Y0-y/ym*H;}
+  // grid and ticks
+  for(var i=0;i<=xm;i+=opt.xstep){o.push(L(px(i),Y0,px(i),Y0-H,'#efe3dc',1));o.push(T(px(i),Y0+16,i,'#888',11));}
+  for(var j=0;j<=ym;j+=opt.ystep){o.push(L(X0,py(j),X0+W,py(j),'#efe3dc',1));o.push(T(X0-8,py(j)+4,j,'#888',11,'end'));}
+  o.push(L(X0,Y0,X0+W+8,Y0,'#241A17',1.5));o.push(L(X0,Y0,X0,Y0-H-8,'#241A17',1.5));
+  o.push(T(X0+W,Y0+32,opt.xl,'#241A17',12,'end',true));
+  o.push(T(X0-4,Y0-H-14,opt.yl,'#241A17',12,'start',true));
+  if(opt.yx){o.push('<line x1="'+px(0)+'" y1="'+py(0)+'" x2="'+px(Math.min(xm,ym))+'" y2="'+py(Math.min(xm,ym))+'" stroke="#C8922A" stroke-width="1.5" stroke-dasharray="6,4"/>');
+    o.push(T(px(Math.min(xm,ym))-4,py(Math.min(xm,ym))+16,'y = x','#C8922A',12,'end',true));}
+  var pts=[],x0=opt.xmin||0;
+  for(var k=0;k<=200;k++){var x=x0+(xm-x0)*k/200,y=opt.fn(x);if(y<=ym&&y>=0)pts.push(px(x).toFixed(1)+','+py(y).toFixed(1));}
+  o.push('<polyline points="'+pts.join(' ')+'" fill="none" stroke="#C0272D" stroke-width="2.5"/>');
+  (opt.pts||[]).forEach(function(pt){o.push('<circle cx="'+px(pt[0])+'" cy="'+py(pt[1])+'" r="4.5" fill="#1a5a8a"/>');o.push(T(px(pt[0])+8,py(pt[1])-8,'('+pt[0]+', '+pt[1]+')','#1a5a8a',11,'start',true));});
+  if(opt.title)o.push(RT(300,opt.titleY||40,opt.title,'#C0272D',15,true));
+  s.innerHTML=o.join('');
+}
+function gQ1(){graphDiag({xmax:10,ymax:50,xstep:1,ystep:10,xl:'x',yl:'y',fn:function(x){return 5*x;},pts:[[2,10],[5,25],[8,40]],title:'y = 5x',titleY:60});}
+function gQ4(){graphDiag({xmin:0.7,xmax:14,ymax:40,xstep:2,ystep:5,xl:'x',yl:'y',fn:function(x){return 36/x;},pts:[[2,18],[3,12],[6,6],[12,3]],title:'y = {36|x}',titleY:50});}
+function gQ6(){graphDiag({xmax:6,ymax:300,xstep:1,ystep:50,xl:'time t (hours)',yl:'distance d (km)',fn:function(x){return 45*x;},pts:[[2,90],[3,135],[5,225]],title:'d = 45t',titleY:60});}
+function gQ7(){graphDiag({xmin:2.5,xmax:14,ymax:14,xstep:2,ystep:2,xl:'workers',yl:'days',fn:function(x){return 36/x;},pts:[[3,12],[4,9],[6,6],[9,4],[12,3]],yx:true,title:'days = {36|workers}',titleY:40});}
+/* Q4: the product x × y is always the same */
+function productDiag(p){
+  var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
+  o.push(R(0,0,480,300,'#fdf7f4'));
+  o.push(R(20,16,440,40,'#fff5f0','#C0272D',1.5));
+  o.push(T(240,42,'Inverse proportion: x × y is ALWAYS the same number','#C0272D',14,'middle',true));
+  var xs=[1,2,3,4,6,9,12],cw=56,x0=72;
+  o.push(T(40,98,'x','#1a5a8a',15,'middle',true));o.push(T(40,138,'y','#1a5a8a',15,'middle',true));o.push(T(40,184,'x × y','#1a7a3a',13,'middle',true));
+  xs.forEach(function(x,i){var cx=x0+i*cw+cw/2;
+    o.push(R(x0+i*cw,76,cw,34,'#fff','#E4D6CE',1));o.push(T(cx,99,x,'#241A17',15,'middle',true));
+    o.push(R(x0+i*cw,116,cw,34,'#fff','#E4D6CE',1));o.push(T(cx,139,36/x,'#241A17',15,'middle',true));
+    o.push(R(x0+i*cw,164,cw,34,'#e8f8ee','#a8dbb8',1));o.push(T(cx,186,'36','#1a7a3a',15,'middle',true));
+  });
+  o.push(T(240,228,'When x is multiplied by 2, y is divided by 2.','#241A17',13,'middle'));
+  o.push(T(240,250,'When x is multiplied by 3, y is divided by 3.','#241A17',13,'middle'));
+  o.push(RT(240,284,'The constant k = xy = 36, so y = {36|x}','#1a7a3a',15,true));
+  s.innerHTML=o.join('');
+}
+
 // Q1 Direct proportion y ∝ x
 function dQ1(p){propDiag(p,'direct',[[2,10,'k=5'],[5,25,'k=5'],[8,null,'k=5']],'Direct proportion:  y ∝ x  means  y = kx');}
 // Q2 Direct proportion y ∝ x²
@@ -152,14 +225,14 @@ function dQ2(p){propDiag(p,'direct2',[[2,12,'k=3'],[3,27,'k=3'],[5,null,'k=3']],
 // Q3 Direct proportion y ∝ √x
 function dQ3(p){propDiag(p,'sqrt',[[4,10,'k=5'],[9,15,'k=5'],[16,null,'k=5']],'Direct proportion:  y ∝ √x  means  y = k√x');}
 // Q4 Inverse proportion y ∝ 1/x
-function dQ4(p){propDiag(p,'inv',[[2,18,'k=36'],[3,12,'k=36'],[6,null,'k=36']],'Inverse proportion:  y ∝ 1/x  means  y = k/x');}
+function dQ4(p){propDiag(p,'inv',[[2,18,'k=36'],[3,12,'k=36'],[6,null,'k=36']],'Inverse proportion:  y ∝ {1|x}  means  y = {k|x}');}
 // Q5 Inverse proportion y ∝ 1/x²
-function dQ5(p){propDiag(p,'inv2',[[2,50,'k=200'],[5,8,'k=200'],[10,null,'k=200']],'Inverse proportion:  y ∝ 1/x²  means  y = k/x²');}
+function dQ5(p){propDiag(p,'inv2',[[2,50,'k=200'],[5,8,'k=200'],[10,null,'k=200']],'Inverse proportion:  y ∝ {1|x²}  means  y = {k|x²}');}
 
 function tableDiag(p,headers,rows,formula,answer){
   var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
   o.push(R(0,0,480,300,'#fdf7f4'));
-  if(p>=1){o.push(R(20,20,440,40,'#fff5f0','#C0272D',1.5));o.push(T(240,45,formula,'#C0272D',15,'middle',true));}
+  if(p>=1){o.push(R(20,16,440,48,'#fff5f0','#C0272D',1.5));o.push(RT(240,46,formula,'#C0272D',15,true));}
   if(p>=2){
     o.push(R(20,72,440,34,'#e8f4ff','#1a5a8a',1));
     headers.forEach(function(h,i){o.push(T(60+i*130,93,h,'#1a5a8a',14,'middle',true));});
@@ -179,7 +252,7 @@ function tableDiag(p,headers,rows,formula,answer){
 }
 
 function dQ6(p){tableDiag(p,['t (hrs)','d (km)','Speed = d/t'],[[2,90,'45 km/h'],[3,135,'45 km/h'],['5','?','—']],'Direct proportion:  distance ∝ time  (constant speed)','d = 45 × 5 = 225 km');}
-function dQ7(p){tableDiag(p,['workers','days','Product'],[[3,12,'36'],[4,9,'36'],['?',4,'—']],'Inverse proportion:  days ∝ 1/workers','workers = 36 ÷ 4 = 9');}
+function dQ7(p){tableDiag(p,['workers','days','Product'],[[3,12,'36'],[4,9,'36'],['?',4,'—']],'Inverse proportion:  days ∝ {1|workers}','workers = 36 ÷ 4 = 9');}
 function dQ8(p){
   var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
   o.push(R(0,0,480,300,'#fdf7f4'));
@@ -193,91 +266,101 @@ function dQ9(p){
   var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
   o.push(R(0,0,480,300,'#fdf7f4'));
   if(p>=1){o.push(R(20,20,440,44,'#fff5f0','#C0272D',1.5));o.push(T(240,48,'P ∝ √Q. When Q = 16, P = 20. Find P when Q = 25.','#C0272D',14,'middle',true));}
-  if(p>=2){o.push(T(240,108,'P = k√Q','#241A17',14,'middle'));o.push(T(240,134,'20 = k × √16 = k × 4   →   k = 5','#241A17',14,'middle'));}
-  if(p>=3){o.push(T(240,166,'P = 5√Q','#C0272D',15,'middle'));}
-  if(p>=4){o.push(R(20,185,440,44,'#e8f8ee','#1a7a3a',1.5));o.push(T(240,213,'P = 5 × √25 = 5 × 5 = 25','#1a7a3a',16,'middle',true));}
+  if(p>=2){o.push(T(240,100,'P = k√Q','#241A17',15,'middle'));o.push(T(240,124,'20 = k × √16','#241A17',15,'middle'));o.push(T(240,148,'20 = 4k   →   k = 5','#241A17',15,'middle'));}
+  if(p>=3){o.push(T(240,176,'P = 5√Q','#C0272D',16,'middle',true));}
+  if(p>=4){o.push(R(20,192,440,44,'#e8f8ee','#1a7a3a',1.5));o.push(T(240,220,'P = 5 × √25 = 5 × 5 = 25','#1a7a3a',16,'middle',true));}
   s.innerHTML=o.join('');
 }
 function dQ10(p){
   var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
   o.push(R(0,0,480,300,'#fdf7f4'));
-  if(p>=1){o.push(R(20,20,440,44,'#fff5f0','#C0272D',1.5));o.push(T(240,48,'F ∝ 1/d².  F = 36 when d = 2. Find F when d = 6.','#C0272D',14,'middle',true));}
-  if(p>=2){o.push(T(240,108,'F = k/d²','#241A17',14,'middle'));o.push(T(240,134,'36 = k/4   →   k = 144','#241A17',14,'middle'));}
-  if(p>=3){o.push(T(240,166,'F = 144/d²','#C0272D',15,'middle'));}
-  if(p>=4){o.push(R(20,185,440,44,'#e8f8ee','#1a7a3a',1.5));o.push(T(240,213,'F = 144/36 = 4  (when d = 6)','#1a7a3a',16,'middle',true));}
+  if(p>=1){o.push(R(20,20,440,44,'#fff5f0','#C0272D',1.5));o.push(RT(240,48,'F ∝ {1|d²}.  F = 36 when d = 2. Find F when d = 6.','#C0272D',14,true));}
+  if(p>=2){o.push(RT(240,104,'F = {k|d²}','#241A17',15));o.push(RT(240,146,'36 = {k|2²} = {k|4}   →   k = 36 × 4 = 144','#241A17',15));}
+  if(p>=3){o.push(RT(240,186,'F = {144|d²}','#C0272D',15,true));}
+  if(p>=4){o.push(R(20,212,440,56,'#e8f8ee','#1a7a3a',1.5));o.push(RT(240,246,'F = {144|6²} = {144|36} = 4  (when d = 6)','#1a7a3a',16,true));}
   s.innerHTML=o.join('');
 }
 
 var QS=[
   {ey:'Q1 · Proportion · Extended',ti:'Direct Proportion  y ∝ x',su:'y is directly proportional to x. When x = 2, y = 10. Find y when x = 8.',lv:'E',steps:[
-    {lb:'What does y ∝ x mean?',dr:dQ1,ht:'<span class="lt le">Extended</span><p>y ∝ x means <b>y = kx</b> for some constant k. When x doubles, y doubles. The ratio y/x is always constant.</p>'},
-    {lb:'Find k',dr:dQ1,ht:'<div class="fm">y = kx  →  10 = k × 2  →  k = 5</div>'},
-    {lb:'Use the formula',dr:dQ1,ht:'<div class="fm">y = 5x</div><div class="fm">When x = 8:  y = 5 × 8 = <b>40</b></div>'},
-    {lb:'Your turn',dr:dQ1,ht:tryIt(function(){var k=rnd(2,8),x1=rnd(2,5),y1=k*x1,x2=rnd(x1+1,10);return{question:'y ∝ x. When x = '+x1+', y = '+y1+'. Find y when x = '+x2+'.',hints:['Find k: k = y/x = '+y1+'/'+x1,'Then y = k × x₂'],ans:k*x2,tol:0,unit:'',working:'k = '+k+', y = '+k+'×'+x2+' = '+k*x2};})},
+    {lb:'What does y ∝ x mean?',dr:dQ1,ht:'<span class="lt le">Extended</span><p>The symbol <b>∝</b> means <b>“is proportional to”</b>. So y ∝ x is read “y is directly proportional to x”.</p><p>It means <b>y = kx</b>, where k is a fixed number called the <b>constant of proportionality</b>.</p><ul class="hl"><li>If x is doubled, y is doubled.</li><li>If x is multiplied by 3, y is multiplied by 3.</li><li>If x = 0, then y = 0.</li><li>The ratio '+fr('y','x')+' is always the same number, k.</li></ul>'},
+    {lb:'Find k',dr:dQ1,ht:'<p>Write the formula, then substitute the pair of values you know (x = 2, y = 10):</p><div class="fm paper">y = kx<br>10 = k × 2<br>k = '+fr(10,2)+'<br>k = 5</div>'},
+    {lb:'Use the formula',dr:dQ1,ht:'<p>Put k back into the formula, then substitute the new value of x:</p><div class="fm paper">y = 5x<br>When x = 8:<br>y = 5 × 8<br>y = <b>40</b></div>'},
+    {lb:'The graph of y ∝ x',dr:gQ1,ht:'<p>The graph of y = kx is a <b>straight line through the origin</b> (0, 0). The gradient of the line is k.</p><p>Every point on the line gives the same value of '+fr('y','x')+': '+fr(10,2)+' = '+fr(25,5)+' = '+fr(40,8)+' = 5.</p><p style="font-size:13px;color:#6b5750;">If a graph is a straight line through the origin, the two quantities are directly proportional.</p>'},
+    {lb:'Your turn',dr:gQ1,ht:tryIt(function(){var k=rnd(2,8),x1=rnd(2,5),y1=k*x1,x2=rnd(x1+1,10);return{question:'y ∝ x. When x = '+x1+', y = '+y1+'. Find y when x = '+x2+'.',hints:['y = kx, so '+y1+' = k × '+x1,'k = '+fr(y1,x1)+' = '+k,'Then y = '+k+' × '+x2],ans:k*x2,tol:0,unit:'',working:'y = kx<br>'+y1+' = k × '+x1+'<br>k = '+fr(y1,x1)+' = '+k+'<br>y = '+k+' × '+x2+' = '+k*x2};})},
   ]},
   {ey:'Q2 · Proportion · Extended',ti:'Direct Proportion  y ∝ x²',su:'y is proportional to x². When x = 2, y = 12. Find y when x = 5.',lv:'E',steps:[
-    {lb:'Write the formula',dr:dQ2,ht:'<span class="lt le">Extended</span><p>y ∝ x² means <b>y = kx²</b>. When x doubles, y multiplies by 4.</p>'},
-    {lb:'Find k',dr:dQ2,ht:'<div class="fm">12 = k × 4  →  k = 3</div>'},
-    {lb:'Use the formula',dr:dQ2,ht:'<div class="fm">y = 3x²</div><div class="fm">When x = 5:  y = 3 × 25 = <b>75</b></div>'},
-    {lb:'Your turn',dr:dQ2,ht:tryIt(function(){var k=rnd(2,5),x1=rnd(2,4),y1=k*x1*x1,x2=rnd(x1+1,7);return{question:'y ∝ x². When x='+x1+', y='+y1+'. Find y when x='+x2+'.',hints:['y = kx², find k = '+y1+'/'+x1*x1+' = '+k],ans:k*x2*x2,tol:0,unit:'',working:'k='+k+', y='+k+'×'+x2*x2+'='+k*x2*x2};})},
+    {lb:'Write the formula',dr:dQ2,ht:'<span class="lt le">Extended</span><p>y ∝ x² means <b>y = kx²</b>. When x doubles, y is multiplied by 2² = 4.</p>'},
+    {lb:'Find k',dr:dQ2,ht:'<p>Substitute x = 2 and y = 12:</p><div class="fm paper">y = kx²<br>12 = k × 2²<br>12 = 4k<br>k = '+fr(12,4)+' = 3</div>'},
+    {lb:'Use the formula',dr:dQ2,ht:'<div class="fm paper">y = 3x²<br>When x = 5:<br>y = 3 × 5²<br>y = 3 × 25<br>y = <b>75</b></div>'},
+    {lb:'Worked example 2',dr:dQ2,ht:'<p><b>y ∝ x². When x = 3, y = 18. Find y when x = 4.</b></p><div class="fm paper">y = kx²<br>18 = k × 3²<br>18 = 9k<br>k = '+fr(18,9)+' = 2<br>So y = 2x²<br>When x = 4: y = 2 × 4² = 2 × 16 = <b>32</b></div>'},
+    {lb:'Worked example 3 (finding x)',dr:dQ2,ht:'<p><b>Using y = 2x² from example 2, find x when y = 50 (x is positive).</b></p><div class="fm paper">50 = 2x²<br>x² = '+fr(50,2)+' = 25<br>x = √25<br>x = <b>5</b></div><p style="font-size:13px;color:#6b5750;">To find x, rearrange the formula: divide by k, then take the square root.</p>'},
+    {lb:'Your turn',dr:dQ2,ht:tryIt(function(){var k=rnd(2,5),x1=rnd(2,4),y1=k*x1*x1,x2=rnd(x1+1,7);return{question:'y ∝ x². When x = '+x1+', y = '+y1+'. Find y when x = '+x2+'.',hints:['y = kx², so '+y1+' = k × '+x1+'² = '+(x1*x1)+'k','k = '+fr(y1,x1*x1)+' = '+k],ans:k*x2*x2,tol:0,unit:'',working:'y = kx²<br>'+y1+' = k × '+x1+'²<br>'+y1+' = '+(x1*x1)+'k<br>k = '+k+'<br>y = '+k+' × '+x2+'² = '+k+' × '+x2*x2+' = '+k*x2*x2};})},
   ]},
   {ey:'Q3 · Proportion · Extended',ti:'Direct Proportion  y ∝ √x',su:'y is proportional to √x. When x = 4, y = 10. Find y when x = 16.',lv:'E',steps:[
-    {lb:'Write the formula',dr:dQ3,ht:'<span class="lt le">Extended</span><p>y ∝ √x means <b>y = k√x</b>. Doubling x multiplies y by √2.</p>'},
-    {lb:'Find k',dr:dQ3,ht:'<div class="fm">10 = k × √4 = 2k  →  k = 5</div>'},
-    {lb:'Use the formula',dr:dQ3,ht:'<div class="fm">y = 5√x</div><div class="fm">When x = 16:  y = 5 × 4 = <b>20</b></div>'},
+    {lb:'Write the formula',dr:dQ3,ht:'<span class="lt le">Extended</span><p>y ∝ √x means <b>y = k√x</b>. When x is multiplied by 4, y is multiplied by √4 = 2.</p>'},
+    {lb:'Find k',dr:dQ3,ht:'<div class="fm paper">y = k√x<br>10 = k × √4<br>10 = 2k<br>k = '+fr(10,2)+' = 5</div>'},
+    {lb:'Use the formula',dr:dQ3,ht:'<div class="fm paper">y = 5√x<br>When x = 16:<br>y = 5 × √16<br>y = 5 × 4 = <b>20</b></div>'},
     {lb:'Your turn',dr:dQ3,ht:tryIt(function(){var k=rnd(3,8),x1=pick([4,9,16,25]),y1=k*Math.sqrt(x1),x2=pick([9,16,25,36]);return{question:'y ∝ √x. When x='+x1+', y='+y1+'. Find y when x='+x2+'.',hints:['k = y/√x = '+y1+'/'+Math.sqrt(x1)+' = '+k],ans:k*Math.sqrt(x2),tol:0.1,unit:'',working:'k='+k+', y='+k+'×'+Math.sqrt(x2)+'='+k*Math.sqrt(x2)};})},
   ]},
   {ey:'Q4 · Proportion · Extended',ti:'Inverse Proportion  y ∝ 1/x',su:'y is inversely proportional to x. When x = 2, y = 18. Find y when x = 6.',lv:'E',steps:[
-    {lb:'What does y ∝ 1/x mean?',dr:dQ4,ht:'<span class="lt le">Extended</span><p>y ∝ 1/x means <b>y = k/x</b>. When x doubles, y halves. The product xy is always constant.</p>'},
-    {lb:'Find k',dr:dQ4,ht:'<div class="fm">18 = k/2  →  k = 36</div><p>Check: xy = 2 × 18 = 36 ✓</p>'},
-    {lb:'Use the formula',dr:dQ4,ht:'<div class="fm">y = 36/x</div><div class="fm">When x = 6:  y = 36/6 = <b>6</b></div>'},
-    {lb:'Your turn',dr:dQ4,ht:tryIt(function(){var k=rnd(12,60),x1=pick([2,3,4,5,6]),y1=k/x1;while(!Number.isInteger(y1)){k=rnd(12,60);y1=k/x1;}var x2=pick([3,4,5,6,8,10,12]).valueOf();while(k%x2!==0)x2++;return{question:'y ∝ 1/x. When x='+x1+', y='+y1+'. Find y when x='+x2+'.',hints:['k = xy = '+x1+'×'+y1+' = '+k,'y = k/x₂'],ans:k/x2,tol:0,unit:'',working:'k='+k+', y='+k+'/'+x2+'='+k/x2};})},
+    {lb:'What does y ∝ 1/x mean?',dr:dQ4,ht:'<span class="lt le">Extended</span><p>y ∝ '+fr(1,'x')+' is read “y is <b>inversely proportional</b> to x”. It means</p><div class="fm">y = '+fr('k','x')+' &nbsp;&nbsp;which is the same as&nbsp;&nbsp; <b>x × y = k</b></div><p>The key idea: <b>the product x × y is always the same number</b>. When x gets bigger, y gets smaller so that the product stays the same.</p>'},
+    {lb:'The product is constant',dr:productDiag,ht:'<p>Look at the table. Every pair of values multiplies to give the <b>same product, 36</b>:</p><div class="fm">1 × 36 = 2 × 18 = 3 × 12 = 4 × 9 = 6 × 6 = 36</div><p>If x is doubled, y is halved. If x is multiplied by 3, y is divided by 3. The product never changes.</p>'},
+    {lb:'Find k',dr:dQ4,ht:'<p>Because the product is constant, k = x × y. Substitute x = 2, y = 18:</p><div class="fm paper">y = '+fr('k','x')+'<br>18 = '+fr('k',2)+'<br>k = 18 × 2 = 36</div><p>Check: x × y = 2 × 18 = 36 ✓</p>'},
+    {lb:'Use the formula',dr:dQ4,ht:'<div class="fm paper">y = '+fr(36,'x')+'<br>When x = 6:<br>y = '+fr(36,6)+'<br>y = <b>6</b></div><p>Check the product: 6 × 6 = 36 ✓</p>'},
+    {lb:'The graph of y ∝ 1/x',dr:gQ4,ht:'<p>The graph of y = '+fr(36,'x')+' is a curve that gets closer and closer to both axes but never touches them. For every point on the curve, x × y = 36.</p>'},
+    {lb:'Your turn',dr:gQ4,ht:tryIt(function(){var k=rnd(12,60),x1=pick([2,3,4,5,6]),y1=k/x1;while(!Number.isInteger(y1)){k=rnd(12,60);y1=k/x1;}var x2=pick([3,4,5,6,8,10,12]);while(k%x2!==0||x2===x1)x2++;return{question:'y ∝ '+fr(1,'x')+'. When x = '+x1+', y = '+y1+'. Find y when x = '+x2+'.',hints:['The product is constant: k = x × y = '+x1+' × '+y1+' = '+k,'y = '+fr(k,x2)],ans:k/x2,tol:0,unit:'',working:'k = x × y = '+x1+' × '+y1+' = '+k+'<br>y = '+fr(k,x2)+' = '+k/x2+'<br>Check: '+x2+' × '+k/x2+' = '+k+' ✓'};})},
   ]},
   {ey:'Q5 · Proportion · Extended',ti:'Inverse Proportion  y ∝ 1/x²',su:'y ∝ 1/x². When x = 2, y = 50. Find y when x = 5.',lv:'E',steps:[
-    {lb:'Write the formula',dr:dQ5,ht:'<span class="lt le">Extended</span><p>y ∝ 1/x² means <b>y = k/x²</b>. When x doubles, y is divided by 4.</p>'},
-    {lb:'Find k',dr:dQ5,ht:'<div class="fm">50 = k/4  →  k = 200</div>'},
-    {lb:'Use the formula',dr:dQ5,ht:'<div class="fm">y = 200/x²</div><div class="fm">When x = 5:  y = 200/25 = <b>8</b></div>'},
-    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var x1=rnd(2,4),k=x1*x1*pick([4,8,12,16,20]),y1=k/(x1*x1),x2=pick([5,6,10]);return{question:'y ∝ 1/x². When x='+x1+', y='+y1+'. Find y when x='+x2+'.',hints:['k = y × x² = '+y1+'×'+x1*x1+' = '+k],ans:round2(k/(x2*x2)),tol:0.05,unit:'',working:'k='+k+', y='+k+'/'+x2*x2+'='+round2(k/(x2*x2))};})},
+    {lb:'Write the formula',dr:dQ5,ht:'<span class="lt le">Extended</span><p>y ∝ '+fr(1,'x²')+' means <b>y = '+fr('k','x²')+'</b>, so x² × y = k is constant. When x doubles, y is divided by 2² = 4.</p>'},
+    {lb:'Find k',dr:dQ5,ht:'<div class="fm paper">y = '+fr('k','x²')+'<br>50 = '+fr('k','2²')+' = '+fr('k',4)+'<br>k = 50 × 4 = 200</div>'},
+    {lb:'Use the formula',dr:dQ5,ht:'<div class="fm paper">y = '+fr(200,'x²')+'<br>When x = 5:<br>y = '+fr(200,'5²')+' = '+fr(200,25)+'<br>y = <b>8</b></div>'},
+    {lb:'Your turn',dr:dQ5,ht:tryIt(function(){var x1,x2,k,y1,y2,t=0;do{x1=rnd(2,4);x2=pick([4,5,8,10]);k=x1*x1*pick([4,8,12,16,20,25,36]);y1=k/(x1*x1);y2=k/(x2*x2);t++;}while((x2===x1||Math.abs(y2*100-Math.round(y2*100))>1e-9)&&t<200);y2=Math.round(y2*100)/100;return{question:'y ∝ '+fr(1,'x²')+'. When x = '+x1+', y = '+y1+'. Find y when x = '+x2+'. Give the <b>exact</b> answer (it has at most 2 decimal places).',hints:['k = y × x² = '+y1+' × '+x1*x1+' = '+k,'y = '+fr(k,x2+'²')+' = '+fr(k,x2*x2)],ans:y2,tol:0.001,unit:'exact',working:'k = '+y1+' × '+x1+'² = '+k+'<br>y = '+fr(k,x2+'²')+' = '+fr(k,x2*x2)+' = '+y2};})},
   ]},
   {ey:'Q6 · Proportion · Foundation',ti:'Proportion in Context — Distance and Time',su:'A car travels at constant speed: 90 km in 2 hours. How far in 5 hours?',lv:'F',steps:[
     {lb:'Identify the proportion',dr:dQ6,ht:'<span class="lt lf">Foundation</span><p>At constant speed, <b>distance ∝ time</b>. This is direct proportion: d = speed × t.</p>'},
-    {lb:'Find the constant (speed)',dr:dQ6,ht:'<div class="fm">Speed = 90 ÷ 2 = 45 km/h</div>'},
-    {lb:'Find d when t = 5',dr:dQ6,ht:'<div class="fm">d = 45 × 5 = <b>225 km</b></div>'},
-    {lb:'Your turn',dr:dQ6,ht:tryIt(function(){var spd=pick([40,50,60,80,90]),t1=rnd(2,4),d1=spd*t1,t2=rnd(t1+1,6);return{question:'A car covers '+d1+' km in '+t1+' hours at constant speed. How far in '+t2+' hours?',hints:['Speed = '+d1+'/'+t1+' = '+spd+' km/h'],ans:spd*t2,tol:0,unit:'km',working:d1+'/'+t1+'='+spd+' km/h, then '+spd+'×'+t2+'='+spd*t2+' km'};})},
+    {lb:'Find the constant (speed)',dr:dQ6,ht:'<div class="fm paper">d = kt<br>90 = k × 2<br>k = '+fr(90,2)+' = 45 km/h</div>'},
+    {lb:'Find d when t = 5',dr:dQ6,ht:'<div class="fm paper">d = 45t<br>d = 45 × 5 = <b>225 km</b></div>'},
+    {lb:'The graph',dr:gQ6,ht:'<p>The distance\u2013time graph is a <b>straight line through the origin</b>, so distance is directly proportional to time. The gradient is the speed:</p><div class="fm">gradient = '+fr(90,2)+' = '+fr(135,3)+' = '+fr(225,5)+' = 45 km/h</div>'},
+    {lb:'Your turn',dr:gQ6,ht:tryIt(function(){var spd=pick([40,50,60,80,90]),t1=rnd(2,4),d1=spd*t1,t2=rnd(t1+1,6);return{question:'A car covers '+d1+' km in '+t1+' hours at constant speed. How far in '+t2+' hours?',hints:['Speed = '+fr(d1,t1)+' = '+spd+' km/h'],ans:spd*t2,tol:0,unit:'km',working:'speed = '+fr(d1,t1)+' = '+spd+' km/h<br>d = '+spd+' × '+t2+' = '+spd*t2+' km'};})},
   ]},
   {ey:'Q7 · Proportion · Extended',ti:'Inverse Proportion in Context — Workers and Days',su:'3 workers take 12 days to finish a job. How many workers are needed to finish in 4 days?',lv:'E',steps:[
     {lb:'Identify the proportion',dr:dQ7,ht:'<span class="lt le">Extended</span><p>More workers → fewer days. This is <b>inverse proportion</b>: workers × days = constant.</p>'},
-    {lb:'Find the constant',dr:dQ7,ht:'<div class="fm">3 × 12 = 36  (worker-days)</div>'},
-    {lb:'Find workers for 4 days',dr:dQ7,ht:'<div class="fm">workers = 36 ÷ 4 = <b>9 workers</b></div>'},
-    {lb:'Your turn',dr:dQ7,ht:tryIt(function(){var w1=rnd(3,6),d1=pick([10,12,15,18,20]),k=w1*d1,d2=pick([3,4,5,6]);while(k%d2!==0)d2++;return{question:w1+' workers finish in '+d1+' days. How many workers to finish in '+d2+' days?',hints:['Product = '+w1+'×'+d1+' = '+k,'workers = '+k+'/'+d2],ans:k/d2,tol:0,unit:'workers',working:w1+'×'+d1+'='+k+', so '+k+'/'+d2+'='+k/d2+' workers'};})},
+    {lb:'Find the constant',dr:dQ7,ht:'<div class="fm">3 × 12 = 36 &nbsp;(worker-days)</div><p>The job always needs 36 worker-days of work.</p>'},
+    {lb:'Find workers for 4 days',dr:dQ7,ht:'<div class="fm paper">workers × days = 36<br>workers × 4 = 36<br>workers = '+fr(36,4)+' = <b>9 workers</b></div>'},
+    {lb:'The graph and its symmetry',dr:gQ7,ht:'<p>The graph of workers × days = 36 is a curve. It is <b>symmetrical about the line y = x</b> (dashed):</p><ul class="hl"><li>(3, 12) and (12, 3) are both on the curve.</li><li>(4, 9) and (9, 4) are both on the curve.</li><li>(6, 6) lies on the line y = x itself.</li></ul><p>This is because swapping the two numbers does not change their product: 3 × 12 = 12 × 3 = 36.</p>'},
+    {lb:'Your turn',dr:gQ7,ht:tryIt(function(){var w1=rnd(3,6),d1=pick([10,12,15,18,20]),k=w1*d1,d2=pick([3,4,5,6]);while(k%d2!==0)d2++;return{question:w1+' workers finish a job in '+d1+' days. How many workers are needed to finish it in '+d2+' days?',hints:['workers × days = '+w1+' × '+d1+' = '+k,'workers = '+fr(k,d2)],ans:k/d2,tol:0,unit:'workers',working:w1+' × '+d1+' = '+k+'<br>workers = '+fr(k,d2)+' = '+k/d2+' workers'};})},
   ]},
   {ey:'Q8 · Proportion · Extended',ti:'Proportion y ∝ x³',su:'y ∝ x³. When x = 2, y = 24. Find y when x = 3.',lv:'E',steps:[
-    {lb:'Write the formula',dr:dQ8,ht:'<span class="lt le">Extended</span><p>y ∝ x³ means <b>y = kx³</b>. When x doubles, y multiplies by 8.</p>'},
-    {lb:'Find k',dr:dQ8,ht:'<div class="fm">24 = k × 8  →  k = 3</div>'},
+    {lb:'Write the formula',dr:dQ8,ht:'<span class="lt le">Extended</span><p>y ∝ x³ means <b>y = kx³</b>. When x doubles, y is multiplied by 2³ = 8.</p>'},
+    {lb:'Find k',dr:dQ8,ht:'<div class="fm paper">y = kx³<br>24 = k × 2³<br>24 = 8k<br>k = '+fr(24,8)+' = 3</div>'},
     {lb:'Formula',dr:dQ8,ht:'<div class="fm">y = 3x³</div>'},
-    {lb:'Evaluate at x = 3',dr:dQ8,ht:'<div class="fm">y = 3 × 27 = <b>81</b></div>'},
+    {lb:'Evaluate at x = 3',dr:dQ8,ht:'<div class="fm paper">y = 3 × 3³<br>y = 3 × 27<br>y = <b>81</b></div>'},
+    {lb:'Where does y ∝ x³ happen in nature?',dr:dQ8,ht:'<p>Cube proportion appears whenever something grows in <b>all three directions</b> at once:</p><ul class="hl"><li><b>Raindrops and hailstones</b> are roughly spheres. Their volume (and mass) is V = '+fr(4,3)+'πr³, so mass ∝ r³. A hailstone with twice the radius is 8 times as heavy.</li><li><b>Fish and other animals</b> keep roughly the same shape as they grow. Scientists who study fish use mass ≈ k × length³.</li><li><b>Planets:</b> Kepler found that for planets orbiting the Sun, (time for one orbit)² ∝ (distance from the Sun)³.</li></ul>'},
     {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var k=rnd(2,4),x1=2,y1=k*8,x2=rnd(3,4);return{question:'y ∝ x³. When x=2, y='+y1+'. Find y when x='+x2+'.',hints:['k = '+y1+'/8 = '+k,'y = '+k+'×'+x2+'³ = '+k+'×'+x2*x2*x2],ans:k*x2*x2*x2,tol:0,unit:'',working:'k='+k+', y='+k+'×'+x2*x2*x2+'='+k*x2*x2*x2};})},
   ]},
   {ey:'Q9 · Proportion · Extended',ti:'Proportion y ∝ √x (Applied)',su:'P ∝ √Q. When Q = 16, P = 20. Find P when Q = 25.',lv:'E',steps:[
-    {lb:'Write the formula',dr:dQ9,ht:'<span class="lt le">Extended</span><p>P ∝ √Q means <b>P = k√Q</b>.</p>'},
-    {lb:'Find k',dr:dQ9,ht:'<div class="fm">20 = k × 4  →  k = 5</div>'},
+    {lb:'Write the formula',dr:dQ9,ht:'<span class="lt le">Extended</span><p>P ∝ √Q means <b>P = k√Q</b>. Always follow the same three steps: <b>write the formula, find k, then use the formula</b>.</p>'},
+    {lb:'Find k',dr:dQ9,ht:'<p>Substitute Q = 16 and P = 20:</p><div class="fm paper">P = k√Q<br>20 = k × √16<br>20 = 4k<br>k = '+fr(20,4)+' = 5</div>'},
     {lb:'Formula',dr:dQ9,ht:'<div class="fm">P = 5√Q</div>'},
-    {lb:'Evaluate at Q = 25',dr:dQ9,ht:'<div class="fm">P = 5 × 5 = <b>25</b></div>'},
-    {lb:'Your turn',dr:dQ9,ht:tryIt(function(){var k=rnd(2,6),x1=pick([4,9,16]),y1=k*Math.sqrt(x1),x2=pick([25,36,49]);return{question:'y ∝ √x. When x='+x1+', y='+y1+'. Find y when x='+x2+'.',hints:['k = '+y1+'/'+Math.sqrt(x1)+' = '+k],ans:k*Math.sqrt(x2),tol:0.1,unit:'',working:'k='+k+', y='+k+'×'+Math.sqrt(x2)+'='+k*Math.sqrt(x2)};})},
+    {lb:'Evaluate at Q = 25',dr:dQ9,ht:'<div class="fm paper">P = 5 × √25<br>P = 5 × 5<br>P = <b>25</b></div>'},
+    {lb:'Worked example 2',dr:dQ9,ht:'<p><b>y ∝ √x. When x = 9, y = 12. Find y when x = 49.</b></p><div class="fm paper">y = k√x<br>12 = k × √9<br>12 = 3k<br>k = '+fr(12,3)+' = 4<br>So y = 4√x<br>When x = 49: y = 4 × √49 = 4 × 7 = <b>28</b></div>'},
+    {lb:'Worked example 3 (working backwards)',dr:dQ9,ht:'<p><b>Using y = 4√x from example 2, find x when y = 20.</b></p><div class="fm paper">20 = 4√x<br>√x = '+fr(20,4)+' = 5<br>x = 5²<br>x = <b>25</b></div><p style="font-size:13px;color:#6b5750;">To undo a square root, square both sides.</p>'},
+    {lb:'Your turn',dr:dQ9,ht:tryIt(function(){var k=rnd(2,6),x1=pick([4,9,16]),y1=k*Math.sqrt(x1),x2=pick([25,36,49]);return{question:'y ∝ √x. When x = '+x1+', y = '+y1+'. Find y when x = '+x2+'.',hints:['y = k√x, so '+y1+' = k × √'+x1+' = '+Math.sqrt(x1)+'k','k = '+fr(y1,Math.sqrt(x1))+' = '+k],ans:k*Math.sqrt(x2),tol:0,unit:'',working:'y = k√x<br>'+y1+' = k × √'+x1+'<br>'+y1+' = '+Math.sqrt(x1)+'k<br>k = '+k+'<br>y = '+k+' × √'+x2+' = '+k+' × '+Math.sqrt(x2)+' = '+k*Math.sqrt(x2)};})},
   ]},
   {ey:'Q10 · Proportion · Extended',ti:'Inverse Square Proportion (Applied)',su:'Gravitational force F ∝ 1/d². When d = 2, F = 36. Find F when d = 6.',lv:'E',steps:[
-    {lb:'Write the formula',dr:dQ10,ht:'<span class="lt le">Extended</span><p>F ∝ 1/d² means <b>F = k/d²</b>. Tripling the distance divides the force by 9.</p>'},
-    {lb:'Find k',dr:dQ10,ht:'<div class="fm">36 = k/4  →  k = 144</div>'},
-    {lb:'Formula',dr:dQ10,ht:'<div class="fm">F = 144/d²</div>'},
-    {lb:'Evaluate at d = 6',dr:dQ10,ht:'<div class="fm">F = 144/36 = <b>4</b></div><p>Note: distance tripled (2→6), so F divides by 9: 36/9 = 4 ✓</p>'},
-    {lb:'Your turn',dr:dQ10,ht:tryIt(function(){var d1=rnd(2,3),k=d1*d1*pick([8,12,16,18,20,25]),F1=k/(d1*d1),d2=d1*rnd(2,3);return{question:'F ∝ 1/d². When d='+d1+', F='+F1+'. Find F when d='+d2+'.',hints:['k = F×d² = '+F1+'×'+d1*d1+' = '+k],ans:round2(k/(d2*d2)),tol:0.05,unit:'',working:'k='+k+', F='+k+'/'+d2*d2+'='+round2(k/(d2*d2))};})},
+    {lb:'Write the formula',dr:dQ10,ht:'<span class="lt le">Extended</span><p>F ∝ '+fr(1,'d²')+' means</p><div class="fm">F = '+fr('k','d²')+'</div><p>Tripling the distance divides the force by 3² = 9.</p>'},
+    {lb:'Find k',dr:dQ10,ht:'<div class="fm paper">F = '+fr('k','d²')+'<br>36 = '+fr('k','2²')+'<br>36 = '+fr('k',4)+'<br>k = 36 × 4 = 144</div>'},
+    {lb:'Formula',dr:dQ10,ht:'<div class="fm">F = '+fr(144,'d²')+'</div>'},
+    {lb:'Evaluate at d = 6',dr:dQ10,ht:'<div class="fm paper">F = '+fr(144,'6²')+'<br>F = '+fr(144,36)+'<br>F = <b>4</b></div><p>Check: distance tripled (2 → 6), so F is divided by 9: '+fr(36,9)+' = 4 ✓</p>'},
+    {lb:'Your turn',dr:dQ10,ht:tryIt(function(){var d1=rnd(2,3),m=pick([2,3]),F2=rnd(2,12),F1=F2*m*m,k=F1*d1*d1,d2=d1*m;return{question:'F ∝ '+fr(1,'d²')+'. When d = '+d1+', F = '+F1+'. Find F when d = '+d2+'.',hints:['F = '+fr('k','d²')+', so k = F × d² = '+F1+' × '+d1*d1+' = '+k,'F = '+fr(k,d2+'²')+' = '+fr(k,d2*d2)],ans:F2,tol:0,unit:'',working:'k = '+F1+' × '+d1+'² = '+k+'<br>F = '+fr(k,d2+'²')+' = '+fr(k,d2*d2)+' = '+F2};})},
   ]}
 ];
 
 var qi=0,si=0;
 function bSB(){var sb=document.getElementById('sb');var lbl=sb.querySelector('.sb-lbl');sb.innerHTML='';sb.appendChild(lbl);QS.forEach(function(q,i){var b=document.createElement('button');b.className='qb'+(i===qi?' on':'');b.innerHTML='<span class="qn">Q'+(i+1)+'</span>'+q.ti+'<br><span class="badge '+(q.lv==='F'?'bf':'be')+'">'+(q.lv==='F'?'Foundation':'Extended')+'</span>';b.onclick=function(){qi=i;si=0;render();};sb.appendChild(b);});}
 function bDT(){var w=document.getElementById('dt');w.innerHTML='';QS[qi].steps.forEach(function(_,i){var d=document.createElement('div');d.className='dot'+(i===si?' on':i<si?' dn':'');w.appendChild(d);});}
-function render(){bSB();var q=QS[qi],st=q.steps[si];document.getElementById('ey').textContent=q.ey;document.getElementById('ti').textContent=q.ti;document.getElementById('su').textContent=q.su;var p=document.getElementById('pn');p.classList.remove('fi');void p.offsetWidth;p.classList.add('fi');p.innerHTML='<div class="sl">'+st.lb+'</div>'+st.ht;st.dr(si);bDT();document.getElementById('pb').disabled=si===0;document.getElementById('nb').textContent=si===q.steps.length-1?'Restart':'Next →';}
+function render(){bSB();var q=QS[qi],st=q.steps[si];document.getElementById('ey').textContent=q.ey;document.getElementById('ti').textContent=q.ti;document.getElementById('su').textContent=q.su;var p=document.getElementById('pn');p.classList.remove('fi');void p.offsetWidth;p.classList.add('fi');p.innerHTML='<div class="sl">'+st.lb+'</div>'+String(st.ht).replace(/∝/g,'<span class="pp">∝</span>');st.dr(si);bDT();document.getElementById('pb').disabled=si===0;document.getElementById('nb').textContent=si===q.steps.length-1?'Restart':'Next →';}
 document.getElementById('pb').addEventListener('click',function(){if(si>0){si--;render();}});
 document.getElementById('nb').addEventListener('click',function(){var q=QS[qi];si=si===q.steps.length-1?0:si+1;render();});
 // Lesson links: ?only=2,5 shows just those questions (as ticked in Lesson Mapping); ?q=N opens question N

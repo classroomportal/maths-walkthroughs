@@ -107,20 +107,22 @@ function tryIt(fn){
   var id='t'+Math.random().toString(36).slice(2);
   ST[id]=fn;return genTry(id,fn());
 }
+var CUR={},SEQ=0;
 function genTry(id,o){
   var h=(o.hints||[]).map(function(x){return '<li>'+x+'</li>';}).join('');
+  var iid=id+'_'+(++SEQ);CUR[iid]=o;
   return '<div class="try" data-tryid="'+id+'">'+
     '<div class="try-t">&#10004; Your Turn</div><p>'+o.question+'</p>'+
-    '<div class="ar"><input type="number" step="any" placeholder="Your answer" id="'+id+'_i"/>'+
-    '<button class="ck" onclick="ck(\''+id+'\')">&#10003; Check</button></div>'+
-    '<div class="fb" id="'+id+'_f"></div>'+
+    '<div class="ar"><input type="number" step="any" placeholder="Your answer" id="'+iid+'_i"/>'+
+    '<button class="ck" onclick="ck(\''+iid+'\')">&#10003; Check</button></div>'+
+    '<div class="fb" id="'+iid+'_f"></div>'+
     '<details class="wk"><summary>Show working</summary><div class="wk-b">'+
     (h?'<ul class="hl">'+h+'</ul>':'')+
     '<div class="wk-ans">'+o.working+'</div></div></details>'+
     '<button class="nq" data-tryid="'+id+'">New question</button></div>';
 }
 function ck(id){
-  var fn=ST[id];var o=typeof fn==='function'?fn():fn;
+  var o=CUR[id];if(!o)return;
   var v=parseFloat(document.getElementById(id+'_i').value);
   var f=document.getElementById(id+'_f');
   if(isNaN(v)){f.className='fb er';f.textContent='Please enter a number.';return;}
@@ -187,6 +189,31 @@ function arr(x1,y1,x2,y2,c,w){
   return L(x1,y1,x2,y2,c,w)+'<polygon points="'+x2+','+y2+' '+p1x.toFixed(1)+','+p1y.toFixed(1)+' '+p2x.toFixed(1)+','+p2y.toFixed(1)+'" fill="'+c+'"/>';
 }
 
+// Drop particles one at a time so each rests on the floor or on other particles (touching, irregular like a liquid).
+function pile(xs,r,floor){var pts=[];xs.forEach(function(x){var y=floor-r;pts.forEach(function(p){var dx=Math.abs(p[0]-x);if(dx<2*r){var yy=p[1]-Math.sqrt(4*r*r-dx*dx);if(yy<y)y=yy;}});pts.push([x,Math.round(y*10)/10]);});return pts;}
+// Regular touching grid resting on the floor (solid).
+function grid(cx,floor,cols,rows,r){var pts=[];for(var j=0;j<rows;j++)for(var i=0;i<cols;i++)pts.push([cx-(cols-1)*r+i*2*r,floor-r-j*2*r]);return pts;}
+// A real Periodic Table layout (118 elements). hi = symbols to highlight.
+var PT_ROWS=['H,,,,,,,,,,,,,,,,,He','Li,Be,,,,,,,,,,,B,C,N,O,F,Ne','Na,Mg,,,,,,,,,,,Al,Si,P,S,Cl,Ar','K,Ca,Sc,Ti,V,Cr,Mn,Fe,Co,Ni,Cu,Zn,Ga,Ge,As,Se,Br,Kr','Rb,Sr,Y,Zr,Nb,Mo,Tc,Ru,Rh,Pd,Ag,Cd,In,Sn,Sb,Te,I,Xe','Cs,Ba,*,Hf,Ta,W,Re,Os,Ir,Pt,Au,Hg,Tl,Pb,Bi,Po,At,Rn','Fr,Ra,**,Rf,Db,Sg,Bh,Hs,Mt,Ds,Rg,Cn,Nh,Fl,Mc,Lv,Ts,Og'];
+var PT_F=['La,Ce,Pr,Nd,Pm,Sm,Eu,Gd,Tb,Dy,Ho,Er,Tm,Yb,Lu','Ac,Th,Pa,U,Np,Pu,Am,Cm,Bk,Cf,Es,Fm,Md,No,Lr'];
+var PT_NONMETAL=' H He C N O F Ne P S Cl Ar Se Br Kr I Xe Rn ',PT_METALLOID=' B Si Ge As Sb Te ';
+function ptCell(o,x,y,w,h,sym,hi){
+  var fill='#e3f2fd',st='#1565C0',tc='#0D47A1';
+  if(PT_NONMETAL.indexOf(' '+sym+' ')>=0){fill='#fce4ec';st='#C0272D';tc='#8e0000';}
+  else if(PT_METALLOID.indexOf(' '+sym+' ')>=0){fill='#fff8e1';st='#C8922A';tc='#7a5200';}
+  if(sym.charAt(0)==='*'){fill='#f5f5f5';st='#999';tc='#666';}
+  var on=hi&&hi.indexOf(sym)>=0;
+  o.push(R(x,y,w-1,h-1,on?'#6A1B9A':fill,on?'#4A148C':st,on?1.5:0.6,1));
+  o.push(T(x+(w-1)/2,y+h/2+3,sym,on?'#fff':tc,8,'middle',true));
+}
+function drawPT(o,x0,y0,w,h,hi,labels){
+  PT_ROWS.forEach(function(row,r){row.split(',').forEach(function(sym,c){if(sym)ptCell(o,x0+c*w,y0+r*h,w,h,sym,hi);});
+    if(labels)o.push(T(x0-5,y0+r*h+h/2+3,String(r+1),'#888',7,'end',false));});
+  if(labels)for(var c=0;c<18;c++)o.push(T(x0+c*w+(w-1)/2,y0-4,String(c+1),'#888',7,'middle',false));
+  var fy=y0+7*h+6;
+  PT_F.forEach(function(row,r){row.split(',').forEach(function(sym,c){ptCell(o,x0+(c+3)*w,fy+r*h,w,h,sym,hi);});o.push(T(x0+3*w-4,fy+r*h+h/2+3,r?'**':'*','#666',8,'end',true));});
+}
+
 
 var QS=[
 {ey:'Y7 Chemistry \u2022 Q1',ti:'Solids, Liquids and Gases',su:'The three states of matter',steps:[
@@ -194,24 +221,26 @@ var QS=[
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 var states=[{label:'SOLID',x:80,col:'#9c27b0'},{label:'LIQUID',x:240,col:'#6A1B9A'},{label:'GAS',x:400,col:'#7b1fa2'}];
 states.forEach(function(st){o.push(R(st.x-55,60,110,170,'#f3e5f5',st.col,2,6));o.push(T(st.x,265,st.label,st.col,11,'middle',true));});
-// solid particles - close packed grid
-for(var r=0;r<4;r++)for(var c=0;c<4;c++)o.push(circ(28+c*16,90+r*16,6,'#9c27b0','#7b1fa2',1));
-// liquid particles - close but irregular
-[[175,90],[195,88],[215,94],[170,108],[190,106],[210,112],[182,124],[202,120],[185,138],[205,140]].forEach(function(p){o.push(circ(p[0],p[1],6,'#6A1B9A','#4A148C',1));});
-// gas particles - spread out
-[[340,80],[380,95],[410,75],[355,120],[395,130],[370,158],[345,170],[405,165],[420,110],[360,200]].forEach(function(p){o.push(circ(p[0],p[1],5,'#ce93d8','#6A1B9A',1));});
+// solid particles - touching, regular rows, resting on the floor of the box
+grid(80,229,6,5,8).forEach(function(p){o.push(circ(p[0],p[1],8,'#9c27b0','#7b1fa2',1));});
+// liquid particles - touching but irregular, settled at the bottom of the box
+pile([196,212,230,247,264,281,204,238,272,221,255,199,284,230,262,214,246,196,279,238,266,208,226,250,282,219,242,203,270,258],8,229).forEach(function(p){o.push(circ(p[0],p[1],8,'#6A1B9A','#4A148C',1));});
+// gas particles - far apart, spread through the whole box
+[[362,82],[410,74],[438,118],[378,128],[423,165],[360,182],[398,208],[440,212],[392,100],[365,222]].forEach(function(p){o.push(circ(p[0],p[1],6,'#ce93d8','#6A1B9A',1));});
 s.innerHTML=o.join('');}},
 {sl:'Properties of solids',p:'In a <b>solid</b>, particles are packed closely together in a regular arrangement. They <b>vibrate</b> but do not move from place to place.<br><br>Solids have a <b>fixed shape</b> and <b>fixed volume</b>. They cannot be compressed.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(R(140,50,200,180,'#f3e5f5','#6A1B9A',2,4));
-for(var r=0;r<5;r++)for(var c=0;c<5;c++)o.push(circ(170+c*30,80+r*30,10,'#ce93d8','#6A1B9A',1.5));
+grid(240,229,8,5,12).forEach(function(p){o.push(circ(p[0],p[1],12,'#ce93d8','#6A1B9A',1.5));});
+o.push(T(240,95,'particles touch and vibrate in fixed positions','#6A1B9A',9,'middle',false));
 o.push(T(240,265,'Fixed shape \u2022 Fixed volume \u2022 Cannot be compressed','#6A1B9A',10,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Properties of liquids',p:'In a <b>liquid</b>, particles are close together but not in a regular pattern. They can <b>slide past each other</b>, which is why liquids can flow.<br><br>Liquids have a <b>fixed volume</b> but take the <b>shape of their container</b>.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(R(140,100,200,130,'#e1bee7','#6A1B9A',2,4));
-var pts=[[165,125],[200,118],[235,128],[270,120],[305,127],[158,148],[195,142],[228,152],[262,145],[298,150],[170,172],[210,168],[248,175],[285,170]];
-pts.forEach(function(p){o.push(circ(p[0],p[1],9,'#9c27b0','#4A148C',1.5));});
+var pts=pile([152,174,197,222,246,270,293,316,327,163,186,210,258,281,305,234,322,152,198,174,269,246,295,221],11,229);
+pts.forEach(function(p){o.push(circ(p[0],p[1],11,'#9c27b0','#4A148C',1.5));});
+o.push(T(240,90,'particles touch but are randomly arranged and slide past each other','#6A1B9A',9,'middle',false));
 o.push(T(240,265,'Fixed volume \u2022 Takes shape of container \u2022 Flows','#6A1B9A',10,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Properties of gases',p:'In a <b>gas</b>, particles are far apart and move randomly at high speed. They fill any container and can be <b>compressed</b>.<br><br>'+
@@ -222,7 +251,7 @@ tryItMC(function(){var qs=[
 ];return rPick(qs);})
 ,draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(R(100,40,280,220,'#f3e5f5','#6A1B9A',2,8));
-var gpts=[[140,80],[220,65],[320,90],[155,140],[260,130],[350,120],[130,190],[210,205],[300,195],[370,170],[175,245],[280,250]];
+var gpts=[[140,80],[220,65],[320,90],[155,140],[260,130],[345,125],[130,190],[210,205],[300,195],[350,180],[175,235],[280,238]];
 gpts.forEach(function(p){o.push(circ(p[0],p[1],7,'#e1bee7','#9c27b0',1));});
 o.push(T(240,295,'Fills container \u2022 Can be compressed \u2022 No fixed shape/volume','#6A1B9A',10,'middle',true));
 s.innerHTML=o.join('');}}
@@ -230,9 +259,12 @@ s.innerHTML=o.join('');}}
 {ey:'Y7 Chemistry \u2022 Q2',ti:'Pure Substances and Mixtures',su:'Elements, compounds and mixtures',steps:[
 {sl:'Elements',p:'An <b>element</b> is a substance made of only <b>one type of atom</b>. It cannot be broken down into simpler substances by chemical means.<br><br>There are 118 known elements, listed in the <b>Periodic Table</b>. Examples: hydrogen (H), oxygen (O), gold (Au), iron (Fe).',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-for(var i=0;i<12;i++){var x=80+((i%6)*52),y=80+(Math.floor(i/6)*52);o.push(circ(x,y,18,'#9c27b0','#6A1B9A',2));o.push(T(x,y+5,'H','#fff',12,'middle',true));}
-o.push(T(240,220,'Element: all atoms the same','#6A1B9A',11,'middle',true));
-o.push(T(240,240,'(e.g. pure hydrogen gas, H\u2082)','#888',10,'middle',false));
+drawPT(o,24,14,24,22,['H','O','Fe','Au'],false);
+o.push(T(240,248,'The Periodic Table: each box is one element (118 in total)','#6A1B9A',11,'middle',true));
+o.push(T(240,266,'Highlighted examples: H (hydrogen), O (oxygen), Fe (iron), Au (gold)','#555',9,'middle',false));
+o.push(R(92,278,10,10,'#e3f2fd','#1565C0',0.6,1));o.push(T(106,287,'metals','#555',9,'start',false));
+o.push(R(182,278,10,10,'#fce4ec','#C0272D',0.6,1));o.push(T(196,287,'non-metals','#555',9,'start',false));
+o.push(R(290,278,10,10,'#fff8e1','#C8922A',0.6,1));o.push(T(304,287,'metalloids','#555',9,'start',false));
 s.innerHTML=o.join('');}},
 {sl:'Compounds',p:'A <b>compound</b> is formed when atoms of <b>two or more different elements</b> are chemically joined together. The compound has different properties from its elements.<br><br>Example: water (H\u2082O) — hydrogen and oxygen joined. Table salt (NaCl) — sodium and chlorine joined.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
@@ -277,28 +309,32 @@ s.innerHTML=o.join('');}}
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(circ(240,150,30,'#e1bee7','#6A1B9A',2));
 o.push(T(240,155,'Nucleus','#6A1B9A',10,'middle',true));
-o.push(circ(240,150,75,'none','#9c27b0',1,'4,3'));
-o.push(circ(240,150,115,'none','#7b1fa2',1,'4,3'));
-[0,120,240].forEach(function(a){var rad=a*Math.PI/180;o.push(circ(240+75*Math.cos(rad),150+75*Math.sin(rad),6,'#1565C0','#0D47A1',1));});
-[45,165,285].forEach(function(a){var rad=a*Math.PI/180;o.push(circ(240+115*Math.cos(rad),150+115*Math.sin(rad),6,'#1565C0','#0D47A1',1));});
-o.push(T(240,290,'Protons & neutrons in nucleus \u2022 Electrons in shells','#6A1B9A',10,'middle',true));
+o.push(circ(240,150,65,'none','#9c27b0',1.2));
+o.push(circ(240,150,105,'none','#7b1fa2',1.2));
+[0,180].forEach(function(a){var rad=a*Math.PI/180;o.push(circ(240+65*Math.cos(rad),150+65*Math.sin(rad),6,'#1565C0','#0D47A1',1));});
+[45,135,225,315].forEach(function(a){var rad=a*Math.PI/180;o.push(circ(240+105*Math.cos(rad),150+105*Math.sin(rad),6,'#1565C0','#0D47A1',1));});
+o.push(T(365,80,'Carbon atom: 2,4','#6A1B9A',10,'start',true));
+o.push(T(365,96,'1st shell holds max 2','#555',9,'start',false));
+o.push(T(365,110,'2nd shell holds max 8','#555',9,'start',false));
+o.push(T(240,285,'Protons & neutrons in nucleus \u2022 Electrons in shells','#6A1B9A',10,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Protons, neutrons and electrons',p:'The three subatomic particles:<br><br>\u2022 <b>Proton</b>: positive charge (+1), in nucleus<br>\u2022 <b>Neutron</b>: no charge (0), in nucleus<br>\u2022 <b>Electron</b>: negative charge (-1), in shells<br><br>The <b>atomic number</b> = number of protons. This defines which element it is.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(circ(240,130,50,'#e1bee7','#6A1B9A',2));
-o.push(circ(225,120,12,'#ffcdd2','#C0272D',2));o.push(T(225,124,'p+','#C0272D',10,'middle',true));
-o.push(circ(255,120,12,'#e0e0e0','#555',2));o.push(T(255,124,'n','#555',10,'middle',true));
-o.push(circ(240,145,12,'#ffcdd2','#C0272D',2));o.push(T(240,149,'p+','#C0272D',10,'middle',true));
-o.push(circ(240,60,8,'#bbdefb','#1565C0',1.5));o.push(T(240,64,'e\u207b','#1565C0',8,'middle',true));
-o.push(circ(190,130,8,'#bbdefb','#1565C0',1.5));o.push(T(190,134,'e\u207b','#1565C0',8,'middle',true));
-o.push(circ(290,130,8,'#bbdefb','#1565C0',1.5));
-o.push(T(120,230,'Positive nucleus','#C0272D',11,'middle',true));o.push(T(360,230,'Negative electrons','#1565C0',11,'middle',true));
+o.push(circ(240,130,85,'none','#9c27b0',1.2));
+o.push(circ(240,130,30,'#e1bee7','#6A1B9A',2));
+o.push(circ(228,118,11,'#ffcdd2','#C0272D',1.5));o.push(T(228,122,'p\u207a','#C0272D',9,'middle',true));
+o.push(circ(252,118,11,'#e0e0e0','#555',1.5));o.push(T(252,122,'n','#555',9,'middle',true));
+o.push(circ(228,142,11,'#e0e0e0','#555',1.5));o.push(T(228,146,'n','#555',9,'middle',true));
+o.push(circ(252,142,11,'#ffcdd2','#C0272D',1.5));o.push(T(252,146,'p\u207a','#C0272D',9,'middle',true));
+o.push(circ(240,45,9,'#bbdefb','#1565C0',1.5));o.push(T(240,49,'e\u207b','#1565C0',8,'middle',true));
+o.push(circ(240,215,9,'#bbdefb','#1565C0',1.5));o.push(T(240,219,'e\u207b','#1565C0',8,'middle',true));
+o.push(T(240,250,'Helium atom: 2 protons, 2 neutrons, 2 electrons','#6A1B9A',11,'middle',true));
+o.push(T(90,130,'Positive nucleus','#C0272D',11,'middle',true));o.push(T(398,130,'Negative electrons','#1565C0',11,'middle',true));
+o.push(T(240,270,'2 protons (+2) and 2 electrons (\u22122) \u2192 the atom is neutral','#555',10,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'The Periodic Table',p:'The <b>Periodic Table</b> arranges all elements in order of <b>atomic number</b>. Elements are arranged so that those with similar properties are in the same vertical column, called a <b>group</b>.<br><br>Horizontal rows are called <b>periods</b>.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-var rows=[[1,0],[1,10],[2,2],[2,10],[3,2],[3,10],[4,2],[4,10]];
-for(var r=0;r<6;r++)for(var c=0;c<18;c++){var skip=(r<2&&c>0&&c<10);if(!skip)o.push(R(20+c*24,20+r*36,21,32,'#f3e5f5','#9c27b0',0.5,1));}
-o.push(R(20,20,21,32,'#ce93d8','#6A1B9A',1.5,1));o.push(T(30,40,'H','#fff',8,'middle',true));
+drawPT(o,26,20,24,22,null,true);
 o.push(T(240,255,'Periodic Table: elements ordered by atomic number','#6A1B9A',10,'middle',true));
 o.push(T(120,275,'Groups (columns) = similar properties','#888',9,'middle',false));
 o.push(T(360,275,'Periods (rows) = same number of shells','#888',9,'middle',false));
@@ -311,7 +347,7 @@ tryItMC(function(){var qs=[
 ];return rPick(qs);})
 ,draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(R(30,50,250,200,'#e3f2fd','#1565C0',2,4));o.push(T(155,155,'Metals','#1565C0',22,'middle',true));
-o.push(R(290,50,160,200,'#fce4ec','#C0272D',2,4));o.push(T(370,155,'Non-\nmetals','#C0272D',22,'middle',true));
+o.push(R(290,50,160,200,'#fce4ec','#C0272D',2,4));o.push(T(370,145,'Non-','#C0272D',22,'middle',true));o.push(T(370,172,'metals','#C0272D',22,'middle',true));
 o.push(T(155,285,'Shiny \u2022 Conduct \u2022 Malleable','#1565C0',9,'middle',false));
 o.push(T(370,285,'Dull \u2022 Poor conductors','#C0272D',9,'middle',false));
 s.innerHTML=o.join('');}}
@@ -327,25 +363,41 @@ o.push(T(240,240,'REVERSIBLE: same substance, different state','#2E7D32',11,'mid
 s.innerHTML=o.join('');}},
 {sl:'Melting and boiling points',p:'Each substance has a specific <b>melting point</b> (solid \u2192 liquid) and <b>boiling point</b> (liquid \u2192 gas).<br><br>Water: melting point = <b>0\u00b0C</b>, boiling point = <b>100\u00b0C</b>.<br><br>These are physical properties that help identify a pure substance.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(L(80,250,80,30,'#555',2));o.push(arr(80,250,440,250,'#555',1.5));
-o.push(T(70,250,'0','#1565C0',10,'end',false));o.push(T(70,155,'50','#888',10,'end',false));o.push(T(70,60,'100','#C0272D',10,'end',false));
-o.push(L(75,250,85,250,'#1565C0',2));o.push(L(75,60,85,60,'#C0272D',2));
-o.push(T(150,260,'Solid','#6A1B9A',10,'middle',false));o.push(T(260,260,'Liquid','#1565C0',10,'middle',false));o.push(T(380,260,'Gas','#888',10,'middle',false));
-o.push(R(100,30,90,210,'#e3f2fd','#1565C0',1,2));
-o.push(R(200,250,120,0,'#e1bee7','#6A1B9A',1,2));
-o.push(T(240,250,'0\u00b0C Melting point','#6A1B9A',9,'start',false));
-o.push(T(340,60,'100\u00b0C Boiling point','#C0272D',9,'start',false));
+// heating curve for water: y = 230 - (T+20)*1.3  (T from -20 to 120 \u00b0C)
+function ty(t){return 230-(t+20)*1.3;}
+o.push(arr(70,250,450,250,'#555',1.5));o.push(arr(70,250,70,20,'#555',1.5));
+o.push(T(260,275,'Time (heating at a steady rate)','#555',10,'middle',false));
+o.push('<text x="30" y="140" font-size="10" font-family="Arial" fill="#555" text-anchor="middle" transform="rotate(-90 30 140)">Temperature (\u00b0C)</text>');
+[-20,0,50,100].forEach(function(t){o.push(L(66,ty(t),74,ty(t),'#555',1.5));o.push(T(62,ty(t)+4,String(t),'#555',9,'end',false));});
+o.push(L(74,ty(0),440,ty(0),'#1565C0',0.8,'4,3'));o.push(L(74,ty(100),440,ty(100),'#C0272D',0.8,'4,3'));
+var pts=[[74,ty(-20)],[120,ty(0)],[190,ty(0)],[270,ty(100)],[390,ty(100)],[430,ty(120)]];
+o.push('<polyline points="'+pts.map(function(p){return p.join(',');}).join(' ')+'" fill="none" stroke="#6A1B9A" stroke-width="2.5"/>');
+o.push(T(112,ty(-12)+10,'solid','#6A1B9A',9,'start',true));
+o.push(T(155,ty(0)-8,'melting','#1565C0',9,'middle',true));o.push(T(155,ty(0)+14,'0\u00b0C','#1565C0',9,'middle',true));
+o.push(T(245,ty(50),'liquid','#6A1B9A',9,'start',true));
+o.push(T(330,ty(100)-8,'boiling','#C0272D',9,'middle',true));o.push(T(330,ty(100)+14,'100\u00b0C','#C0272D',9,'middle',true));
+o.push(T(420,ty(120)+22,'gas','#6A1B9A',9,'middle',true));
+o.push(T(260,22,'Flat sections: temperature stays constant while the state changes','#555',9,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'Chemical changes',p:'A <b>chemical change</b> produces one or more <b>new substances</b>. The change is usually <b>irreversible</b>.<br><br>Signs of a chemical change: colour change, gas produced, temperature change, light produced, precipitate formed.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(130,25,'Burning wood','#C0272D',11,'middle',true));
-o.push(R(90,160,80,80,'#795548','#4e342e',2,2));
-o.push('<path d="M130,160 C110,120 100,80 130,60 C140,80 140,100 130,90 C150,70 165,50 145,30 C170,50 165,85 155,100 C155,80 165,60 155,40 C185,65 175,110 155,130 L155,160 Z" fill="#ff5722" stroke="#d84315" stroke-width="1"/>');
-o.push(T(130,265,'Wood \u2192 ash + CO\u2082 + water','#555',10,'middle',false));
+o.push('<path d="M100,150 C85,120 105,100 112,80 C118,100 126,95 124,70 C140,90 150,105 142,85 C160,105 168,125 160,150 Z" fill="#ff9800" stroke="#e65100" stroke-width="1.5"/>');
+o.push('<path d="M112,150 C105,130 118,118 122,105 C128,120 138,118 136,105 C148,122 150,138 146,150 Z" fill="#ffeb3b" stroke="none"/>');
+o.push('<rect x="80" y="150" width="100" height="18" rx="8" fill="#795548" stroke="#4e342e" stroke-width="2" transform="rotate(-8 130 159)"/>');
+o.push('<rect x="80" y="150" width="100" height="18" rx="8" fill="#8d6e63" stroke="#4e342e" stroke-width="2" transform="rotate(8 130 159)"/>');
+o.push(R(85,180,90,14,'#9e9e9e','#616161',1,6));o.push(T(130,212,'grey ash left behind','#616161',9,'middle',false));
+[[118,60],[132,48],[145,38]].forEach(function(p,i){o.push(circ(p[0],p[1],6+i*2,'#eeeeee','#bdbdbd',1));});
+o.push(T(175,50,'smoke, CO\u2082 and','#616161',9,'start',false));o.push(T(175,62,'water vapour','#616161',9,'start',false));
+o.push(T(130,250,'Wood + oxygen \u2192 ash + CO\u2082 + water','#555',10,'middle',false));
+o.push(T(130,265,'New substances; heat and light given out','#C0272D',9,'middle',false));
 o.push(T(350,25,'Vinegar + Bicarbonate','#6A1B9A',11,'middle',true));
-for(var i=0;i<8;i++)o.push(circ(280+rInt(0,140),100+rInt(0,120),rInt(4,9),'none','#90caf9',1.5));
-o.push(R(295,180,110,80,'#e3f2fd','#6A1B9A',2,4));
-o.push(T(350,265,'Bubbles = CO\u2082 gas produced','#555',10,'middle',false));
+o.push('<path d="M300,80 L300,225 Q300,235 310,235 L390,235 Q400,235 400,225 L400,80" fill="none" stroke="#6A1B9A" stroke-width="2"/>');
+o.push(R(301,140,98,94,'#e3f2fd','none',0,0));
+o.push(L(301,140,399,140,'#1565C0',1.5));
+[[315,215,4],[330,190,5],[350,210,4],[365,175,6],[380,200,4],[340,160,5],[320,150,4],[375,152,5]].forEach(function(b){o.push(circ(b[0],b[1],b[2],'#fff','#1E88E5',1.5));});
+o.push(T(350,255,'Fizzing: bubbles of CO\u2082 gas','#555',10,'middle',false));
+o.push(T(350,270,'(a new substance) are produced','#555',10,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'Identifying changes',p:'To decide if a change is physical or chemical, ask: <b>Is a new substance formed?</b><br><br>Physical: change of state, dissolving, cutting, bending.<br>Chemical: burning, rusting, cooking, acid + metal reactions.<br><br>'+
 tryItMC(function(){var qs=[
@@ -363,23 +415,41 @@ s.innerHTML=o.join('');}}
 {ey:'Y7 Chemistry \u2022 Q5',ti:'Solutions and Solubility',su:'Dissolving and saturation',steps:[
 {sl:'Solutions',p:'When a <b>solute</b> (e.g. salt) dissolves in a <b>solvent</b> (e.g. water), it forms a <b>solution</b>. The solute particles spread out evenly between the solvent particles.<br><br>A solution is a type of mixture — it is clear (transparent) but may be coloured.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(R(140,60,200,180,'#e3f2fd','#1565C0',2,4));
-for(var i=0;i<20;i++){var x=160+rInt(0,160),y=80+rInt(0,140);o.push(circ(x,y,5,'#9c27b0','#6A1B9A',1));}
-o.push(T(240,268,'Solute particles (purple) in solvent (blue) = solution','#555',10,'middle',false));
+o.push(T(95,40,'Before: salt + water','#6A1B9A',10,'middle',true));
+o.push(R(35,60,120,170,'#f7fbff','#1565C0',2,4));
+var sv=pile([45,63,81,99,117,135,54,72,90,108,126,144,45,63,81,99,117,135,54,72,90,108,126,144,45,63,81,99,117,135,54,72,90,108,126,144],9,229);
+sv.forEach(function(p){o.push(circ(p[0],p[1],9,'#90caf9','#1565C0',1));});
+o.push(R(75,95,40,24,'#ce93d8','#6A1B9A',1.5,2));o.push(T(95,111,'salt','#4A148C',9,'middle',true));o.push(arr(95,121,95,135,'#6A1B9A',1.5));
+o.push(arr(170,145,225,145,'#555',2));o.push(T(197,135,'dissolves','#555',9,'middle',false));
+o.push(T(335,40,'After: a solution','#6A1B9A',10,'middle',true));
+o.push(R(240,60,190,170,'#f7fbff','#1565C0',2,4));
+var k=0;for(var r=0;r<8;r++)for(var c=0;c<10;c++){var x=250+c*18+(r%2?9:0),y=220-r*16;if(x>421)continue;var sol=((r*10+c)%7===3);o.push(circ(x,y,sol?6:8,sol?'#9c27b0':'#90caf9',sol?'#4A148C':'#1565C0',1));}
+o.push(circ(265,255,6,'#9c27b0','#4A148C',1));o.push(T(276,259,'solute particle','#555',9,'start',false));
+o.push(circ(365,255,8,'#90caf9','#1565C0',1));o.push(T(378,259,'solvent particle','#555',9,'start',false));
+o.push(T(240,285,'Solute particles spread out evenly between the solvent particles','#555',10,'middle',false));
 s.innerHTML=o.join('');}},
-{sl:'Factors affecting dissolving',p:'Three factors speed up dissolving:<br><br>1. <b>Temperature</b> — higher temperature = faster dissolving (particles have more energy)<br>2. <b>Stirring</b> — moves solute away from the solvent, exposing fresh solvent<br>3. <b>Particle size</b> — smaller particles dissolve faster (greater surface area)',
+{sl:'Factors affecting dissolving',p:'Three factors speed up dissolving:<br><br>1. <b>Temperature</b> — higher temperature = faster dissolving (particles have more energy)<br>2. <b>Stirring</b> — carries dissolved particles away from the solid, so fresh solvent keeps reaching its surface<br>3. <b>Particle size</b> — smaller particles dissolve faster (greater surface area)',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-var facts=['Temperature \u2191','Stirring','Smaller particles'];var icons=['\u25b2','~','::'];var cols=['#C0272D','#1565C0','#2E7D32'];
-facts.forEach(function(f,i){o.push(R(50+i*130,80,110,110,cols[i]+'22',cols[i],1.5,8));o.push(T(105+i*130,125,icons[i],cols[i],24,'middle',true));o.push(T(105+i*130,165,f,cols[i],10,'middle',true));o.push(T(105+i*130,200,'Faster',cols[i],10,'middle',false));});
+var facts=['Temperature \u2191','Stirring','Smaller particles'];var cols=['#C0272D','#1565C0','#2E7D32'];
+facts.forEach(function(f,i){o.push(R(50+i*130,60,110,150,cols[i]+'22',cols[i],1.5,8));o.push(T(105+i*130,185,f,cols[i],10,'middle',true));o.push(T(105+i*130,200,'\u2192 faster dissolving',cols[i],9,'middle',false));});
+// thermometer
+o.push(R(100,75,10,70,'#fff','#C0272D',1.5,5));o.push(circ(105,150,10,'#C0272D','#C0272D',1.5));o.push(R(102,95,6,55,'#C0272D','#C0272D',0,3));
+// beaker with stirring rod and swirl
+o.push('<path d="M205,85 L205,160 L265,160 L265,85" fill="#e3f2fd" stroke="#1565C0" stroke-width="1.5"/>');
+o.push(L(250,70,228,150,'#555',3));o.push('<path d="M215,125 Q235,110 255,125 Q235,140 215,125" fill="none" stroke="#1565C0" stroke-width="1.5"/>');
+// one big lump vs many small pieces
+o.push(R(318,95,34,34,'#a5d6a7','#2E7D32',1.5,2));o.push(T(335,150,'lump','#2E7D32',8,'middle',false));
+[[372,98],[386,98],[372,112],[386,112],[379,126],[365,126],[393,126]].forEach(function(p){o.push(R(p[0]-5,p[1]-5,10,10,'#a5d6a7','#2E7D32',1,1));});o.push(T(380,150,'powder','#2E7D32',8,'middle',false));
 o.push(T(240,275,'All three factors speed up the rate of dissolving','#555',10,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'Solubility and saturation',p:'<b>Solubility</b> is the maximum mass of solute that dissolves in 100 g of solvent at a given temperature.<br><br>A <b>saturated solution</b> is one where no more solute can dissolve — excess solute remains as a solid.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(R(80,60,140,180,'#e3f2fd','#1565C0',1.5,4));o.push(T(150,155,'Unsaturated','#1565C0',10,'middle',true));o.push(T(150,170,'(more can dissolve)','#888',9,'middle',false));
-for(var i=0;i<6;i++){o.push(circ(100+rInt(0,100),80+rInt(0,130),5,'#9c27b0','#6A1B9A',1));}
-o.push(R(260,60,140,180,'#e1bee7','#6A1B9A',1.5,4));o.push(T(330,115,'Saturated','#6A1B9A',10,'middle',true));o.push(T(330,130,'(no more dissolves)','#888',9,'middle',false));
-for(var j=0;j<14;j++)o.push(circ(270+rInt(0,120),70+rInt(0,100),5,'#9c27b0','#6A1B9A',1));
-o.push(R(270,175,120,50,'#ce93d8','#6A1B9A',2,2));o.push(T(330,203,'Undissolved solute','#6A1B9A',9,'middle',true));
+o.push(R(80,60,140,180,'#e3f2fd','#1565C0',1.5,4));o.push(T(150,40,'Unsaturated','#1565C0',10,'middle',true));o.push(T(150,52,'(more can dissolve)','#888',9,'middle',false));
+[[100,80],[170,95],[130,190],[195,210],[105,225],[160,135]].forEach(function(p){o.push(circ(p[0],p[1],5,'#9c27b0','#6A1B9A',1));});
+o.push(R(260,60,140,180,'#e1bee7','#6A1B9A',1.5,4));o.push(T(330,40,'Saturated','#6A1B9A',10,'middle',true));o.push(T(330,52,'(no more dissolves)','#888',9,'middle',false));
+for(var r=0;r<5;r++)for(var c=0;c<6;c++)o.push(circ(277+c*20+(r%2?10:0),75+r*22,5,'#9c27b0','#6A1B9A',1));
+pile([282,296,310,324,338,352,366,380,289,303,317,331,345,359,373,296,310,324,338,352,366,310,324,338,352],7,239).forEach(function(p){o.push(circ(p[0],p[1],7,'#ce93d8','#6A1B9A',1));});
+o.push(T(330,262,'Excess solid settles at the bottom','#6A1B9A',9,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Solubility curves',p:'A <b>solubility curve</b> shows how the solubility of a substance changes with temperature. Most solids become more soluble as temperature increases, but gases become less soluble.<br><br>'+
 tryItMC(function(){var qs=[
@@ -389,13 +459,14 @@ tryItMC(function(){var qs=[
 ];return rPick(qs);})
 ,draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(arr(50,250,440,250,'#555',1.5));o.push(arr(50,250,50,20,'#555',1.5));
-o.push(T(245,275,'Temperature (\u00b0C)','#555',11,'middle',false));o.push(T(30,135,'Solubility\n(g/100g)','#555',9,'middle',true));
+o.push(T(245,285,'Temperature (\u00b0C)','#555',11,'middle',false));o.push('<text x="28" y="135" font-size="10" font-family="Arial" fill="#555" text-anchor="middle" font-weight="700" transform="rotate(-90 28 135)">Solubility (g per 100 g water)</text>');
+o.push('<polyline points="50,120 100,150 150,175 200,195 250,210 300,221 350,229 400,234" fill="none" stroke="#1565C0" stroke-width="2" stroke-dasharray="6,4"/>');
+o.push(T(300,205,'Gas solute: less soluble when hotter','#1565C0',9,'start',false));
 var pts='50,240 100,220 150,195 200,168 250,140 300,108 350,80 400,58';
 o.push('<polyline points="'+pts+'" fill="none" stroke="#6A1B9A" stroke-width="2.5"/>');
-[50,150,250,350].forEach(function(x,i){o.push(T(x,263,(i*20).toString(),'#888',9,'middle',false));});
-o.push(T(380,70,'Solid solute','#6A1B9A',10,'start',false));
-o.push(T(380,90,'more soluble','#6A1B9A',10,'start',false));
-o.push(T(380,108,'when hotter','#6A1B9A',10,'start',false));
+[50,150,250,350].forEach(function(x,i){o.push(T(x,265,(i*20).toString(),'#888',9,'middle',false));});
+o.push(T(300,55,'Solid solute: more soluble','#6A1B9A',10,'end',false));
+o.push(T(300,70,'when hotter','#6A1B9A',10,'end',false));
 s.innerHTML=o.join('');}}
 ]}
 ];

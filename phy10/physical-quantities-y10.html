@@ -133,12 +133,12 @@ document.addEventListener('click',function(e){
   if(el.classList.contains('try-new')){
     var id=el.getAttribute('data-tryid');
     var entry=ST[id]; if(!entry)return;
-    var o=entry.genFn(); entry.o=o;
+    var o=entry.genFn(); var nid='t'+Math.random().toString(36).slice(2);
     var wrap=el.closest?el.closest('.try'):document.querySelector('.try[data-tryid="'+id+'"]');
     if(!wrap)return;
-    var tmp=document.createElement('div'); tmp.innerHTML=entry.mc?buildTryMC(id,o):buildTry(id,o);
+    var tmp=document.createElement('div'); tmp.innerHTML=entry.mc?buildTryMC(nid,o):buildTry(nid,o);
     wrap.parentNode.replaceChild(tmp.firstChild,wrap);
-    ST[id]={o:o,genFn:entry.genFn,mc:entry.mc}; return;
+    ST[nid]={o:o,genFn:entry.genFn,mc:entry.mc}; return;
   }
   if(el.classList.contains('mc-opt')){
     if(el.disabled)return;
@@ -158,7 +158,7 @@ document.addEventListener('click',function(e){
     if(!inp||!fb)return;
     var v=parseFloat(inp.value);
     if(isNaN(v)){fb.className='try-fb er';fb.textContent='Enter a number.';return;}
-    var tol=o.tol!=null?o.tol:0.05;
+    var tol=o.tol!=null?Math.abs(o.tol):0.05;
     if(Math.abs(v-o.ans)<=tol){fb.className='try-fb ok';fb.innerHTML='&#10003; Correct! &nbsp;'+o.working;}
     else{fb.className='try-fb er';fb.textContent='Not quite — check your working and try again.';}
   }
@@ -172,7 +172,7 @@ function circ(cx,cy,r,fill,stroke){return '<circle cx="'+cx+'" cy="'+cy+'" r="'+
 
 function dQ1(p){var s=g(),o=[];s.setAttribute('viewBox','0 0 480 260');
 o.push(R(10,10,460,240,'#e3f2fd','#1565C0',1));
-o.push(T(240,36,'SI Base Units',PHY_ACC||'#1565C0',15,'middle',true));
+o.push(T(240,36,'SI Base Units','#1565C0',15,'middle',true));
 var rows=[['Length','metre','m'],['Mass','kilogram','kg'],['Time','second','s'],['Current','ampere','A'],['Temperature','kelvin','K']];
 rows.forEach(function(r,i){if(i<p+1){o.push(R(20,50+i*38,440,32,'#fff','#BBDEFB',1));o.push(T(120,70+i*38,r[0],'#333',11,'middle',false));o.push(T(260,70+i*38,r[1],'#1565C0',11,'middle',false));o.push(T(420,70+i*38,r[2],'#0d47a1',13,'middle',true));}});
 s.innerHTML=o.join('');}
@@ -286,7 +286,7 @@ var QS=[
   {ey:'Q8 \u2022 Y10 Physics \u2022 Measurement',ti:'Standard Form',su:'Express very large and very small numbers in standard form A \u00d7 10\u207f.',steps:[
     {lb:'What is standard form?',dr:dQ8,ht:'<p>Standard form: <b>A \u00d7 10\u207f</b> where 1 \u2264 A < 10. Used for very large or very small numbers to avoid ambiguous zeros and to make them easier to work with.</p>'},
     {lb:'Examples',dr:dQ8,ht:'<p>3 400 000 = <b>3.4 \u00d7 10\u2076</b>. &nbsp;&nbsp;0.000 056 = <b>5.6 \u00d7 10\u207b\u2075</b>. &nbsp;&nbsp;Speed of light = <b>3.0 \u00d7 10\u2078 m/s</b>.</p>'},
-    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var type=pick(['to_sf','from_sf']);if(type==='to_sf'){var m=pick([1.5,2.3,3.8,4.6,7.2]);var e=pick([-9,-6,-3,3,6,9]);var val=m*Math.pow(10,e);return{question:'What is the value of <b>'+m+' \u00d7 10^'+e+'</b> as a plain number?',hints:['Multiply: shift decimal point '+Math.abs(e)+' places'],ans:val,tol:Math.abs(val)*0.01,unit:'',working:m+' \u00d7 10^'+e+' = '+val};}var plain=pick([3400000,0.0056,25000,0.000001,980000]);var sf=parseFloat(plain.toExponential(1));var exp=parseInt(plain.toExponential(1).split('e')[1]);return{question:'Write <b>'+plain+'</b> in standard form. What is the mantissa (the A in A\u00d710\u207f)?',hints:['Move decimal so 1 \u2264 A < 10'],ans:sf,tol:0.01,unit:'',working:plain+' = '+sf+' \u00d7 10^'+exp};})},
+    {lb:'Your turn',dr:dQ8,ht:tryIt(function(){var type=pick(['to_sf','from_sf']);if(type==='to_sf'){var m=pick([1.5,2.3,3.8,4.6,7.2]);var e=pick([-9,-6,-3,3,6,9]);var val=Number((m*Math.pow(10,e)).toPrecision(3));var valStr=e<0?val.toFixed(-e+1):val.toFixed(0);return{question:'What is the value of <b>'+m+' \u00d7 10^'+e+'</b> as an ordinary number?',hints:['Move the decimal point '+Math.abs(e)+' places to the '+(e<0?'left':'right')],ans:val,tol:Math.abs(val)*0.01,unit:'',working:m+' \u00d7 10^'+e+' = <b>'+valStr+'</b>'};}var plain=pick([3400000,0.0056,25000,0.000001,980000]);var parts=plain.toExponential(1).split('e');var sf=parseFloat(parts[0]);var exp=parseInt(parts[1],10);return{question:'Write <b>'+plain+'</b> in standard form. What is the mantissa (the A in A\u00d710\u207f)?',hints:['Move the decimal point so that 1 \u2264 A < 10','Count how many places you moved it to find n'],ans:sf,tol:0.01,unit:'',working:plain+' = <b>'+sf+'</b> \u00d7 10^'+exp+', so A = <b>'+sf+'</b>'};})},
   ]},
   {ey:'Q9 \u2022 Y10 Physics \u2022 Measurement',ti:'Timing Experiments',su:'Explain how to reduce timing error in oscillation experiments.',steps:[
     {lb:'The problem',dr:dQ9,ht:'<p>A stopwatch has precision \u00b10.01 s, but human <b>reaction time</b> is ~0.3 s. Timing a single short event is dominated by this reaction time error.</p>'},

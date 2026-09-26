@@ -110,6 +110,7 @@ function buildTry(id,o){
     +'<div class="try-t">✔ Your Turn'
     +' <button class="nq-btn" data-tryid="'+id+'">↻ New</button></div>'
     +'<div class="try-q">'+o.question+'</div>'
+    +(o.extraHTML||'')
     +'<ul class="hl">'+(h||'')+'</ul>'
     +'<div class="ar">'
     +'<input type="number" step="any" placeholder="'+ph+'" class="try-inp" data-tryid="'+id+'"/>'
@@ -153,6 +154,31 @@ function R(x,y,w,h,fill,stroke,sw){fill=fill||'#fff5f0';stroke=stroke||'#C0272D'
 function L(x1,y1,x2,y2,c,w,d){c=c||'#888';w=w||1.5;return '<line x1="'+x1+'" y1="'+y1+'" x2="'+x2+'" y2="'+y2+'" stroke="'+c+'" stroke-width="'+w+'" '+(d?'stroke-dasharray="'+d+'"':'')+'/>';}
 function C(cx,cy,r,fill,stroke,sw){return '<circle cx="'+cx+'" cy="'+cy+'" r="'+r+'" fill="'+fill+'" stroke="'+stroke+'" stroke-width="'+(sw||1.5)+'"/>';}
 
+/* Three-set Venn diagram. Region keys: a (only A), b (only B), c (only C), ab (A and B only),
+   ac (A and C only), bc (B and C only), abc (all three), out (outside all circles).
+   Positions are the centres of each region for circles A(185,125) B(295,125) C(240,215) r=85. */
+var V3POS={a:[150,106],b:[330,106],c:[240,256],ab:[240,98],ac:[193,188],bc:[287,188],abc:[240,158],out:[430,296]};
+var V3COL={a:'#C0272D',b:'#1a5a8a',c:'#1a7a3a',ab:'#555',ac:'#555',bc:'#555',abc:'#7a5a10',out:'#555'};
+function venn3(o,opt){
+  opt=opt||{};
+  o.push(R(14,8,452,304,'#fff5f0','#C0272D',2));
+  o.push(T(28,32,'U','#C0272D',16,'start',true));
+  o.push(C(185,125,85,'rgba(192,39,45,0.10)','#C0272D',2));
+  o.push(C(295,125,85,'rgba(26,90,138,0.10)','#1a5a8a',2));
+  o.push(C(240,215,85,'rgba(26,122,58,0.10)','#1a7a3a',2));
+  var nm=opt.names||['A','B','C'];
+  o.push(T(96,44,nm[0],'#C0272D',16,'middle',true));
+  o.push(T(384,44,nm[1],'#1a5a8a',16,'middle',true));
+  o.push(T(352,290,nm[2],'#1a7a3a',16,'start',true));
+  var vals=opt.vals||{};
+  Object.keys(vals).forEach(function(k){
+    if(vals[k]==null)return;
+    var pt=V3POS[k],hl=opt.hl&&opt.hl.indexOf(k)>=0;
+    if(hl)o.push(C(pt[0],pt[1]-6,17,'#fff3cc','#C8922A',2.5));
+    o.push(T(pt[0],pt[1],vals[k],hl?'#7a5a10':V3COL[k],opt.size||18,'middle',true));
+  });
+  if(vals.out!=null)o.push(T(430,276,'outside','#888',11,'middle',false));
+}
 
 function dQ1(p){
   var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
@@ -188,41 +214,16 @@ function dQ1(p){
 }
 
 function dQ2(p){
-  // 3-set Venn diagram
-  var s=g();s.setAttribute('viewBox','0 0 480 320');var o=[];
-  o.push(R(14,8,452,304,'#fff5f0','#C0272D',2));
-  o.push(T(36,28,'U','#C0272D',14,'middle',true));
-  // Three circles: A(top-left), B(top-right), C(bottom)
-  var Ax=185,Ay=130,Bx=295,By=130,Cx=240,Cy=210,r=80;
-  o.push(C(Ax,Ay,r,'rgba(192,39,45,0.10)','#C0272D',2));
-  o.push(C(Bx,By,r,'rgba(26,90,138,0.10)','#1a5a8a',2));
-  o.push(C(Cx,Cy,r,'rgba(26,122,58,0.10)','#1a7a3a',2));
-  o.push(T(138,72,'A','#C0272D',16,'middle',true));
-  o.push(T(342,72,'B','#1a5a8a',16,'middle',true));
-  o.push(T(240,306,'C','#1a7a3a',16,'middle',true));
-  if(p>=1){
-    // Region labels (7 regions)
-    o.push(T(158,135,'a','#C0272D',13,'middle',true));   // only A
-    o.push(T(322,135,'b','#1a5a8a',13,'middle',true));   // only B
-    o.push(T(240,262,'c','#1a7a3a',13,'middle',true));   // only C
-    o.push(T(240,115,'d','#888',13,'middle',false));     // A∩B only
-    o.push(T(195,210,'e','#888',13,'middle',false));     // A∩C only
-    o.push(T(285,210,'f','#888',13,'middle',false));     // B∩C only
-    o.push(T(240,178,'\u03b5','#C8922A',14,'middle',true)); // A∩B∩C
+  // 3-set Venn diagram: letters first, then the values, each in the middle of its region
+  var s=g();s.setAttribute('viewBox','0 0 480 356');var o=[];
+  if(p<=0){
+    venn3(o,{vals:{a:'a',b:'b',c:'c',ab:'d',ac:'e',bc:'f',abc:'g',out:'h'},size:20});
+  } else {
+    venn3(o,{vals:{a:'5',b:'4',c:'6',ab:'3',ac:'2',bc:'2',abc:'1',out:'2'},size:20});
   }
   if(p>=2){
-    // Concrete numbers: a=5,b=4,c=6,d=3,e=2,f=2,ε=1
-    var vals=['5','4','6','3','2','2','1'];
-    var pos=[[158,135],[322,135],[240,262],[240,115],[195,210],[285,210],[240,178]];
-    var cols=['#C0272D','#1a5a8a','#1a7a3a','#555','#555','#555','#C8922A'];
-    pos.forEach(function(pt,i){o.push(T(pt[0],pt[1],vals[i],cols[i],15,'middle',true));});
-    o.push(T(438,290,'2','#888',13,'middle',false)); // outside
-    o.push(R(14,276,200,30,'#f0f0f0','#888',1));
-    o.push(T(114,295,'Outside all circles: 2','#888',10,'middle',false));
-  }
-  if(p>=3){
-    o.push(R(220,276,226,30,'#e8f8ee','#1a7a3a',1.5));
-    o.push(T(333,295,'|U| = 5+4+6+3+2+2+1+2 = 25','#1a7a3a',10,'middle',false));
+    o.push(R(60,318,360,32,'#e8f8ee','#1a7a3a',1.5));
+    o.push(T(240,339,'|U| = 5+4+6+3+2+2+1+2 = 25','#1a7a3a',15,'middle',true));
   }
   s.innerHTML=o.join('');
 }
@@ -262,69 +263,44 @@ function dQ3(p){
 }
 
 function dQ4(p){
-  // Complement and difference using 2-set
-  var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-  o.push(R(20,20,440,260,'#fff5f0','#C0272D',2));
-  o.push(T(50,42,'U','#C0272D',14,'middle',true));
-  var Ax=185,Ay=148,Bx=295,By=148,r=85;
-  // Shade A' (everything NOT in A) at p>=1
-  if(p>=1){o.push(R(20,20,440,260,'rgba(26,90,138,0.15)','none',0));}
-  o.push(C(Ax,Ay,r,'rgba(255,255,255,0.9)','#C0272D',2.5));
-  if(p>=1){o.push(C(Ax,Ay,r,'rgba(255,255,255,0.9)','#C0272D',2.5));}
-  o.push(C(Bx,By,r,'rgba(26,90,138,0.12)','#1a5a8a',2));
-  o.push(T(130,95,'A','#C0272D',18,'middle',true));
-  o.push(T(350,95,'B','#1a5a8a',18,'middle',true));
-  if(p>=1){
-    o.push(T(430,50,"A'","#1a5a8a",13,'middle',true));
-    o.push(T(430,70,'(shaded)','#1a5a8a',10,'middle',false));
-  }
-  if(p>=2){
-    // A\B = A minus intersection — shade only-A region
-    o.push(T(145,148,'A\\B','#C0272D',13,'middle',true));
-    o.push(T(145,168,'(only A)','#C0272D',10,'middle',false));
-  }
-  if(p>=3){
-    o.push(R(60,230,360,40,'#e8f8ee','#1a7a3a',1.5));
-    o.push(T(240,248,"A' = everything NOT in A","#1a7a3a",12,'middle',false));
-    o.push(T(240,264,'A\\B = elements in A but NOT in B','#1a7a3a',11,'middle',false));
-  }
+  // U = {1..10}, A = evens, B = odds. A and B share no elements, so the circles do not overlap.
+  var s=g();s.setAttribute('viewBox','0 0 480 330');var o=[];
+  var Ax=140,Bx=340,cy=140,r=88;
+  var shadeOut=(p===1);           // A' = everything outside A
+  o.push(R(20,14,440,256,shadeOut?'rgba(26,90,138,0.18)':'#fff5f0','#C0272D',2));
+  o.push(T(34,38,'U','#C0272D',16,'start',true));
+  var aFill=(p===2)?'rgba(192,39,45,0.28)':(shadeOut?'#fff':'rgba(192,39,45,0.08)');
+  var bFill=(p===3)?'rgba(26,90,138,0.28)':'rgba(26,90,138,0.08)';
+  o.push(C(Ax,cy,r,aFill,'#C0272D',2.5));
+  o.push(C(Bx,cy,r,bFill,'#1a5a8a',2.5));
+  o.push(T(Ax,cy-r-10,'A','#C0272D',18,'middle',true));
+  o.push(T(Bx,cy-r-10,'B','#1a5a8a',18,'middle',true));
+  var pos=[[-40,-38],[30,-40],[-50,22],[45,20],[0,60]];
+  [2,4,6,8,10].forEach(function(n,i){o.push(T(Ax+pos[i][0],cy+pos[i][1]+6,n,'#C0272D',20,'middle',true));});
+  [1,3,5,7,9].forEach(function(n,i){o.push(T(Bx+pos[i][0],cy+pos[i][1]+6,n,'#1a5a8a',20,'middle',true));});
+  var msg=['A = {2,4,6,8,10}    B = {1,3,5,7,9}',"A' (shaded) = {1,3,5,7,9}",'A\\B (shaded) = {2,4,6,8,10}',"A'∪B (shaded) = {1,3,5,7,9}, so |A'∪B| = 5"];
+  var m=msg[Math.min(p,3)];
+  o.push(R(30,282,420,36,'#e8f8ee','#1a7a3a',1.5));
+  o.push(T(240,306,m,'#1a7a3a',14,'middle',true));
   s.innerHTML=o.join('');
 }
 
 function dQ5(p){
-  // WAEC-style word problem with 3-set
-  var s=g();s.setAttribute('viewBox','0 0 480 320');var o=[];
-  o.push(R(14,8,452,304,'#fff5f0','#C0272D',2));
-  o.push(T(240,26,'100 students: French(F), Igbo(I), Yoruba(Y)','#C0272D',11,'middle',true));
-  var Ax=185,Ay=135,Bx=295,By=135,Cx=240,Cy=210,r=76;
-  o.push(C(Ax,Ay,r,'rgba(192,39,45,0.08)','#C0272D',2));
-  o.push(C(Bx,By,r,'rgba(26,90,138,0.08)','#1a5a8a',2));
-  o.push(C(Cx,Cy,r,'rgba(26,122,58,0.08)','#1a7a3a',2));
-  o.push(T(140,66,'F','#C0272D',16,'middle',true));
-  o.push(T(340,66,'I','#1a5a8a',16,'middle',true));
-  o.push(T(240,306,'Y','#1a7a3a',16,'middle',true));
-  if(p>=1){
-    // Given: |F|=40,|I|=35,|Y|=30, F∩I=12, F∩Y=10, I∩Y=8, all three=5
-    o.push(T(240,180,'5','#C8922A',15,'middle',true));
-    o.push(T(240,118,'7','#555',13,'middle',true));   // F∩I only = 12-5=7
-    o.push(T(195,210,'5','#555',13,'middle',true));   // F∩Y only = 10-5=5
-    o.push(T(285,210,'3','#555',13,'middle',true));   // I∩Y only = 8-5=3
-  }
-  if(p>=2){
-    // only F=40-(7+5+5)=23, only I=35-(7+5+3)=20, only Y=30-(5+5+3)=17
-    o.push(T(155,140,'23','#C0272D',14,'middle',true));
-    o.push(T(325,140,'20','#1a5a8a',14,'middle',true));
-    o.push(T(240,262,'17','#1a7a3a',14,'middle',true));
-    // outside = 100-(23+20+17+7+5+3+5) = 20
-    o.push(T(440,294,'20','#888',13,'middle',false));
-  }
-  if(p>=3){
-    o.push(R(14,276,452,30,'#e8f8ee','#1a7a3a',1.5));
-    o.push(T(240,295,'Check: 23+20+17+7+5+3+5+20 = 100 \u2713','#1a7a3a',10,'middle',false));
+  // 100 students: French (F), Igbo (I), Yoruba (Y). Regions are filled one step at a time.
+  var s=g();s.setAttribute('viewBox','0 0 480 356');var o=[];
+  var order=[['abc','5'],['ab','7'],['ac','5'],['bc','3'],['a','23'],['b','20'],['c','17'],['out','20']];
+  // step p shows: 0 none, 1 centre, 2 F&I only, 3 F&Y and I&Y only, 4 only F, 5 only I and only Y, 6+ outside
+  var shown=[0,1,2,4,5,7,8,8,8][Math.min(p,8)];
+  var newly={1:['abc'],2:['ab'],3:['ac','bc'],4:['a'],5:['b','c'],6:['out']}[p]||[];
+  var vals={};order.slice(0,shown).forEach(function(x){vals[x[0]]=x[1];});
+  venn3(o,{names:['F','I','Y'],vals:vals,hl:newly,size:20});
+  o.push(T(240,30,'F = French   I = Igbo   Y = Yoruba','#241A17',12,'middle',false));
+  if(p>=6){
+    o.push(R(30,318,420,32,'#e8f8ee','#1a7a3a',1.5));
+    o.push(T(240,339,'Check: 23+20+17+7+5+3+5+20 = 100 ✓','#1a7a3a',14,'middle',true));
   }
   s.innerHTML=o.join('');
 }
-
 
 var QS=[
   {ey:'Q1 \u00b7 Sets \u00b7 WAEC',ti:'Two-Set Venn Diagram',su:'In a group of 20 people, 10 like Maths, 8 like English, 3 like both. Draw a Venn diagram and find |A\u222aB|.',lv:'F',steps:[
@@ -335,14 +311,23 @@ var QS=[
     {lb:'Your turn',dr:dQ1,ht:tryIt(function(){
       var aOnly=rnd(5,15),bOnly=rnd(5,12),both=rnd(2,6),out=rnd(1,8);
       var A=aOnly+both,B=bOnly+both,U=aOnly+bOnly+both+out;
+      var svg='<div style="display:flex;justify-content:center;margin:6px 0;"><svg viewBox="0 0 480 230" style="width:100%;max-width:420px;height:auto;">'
+        +R(20,10,440,210,'#fff5f0','#C0272D',2)+T(40,34,'U = '+U,'#C0272D',14,'start',true)
+        +C(185,120,85,'rgba(192,39,45,0.12)','#C0272D',2)+C(295,120,85,'rgba(26,90,138,0.12)','#1a5a8a',2)
+        +T(120,40,'A','#C0272D',16,'middle',true)+T(360,40,'B','#1a5a8a',16,'middle',true)
+        +T(145,126,'?','#C0272D',20,'middle',true)+T(240,126,both,'#7a5a10',20,'middle',true)+T(335,126,'?','#1a5a8a',20,'middle',true)
+        +T(240,146,'A\u2229B','#888',11,'middle',false)
+        +T(120,212,'|A| = '+A,'#C0272D',14,'middle',true)+T(360,212,'|B| = '+B,'#1a5a8a',14,'middle',true)
+        +'</svg></div>';
       return {question:'In a group of '+U+' people, |A|='+A+', |B|='+B+', |A\u2229B|='+both+'. Find |A\u222aB|.',
-        hints:['|A\u222aB| = |A| + |B| \u2212 |A\u2229B|',A+' + '+B+' \u2212 '+both],
-        ans:A+B-both,tol:0,unit:'',working:'|A\u222aB| = '+A+'+'+B+'\u2212'+both+' = '+(A+B-both)};
+        extraHTML:svg,
+        hints:['Only A = '+A+' \u2212 '+both+', only B = '+B+' \u2212 '+both,'|A\u222aB| = |A| + |B| \u2212 |A\u2229B|',A+' + '+B+' \u2212 '+both],
+        ans:A+B-both,tol:0,unit:'',working:'Only A = '+aOnly+', A\u2229B = '+both+', only B = '+bOnly+'. |A\u222aB| = '+aOnly+' + '+both+' + '+bOnly+' = '+(A+B-both)+'. Or: '+A+' + '+B+' \u2212 '+both+' = '+(A+B-both)};
     })}
   ]},
   {ey:'Q2 \u00b7 Sets \u00b7 WAEC',ti:'Three-Set Venn Diagram',su:'Three overlapping sets A, B, C with values in each region. Find |U|.',lv:'F',steps:[
-    {lb:'The seven regions',dr:dQ2,ht:'<p>Three circles create <b>7 regions</b> inside them (plus the area outside all three). Label each region with a letter.</p>'},
-    {lb:'Fill in values',dr:dQ2,ht:'<p>Values: only A=5, only B=4, only C=6, A\u2229B only=3, A\u2229C only=2, B\u2229C only=2, A\u2229B\u2229C=1, outside=2.</p>'},
+    {lb:'The eight regions',dr:dQ2,ht:'<p>Three circles make <b>7 regions</b> inside them, plus <b>1 region</b> outside all three. Each letter is in the middle of its region:</p><ul class="hl"><li>a = only A</li><li>b = only B</li><li>c = only C</li><li>d = A\u2229B only (in A and B, not C)</li><li>e = A\u2229C only (in A and C, not B)</li><li>f = B\u2229C only (in B and C, not A)</li><li>g = A\u2229B\u2229C (in all three)</li><li>h = outside all three circles</li></ul>'},
+    {lb:'Fill in values',dr:dQ2,ht:'<p>The number of elements in each region:</p><ul class="hl"><li>only A = 5</li><li>only B = 4</li><li>only C = 6</li><li>A\u2229B only = 3</li><li>A\u2229C only = 2</li><li>B\u2229C only = 2</li><li>A\u2229B\u2229C = 1</li><li>outside all three = 2</li></ul>'},
     {lb:'Find |U|',dr:dQ2,ht:'<div class="fm">|U| = 5+4+6+3+2+2+1+2 = 25</div><p>Add ALL regions including outside the circles.</p>'},
     {lb:'Your turn',dr:dQ2,ht:tryIt(function(){
       var a=rnd(4,10),b=rnd(3,9),c=rnd(3,8),ab=rnd(1,4),ac=rnd(1,3),bc=rnd(1,3),abc=rnd(1,2),out=rnd(1,5);
@@ -368,9 +353,10 @@ var QS=[
     })}
   ]},
   {ey:'Q4 \u00b7 Sets \u00b7 WAEC',ti:'Complement and Set Difference',su:"Given U={1..10}, A={2,4,6,8,10}, B={1,3,5,7,9}. Find A', A\\B, and |A'\u222aB|.",lv:'F',steps:[
-    {lb:'Complement A\'',dr:dQ4,ht:"<p>The <b>complement</b> A' is everything in U that is NOT in A.</p><div class=\"fm\">A' = {1,3,5,7,9} = B in this case</div>"},
-    {lb:'Set difference A\\B',dr:dQ4,ht:"<p><b>A\\B</b> (A minus B) contains elements in A that are NOT in B.</p><div class=\"fm\">A\\B = {2,4,6,8,10} \u2212 {1,3,5,7,9} = {2,4,6,8,10} = A</div>"},
-    {lb:'A\'\u222aB',dr:dQ4,ht:"<div class=\"fm\">A' = {1,3,5,7,9} = B<br>A'\u222aB = B\u222aB = B = {1,3,5,7,9}</div><div class=\"fm\">|A'\u222aB| = 5</div>"},
+    {lb:'The sets',dr:dQ4,ht:"<p>U = {1, 2, \u2026, 10}. A is the even numbers and B is the odd numbers. No number is both even and odd, so A and B have <b>no elements in common</b>. That is why the circles do not overlap.</p>"},
+    {lb:'Complement A\'',dr:dQ4,ht:"<p>The <b>complement</b> A' is everything in U that is NOT in A (the shaded part).</p><div class=\"fm\">A' = {1,3,5,7,9} = B in this case</div>"},
+    {lb:'Set difference A\\B',dr:dQ4,ht:"<p><b>A\\B</b> (A minus B) contains elements in A that are NOT in B. A and B have nothing in common, so nothing is removed from A.</p><div class=\"fm\">A\\B = {2,4,6,8,10} = A</div>"},
+    {lb:'A\'\u222aB',dr:dQ4,ht:"<p>\u222a means \u201cin either set\u201d. A' and B are the same set here, so joining them gives nothing new.</p><div class=\"fm\">A' = {1,3,5,7,9} = B<br>A'\u222aB = {1,3,5,7,9}</div><div class=\"fm\">|A'\u222aB| = 5 (it has 5 elements)</div>"},
     {lb:'Your turn',dr:dQ4,ht:tryIt(function(){
       var n=rnd(8,14);
       var aSize=rnd(3,n-2); var A=[];
@@ -383,10 +369,13 @@ var QS=[
     })}
   ]},
   {ey:'Q5 \u00b7 Sets \u00b7 WAEC',ti:'3-Set Word Problem (WAEC Style)',su:'100 students study French, Igbo or Yoruba. French=40, Igbo=35, Yoruba=30, F\u2229I=12, F\u2229Y=10, I\u2229Y=8, all three=5. Find those studying none.',lv:'E',steps:[
-    {lb:'Set up the diagram',dr:dQ5,ht:'<p>Place the 3 circles. Start with A\u2229B\u2229C = 5. Then find each pair-only intersection.</p>'},
-    {lb:'Pair intersections',dr:dQ5,ht:'<div class="fm">F\u2229I only = 12\u22125 = 7<br>F\u2229Y only = 10\u22125 = 5<br>I\u2229Y only = 8\u22125 = 3</div>'},
-    {lb:'Individual regions',dr:dQ5,ht:'<div class="fm">Only F = 40\u2212(7+5+5)=23<br>Only I = 35\u2212(7+5+3)=20<br>Only Y = 30\u2212(5+5+3)=17</div>'},
-    {lb:'Find those studying none',dr:dQ5,ht:'<div class="fm">In sets = 23+20+17+7+5+3+5 = 80<br>None = 100 \u2212 80 = 20</div>'},
+    {lb:'Set up the diagram',dr:dQ5,ht:'<p>Draw three overlapping circles: F (French), I (Igbo) and Y (Yoruba), inside a rectangle for all 100 students.</p><p><b>Important:</b> the numbers in the question are <b>totals</b>. For example, French = 40 counts <b>everyone</b> in the F circle, including students who also study Igbo or Yoruba. So we cannot write 40 straight into the diagram. We fill the regions from the <b>middle outwards</b>.</p>'},
+    {lb:'Step 1: the middle',dr:dQ5,ht:'<p>The middle region is students who study <b>all three</b> languages. This is given directly.</p><div class="fm">F\u2229I\u2229Y = 5</div>'},
+    {lb:'Step 2: French and Igbo only',dr:dQ5,ht:'<p>F\u2229I = 12 counts everyone in <b>both</b> F and I. That includes the 5 in the middle, who also study Yoruba. Take them away:</p><div class="fm">F\u2229I only = 12 \u2212 5 = 7</div>'},
+    {lb:'Step 3: the other two overlaps',dr:dQ5,ht:'<p>Do the same for the other pairs. Always subtract the middle 5:</p><div class="fm">F\u2229Y only = 10 \u2212 5 = 5<br>I\u2229Y only = 8 \u2212 5 = 3</div>'},
+    {lb:'Step 4: French only',dr:dQ5,ht:'<p>The F circle has 40 students in total. The overlap regions inside F are 7, 5 and 5. Subtract them:</p><div class="fm">Only F = 40 \u2212 (7 + 5 + 5) = 40 \u2212 17 = 23</div>'},
+    {lb:'Step 5: Igbo only and Yoruba only',dr:dQ5,ht:'<div class="fm">Only I = 35 \u2212 (7 + 5 + 3) = 35 \u2212 15 = 20</div><div class="fm">Only Y = 30 \u2212 (5 + 5 + 3) = 30 \u2212 13 = 17</div>'},
+    {lb:'Step 6: students studying none',dr:dQ5,ht:'<p>Add every region inside the circles, then subtract from 100:</p><div class="fm">In the circles = 23 + 20 + 17 + 7 + 5 + 3 + 5 = 80<br>None = 100 \u2212 80 = 20</div><p>Check: all 8 regions add up to 100 \u2713</p>'},
     {lb:'Your turn',dr:dQ5,ht:tryIt(function(){
       var abc=rnd(2,5);
       var ab=rnd(abc+1,abc+6),ac=rnd(abc+1,abc+5),bc=rnd(abc+1,abc+5);

@@ -107,20 +107,22 @@ function tryIt(fn){
   var id='t'+Math.random().toString(36).slice(2);
   ST[id]=fn;return genTry(id,fn());
 }
+var CUR={},SEQ=0;
 function genTry(id,o){
   var h=(o.hints||[]).map(function(x){return '<li>'+x+'</li>';}).join('');
+  var iid=id+'_'+(++SEQ);CUR[iid]=o;
   return '<div class="try" data-tryid="'+id+'">'+
     '<div class="try-t">&#10004; Your Turn</div><p>'+o.question+'</p>'+
-    '<div class="ar"><input type="number" step="any" placeholder="Your answer" id="'+id+'_i"/>'+
-    '<button class="ck" onclick="ck(\''+id+'\')">&#10003; Check</button></div>'+
-    '<div class="fb" id="'+id+'_f"></div>'+
+    '<div class="ar"><input type="number" step="any" placeholder="Your answer" id="'+iid+'_i"/>'+
+    '<button class="ck" onclick="ck(\''+iid+'\')">&#10003; Check</button></div>'+
+    '<div class="fb" id="'+iid+'_f"></div>'+
     '<details class="wk"><summary>Show working</summary><div class="wk-b">'+
     (h?'<ul class="hl">'+h+'</ul>':'')+
     '<div class="wk-ans">'+o.working+'</div></div></details>'+
     '<button class="nq" data-tryid="'+id+'">New question</button></div>';
 }
 function ck(id){
-  var fn=ST[id];var o=typeof fn==='function'?fn():fn;
+  var o=CUR[id];if(!o)return;
   var v=parseFloat(document.getElementById(id+'_i').value);
   var f=document.getElementById(id+'_f');
   if(isNaN(v)){f.className='fb er';f.textContent='Please enter a number.';return;}
@@ -187,32 +189,60 @@ function arr(x1,y1,x2,y2,c,w){
   return L(x1,y1,x2,y2,c,w)+'<polygon points="'+x2+','+y2+' '+p1x.toFixed(1)+','+p1y.toFixed(1)+' '+p2x.toFixed(1)+','+p2y.toFixed(1)+'" fill="'+c+'"/>';
 }
 
+// ---- standard circuit symbols ----
+var HALF={cell:4,battery:14,lamp:12,resistor:18,switch:15,switchc:15,ammeter:12,voltmeter:12,broken:12};
+function comp(o,type,x,y,v,c,lab){c=c||'#333';var g=[];
+  if(type==='cell'){g.push(L(x-4,y-14,x-4,y+14,c,2));g.push(L(x+4,y-7,x+4,y+7,c,4));}
+  else if(type==='battery'){g.push(L(x-14,y-14,x-14,y+14,c,2));g.push(L(x-6,y-7,x-6,y+7,c,4));g.push(L(x-6,y,x+6,y,c,2));g.push(L(x+6,y-14,x+6,y+14,c,2));g.push(L(x+14,y-7,x+14,y+7,c,4));}
+  else if(type==='lamp'||type==='broken'){g.push(circ(x,y,12,'#fff',c,2));var d=8.5;g.push(L(x-d,y-d,x+d,y+d,c,1.5));g.push(L(x-d,y+d,x+d,y-d,c,1.5));}
+  else if(type==='resistor'){g.push(R(x-18,y-7,36,14,'#fff',c,2,0));}
+  else if(type==='switch'){g.push(circ(x-13,y,2.5,'#fff',c,1.5));g.push(circ(x+13,y,2.5,'#fff',c,1.5));g.push(L(x-15,y,x-13,y,c,2));g.push(L(x+13,y,x+15,y,c,2));g.push(L(x-11,y-1,x+12,y-13,c,2));}
+  else if(type==='switchc'){g.push(circ(x-13,y,2.5,'#fff',c,1.5));g.push(circ(x+13,y,2.5,'#fff',c,1.5));g.push(L(x-15,y,x-13,y,c,2));g.push(L(x+13,y,x+15,y,c,2));g.push(L(x-11,y-1,x+11,y-2,c,2));}
+  else if(type==='ammeter'||type==='voltmeter'){g.push(circ(x,y,12,'#fff',c,2));}
+  o.push(v?'<g transform="rotate(90 '+x+' '+y+')">'+g.join('')+'</g>':g.join(''));
+  if(type==='ammeter')o.push(T(x,y+4.5,'A',c,12,'middle',true));
+  if(type==='voltmeter')o.push(T(x,y+4.5,'V',c,12,'middle',true));
+  if(type==='broken')o.push(T(x+16,y-12,'✗','#C0272D',16,'start',true));
+  if(lab)o.push(T(lab[0],lab[1],lab[2],lab[3]||c,lab[4]||9,'middle',!!lab[5]));
+}
+// straight wire from (x1,y1) to (x2,y2) (horizontal or vertical) with components on it: [{t:'lamp',at:240,c:..,lab:..}]
+function wire(o,x1,y1,x2,y2,comps,c){c=c||'#333';var v=(x1===x2);var a=v?y1:x1,b=v?y2:x2;if(a>b){var t=a;a=b;b=t;}
+  var cur=a;(comps||[]).slice().sort(function(p,q){return p.at-q.at;}).forEach(function(k){var h=HALF[k.t];if(k.at-h>cur)o.push(v?L(x1,cur,x1,k.at-h,c,2):L(cur,y1,k.at-h,y1,c,2));comp(o,k.t,v?x1:k.at,v?k.at:y1,v,k.c||c,k.lab);cur=k.at+h;});
+  if(cur<b)o.push(v?L(x1,cur,x1,b,c,2):L(cur,y1,b,y1,c,2));}
+function jn(o,x,y,c){o.push(circ(x,y,3.5,c||'#333',c||'#333',1));}
+
 
 var QS=[
 {ey:'Y9 Physics \u2022 Q1',ti:'Current, Voltage and Circuits',su:'The basics of electric circuits',steps:[
 {sl:'What is electric current?',p:'<b>Electric current</b> is the flow of charge around a complete circuit. It needs an unbroken loop connecting a source of energy (like a battery) to components.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(R(60,80,360,140,'none','#1565C0',2,8));
-o.push(R(80,140,40,40,'#fff9c4','#C8922A',2,2));o.push(T(100,165,'+\u2212','#C8922A',10,'middle',true));
-o.push(circ(240,150,20,'none','#1565C0',2));
-o.push(arr(150,80,220,80,'#C0272D',2));o.push(T(185,65,'current flows','#C0272D',9,'middle',false));
+wire(o,100,70,380,70,[{t:'battery',at:240,lab:[240,48,'battery (+ is the long line)','#C8922A',9]}]);
+wire(o,100,70,100,220,[]);wire(o,380,70,380,220,[{t:'switchc',at:145,lab:[355,150,'switch','#333',9]}]);
+wire(o,100,220,380,220,[{t:'lamp',at:240,lab:[240,250,'lamp','#333',9]}]);
+o.push(arr(80,120,80,170,'#C0272D',2));o.push(arr(260,238,320,238,'#C0272D',2));o.push(arr(400,190,400,110,'#C0272D',2));
+o.push(T(60,145,'current','#C0272D',9,'end',false));
+o.push(T(240,285,'A complete loop: current flows from + to \u2212 through the lamp','#555',10,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Voltage: energy per unit charge',p:'<b>Voltage</b> (potential difference) is a measure of the energy transferred to a component, like a bulb, for each unit of charge that flows through it.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(R(150,80,180,80,'#fff9c4','#C8922A',2,8));o.push(T(240,120,'Battery: pushes charge,\nsupplies energy','#C8922A',9,'middle',true));
+o.push(R(150,80,180,80,'#fff9c4','#C8922A',2,8));o.push(T(240,115,'Battery: pushes charge,','#C8922A',10,'middle',true));o.push(T(240,132,'supplies energy','#C8922A',10,'middle',true));
 o.push(arr(150,200,330,200,'#555',2));o.push(T(240,220,'Voltage = energy transferred per unit of charge','#555',9,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'Ammeters and voltmeters',p:'An <b>ammeter</b> measures current and is placed in series (in the main loop). A <b>voltmeter</b> measures voltage across a component and is placed in parallel (as a side branch).',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(T(120,30,'Ammeter (in series)','#1565C0',10,'middle',true));
-o.push(R(40,60,160,120,'none','#1565C0',2,6));o.push(circ(120,100,18,'none','#1565C0',2));o.push(T(120,104,'A','#1565C0',12,'middle',true));
-o.push(T(360,30,'Voltmeter (in parallel)','#C0272D',10,'middle',true));
-o.push(R(280,60,160,120,'none','#C0272D',2,6));o.push(circ(360,140,18,'none','#C0272D',2));o.push(T(360,144,'V','#C0272D',12,'middle',true));
+wire(o,100,60,380,60,[{t:'cell',at:240,lab:[240,38,'cell','#C8922A',9]}]);
+wire(o,100,60,100,180,[{t:'ammeter',at:120,c:'#1565C0',lab:[62,124,'ammeter','#1565C0',9,true]}]);
+wire(o,380,60,380,180,[]);
+wire(o,100,180,380,180,[{t:'lamp',at:240}]);
+jn(o,190,180);jn(o,290,180);wire(o,190,180,190,240,[]);wire(o,290,180,290,240,[]);wire(o,190,240,290,240,[{t:'voltmeter',at:240,c:'#C0272D'}]);
+o.push(T(240,270,'voltmeter connected across (in parallel with) the lamp','#C0272D',9,'middle',true));
+o.push(T(150,124,'in series: all the current','#1565C0',9,'start',false));o.push(T(150,137,'passes through it','#1565C0',9,'start',false));
 s.innerHTML=o.join('');}},
 {sl:'Circuit symbols',p:'Standard <b>circuit symbols</b> represent components clearly: battery, bulb, switch, ammeter, voltmeter, resistor, and wires.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-var syms=['Battery','Bulb','Switch','Wire'];var c=['#C8922A','#FFCA28','#2E7D32','#555'];
-syms.forEach(function(x,i){o.push(R(20+i*115,100,105,80,c[i]+'22',c[i],2,6));o.push(T(72+i*115,145,x,c[i],10,'middle',true));});
+var syms=[['cell','Cell'],['battery','Battery (2 cells)'],['lamp','Lamp (bulb)'],['switch','Switch (open)'],['switchc','Switch (closed)'],['resistor','Resistor'],['ammeter','Ammeter'],['voltmeter','Voltmeter']];
+syms.forEach(function(sy,i){var cx=70+(i%4)*113,cy=90+Math.floor(i/4)*110;o.push(R(cx-50,cy-40,100,85,'#f7f9fc','#ccc',1,6));wire(o,cx-38,cy,cx+38,cy,[{t:sy[0],at:cx}]);o.push(T(cx,cy+34,sy[1],'#333',9,'middle',true));});
+o.push(T(240,280,'Wires are drawn as straight lines; a dot (\u25cf) marks a junction','#555',9,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'Try it',p:''+tryItMC(function(){var qs=[{question:'What is electric current?',options:['The flow of electric charge around a circuit','The energy stored in a battery','The resistance of a wire','A type of electric charge that never moves'],correct:0,working:'<b>Electric current</b> is the flow of electric charge (carried by electrons in a wire) around a complete circuit.'},{question:'What is needed for an electric current to flow in a circuit?',options:['A complete, unbroken loop (circuit) with a source of energy like a battery','Only a battery, with no wires needed','Only a switch, with no battery needed','Nothing — current flows without any components'],correct:0,working:'Current needs a <b>complete circuit</b> — an unbroken loop of conducting material connected to a source of energy, such as a battery or cell.'},{question:'What is voltage (potential difference) in a circuit?',options:['A measure of the energy transferred to or from each unit of charge passing through a component','The speed at which electrons move','The total charge stored in a battery','The resistance of a component'],correct:0,working:'<b>Voltage</b> (potential difference) measures the energy transferred per unit of charge as it flows through a component, such as a bulb or motor.'},{question:'What happens to a bulb in a circuit if the switch is open?',options:['No current flows, so the bulb does not light up','Current still flows normally','The bulb lights up brighter than usual','The battery stops working permanently'],correct:0,working:'An <b>open switch</b> breaks the circuit, so there is no complete loop for current to flow through — the bulb will not light.'},{question:'What instrument is used to measure current in a circuit?',options:['An ammeter','A voltmeter','A thermometer','A battery'],correct:0,working:'An <b>ammeter</b> measures current (in amps), and is connected in series in the circuit so all the current passes through it.'},{question:'What instrument is used to measure voltage across a component?',options:['A voltmeter','An ammeter','A thermometer','A switch'],correct:0,working:'A <b>voltmeter</b> measures voltage (potential difference) across a component, and is connected in parallel with that component.'},{question:'What is the function of a battery (or cell) in a circuit?',options:['It provides the energy needed to push charge around the circuit','It stores current permanently without releasing it','It measures the resistance of the circuit','It always stops current from flowing'],correct:0,working:'A <b>battery</b> (or cell) supplies the energy that drives current around the circuit, transferring energy to the charge as it flows.'},{question:'Why do we use circuit symbols and diagrams to represent circuits?',options:['They give a clear, standard way to show how components are connected, without needing detailed drawings of real components','Circuit symbols are only used in industry, never in schools','Circuit diagrams cannot show batteries or bulbs','Symbols make circuits more complicated to understand'],correct:0,working:'<b>Circuit symbols</b> provide a simple, standardised way to represent components (bulbs, batteries, switches, etc.), making circuit diagrams clear and easy to draw and interpret.'}];return rPick(qs);}),draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(240,30,'Current, voltage & circuits summary','#1565C0',12,'middle',true));
@@ -223,28 +253,31 @@ s.innerHTML=o.join('');}}
 {ey:'Y9 Physics \u2022 Q2',ti:'Series Circuits',su:'One loop, shared voltage, same current',steps:[
 {sl:'Series circuits: one loop',p:'A <b>series</b> circuit has only one loop, so all components share the same current path. If the loop breaks anywhere, everything stops.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(R(60,80,360,140,'none','#1565C0',2,8));
-[180,300].forEach(function(x){o.push(circ(x,150,20,'none','#1565C0',2));});
+wire(o,90,70,390,70,[{t:'battery',at:240}]);wire(o,90,70,90,210,[]);wire(o,390,70,390,210,[{t:'switchc',at:140}]);
+wire(o,90,210,390,210,[{t:'lamp',at:180},{t:'lamp',at:300}]);
 o.push(T(240,250,'One loop \u2014 all components in a single path','#555',10,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Current in series circuits',p:'In a series circuit, current is the <b>same</b> at every point around the loop, since there\'s nowhere else for it to go.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(R(60,80,360,140,'none','#1565C0',2,8));
-o.push(arr(100,80,180,80,'#C0272D',2));o.push(T(140,65,'I','#C0272D',11,'middle',true));
-o.push(arr(300,80,380,80,'#C0272D',2));o.push(T(340,65,'I (same)','#C0272D',10,'middle',true));
+wire(o,90,70,390,70,[{t:'battery',at:240}]);
+wire(o,90,70,90,210,[{t:'ammeter',at:140,c:'#C0272D',lab:[50,144,'0.2 A','#C0272D',10,true]}]);
+wire(o,390,70,390,210,[{t:'ammeter',at:140,c:'#C0272D',lab:[430,144,'0.2 A','#C0272D',10,true]}]);
+wire(o,90,210,390,210,[{t:'lamp',at:180},{t:'lamp',at:300}]);
+wire(o,240,210,240,210,[]);o.push(T(240,195,'0.2 A','#C0272D',10,'middle',true));o.push(arr(225,210,255,210,'#C0272D',1.5));
 o.push(T(240,250,'Current: identical everywhere in the loop','#555',10,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Voltage sharing in series circuits',p:'In a series circuit, the battery\'s total voltage is <b>shared</b> (split) between the components — more components usually means less voltage (and less brightness) for each one.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(R(60,100,360,80,'#fff9c4','#C8922A',2,8));o.push(T(240,130,'Battery voltage','#C8922A',11,'middle',true));
-o.push(arr(150,190,150,220,'#555',2));o.push(arr(330,190,330,220,'#555',2));
-o.push(T(150,240,'Bulb 1 share','#1565C0',9,'middle',false));o.push(T(330,240,'Bulb 2 share','#1565C0',9,'middle',false));
+wire(o,90,60,390,60,[{t:'battery',at:240,lab:[240,38,'6 V','#C8922A',11,true]}]);wire(o,90,60,90,160,[]);wire(o,390,60,390,160,[]);
+wire(o,90,160,390,160,[{t:'lamp',at:170},{t:'lamp',at:310}]);
+[170,310].forEach(function(x){jn(o,x-40,160);jn(o,x+40,160);wire(o,x-40,160,x-40,220,[]);wire(o,x+40,160,x+40,220,[]);wire(o,x-40,220,x+40,220,[{t:'voltmeter',at:x,c:'#1565C0',lab:[x,250,'3 V','#1565C0',11,true]}]);});
+o.push(T(240,280,'6 V is shared: 3 V + 3 V = 6 V','#555',10,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'A downside of series circuits',p:'If one bulb in a series circuit fails or is removed, the loop breaks and <b>everything else stops working too</b> — a key disadvantage of series wiring.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(R(60,100,360,100,'none','#888',2,8));o.push(circ(160,150,20,'none','#888',2));o.push(T(160,155,'\u2717','#C0272D',18,'middle',true));
-o.push(circ(320,150,20,'none','#888',2));
-o.push(T(240,230,'One bulb breaks \u2192 whole circuit stops','#C0272D',10,'middle',true));
+wire(o,90,80,390,80,[{t:'battery',at:240}],'#888');wire(o,90,80,90,190,[],'#888');wire(o,390,80,390,190,[],'#888');
+wire(o,90,190,390,190,[{t:'broken',at:170,lab:[170,218,'blown','#C0272D',9]},{t:'lamp',at:310,lab:[310,218,'off','#888',9]}],'#888');
+o.push(T(240,255,'One bulb breaks \u2192 whole circuit stops','#C0272D',10,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Try it',p:''+tryItMC(function(){var qs=[{question:'In a series circuit, if one bulb goes out, what happens to the other bulbs?',options:['They all go out too, since the circuit is broken','They stay lit as normal','They get brighter','Only the bulb nearest the battery goes out'],correct:0,working:'In a <b>series</b> circuit, there is only one loop. If one bulb breaks, the whole circuit is interrupted, so <b>all the bulbs go out</b>.'},{question:'In a series circuit with two identical bulbs, how does the current compare at different points in the circuit?',options:['It is the same everywhere in the circuit','It is bigger near the battery and smaller further away','It decreases as it passes through each bulb','Current is different depending on the wire colour'],correct:0,working:'In a <b>series</b> circuit, current has nowhere else to go, so it is the <b>same everywhere</b> around the single loop.'},{question:'In a series circuit with two identical bulbs connected to a battery, how is the voltage shared between them?',options:['Shared equally between the two identical bulbs','All the voltage goes to just one bulb','Voltage is not shared at all in series circuits','Voltage only appears at the battery, not the bulbs'],correct:0,working:'In a series circuit, the battery\'s voltage is <b>shared</b> between the components. With two identical bulbs, they would share the voltage equally.'},{question:'Why do old-style Christmas tree lights (wired in series) all go out if just one bulb blows?',options:['They are connected in a single loop, so a break anywhere stops current everywhere','They are connected in parallel, which causes this problem','The remaining bulbs use up all the current','Christmas lights don\'t use circuits at all'],correct:0,working:'Old-style Christmas lights wired in <b>series</b> form a single loop. If one bulb fails (breaking the connection), the whole loop is broken and all bulbs go out.'},{question:'What is one key disadvantage of wiring household lights in series?',options:['If one bulb fails, all the other lights on that circuit go out too','Series circuits use significantly more electricity','Series circuits are more expensive to wire','There are no disadvantages to series wiring for household lights'],correct:0,working:'A major disadvantage of <b>series</b> wiring is that a single broken or removed bulb stops current flowing anywhere in that circuit, turning off all the lights.'},{question:'If you add more bulbs to a series circuit (same battery), what typically happens to each bulb\'s brightness?',options:['Each bulb becomes dimmer, since the shared voltage is now split more ways','Each bulb becomes brighter','Brightness stays exactly the same no matter how many bulbs are added','Only the last bulb changes brightness'],correct:0,working:'Since the battery\'s fixed voltage must be <b>shared</b> between more components, adding more bulbs in series usually makes each bulb <b>dimmer</b>.'},{question:'How many paths for current to flow are there in a series circuit?',options:['Only one path (a single loop)','Multiple separate paths','No paths at all','It depends on the number of batteries used'],correct:0,working:'A <b>series</b> circuit has just <b>one single loop</b>, so there is only one path available for current to flow through all the components.'},{question:'A student wants to build a circuit where a switch can turn off just one bulb without affecting a second bulb. Should they use series or parallel wiring?',options:['Parallel — the bulbs are on separate branches, so one switch/bulb doesn\'t affect the other','Series — both bulbs would be affected either way','It\'s impossible to control just one bulb independently','Only ammeters can achieve this, not switches'],correct:0,working:'In a <b>parallel</b> circuit, each bulb is on its own branch, so a switch on one branch can turn that bulb off without affecting the other bulb on a separate branch.'}];return rPick(qs);}),draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
 o.push(T(240,30,'Series circuits summary','#1565C0',12,'middle',true));
@@ -255,22 +288,26 @@ s.innerHTML=o.join('');}}
 {ey:'Y9 Physics \u2022 Q3',ti:'Parallel Circuits',su:'Multiple branches, same voltage, splitting current',steps:[
 {sl:'Parallel circuits: multiple branches',p:'A <b>parallel</b> circuit has more than one loop (branch). Current can take different paths, and each branch can work independently of the others.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(R(60,40,360,200,'none','#C0272D',2,8));
-o.push(L(240,40,240,240,'#C0272D',1,'4,3'));
-o.push(circ(180,80,18,'none','#C0272D',2));o.push(circ(300,180,18,'none','#C0272D',2));
+function ladder(o,labs){wire(o,100,50,380,50,[{t:'battery',at:240}]);wire(o,100,50,100,220,[]);wire(o,380,50,380,220,[]);
+  wire(o,100,135,380,135,[{t:'lamp',at:240}]);wire(o,100,220,380,220,[{t:'lamp',at:240}]);jn(o,100,135);jn(o,380,135);}
+ladder(o);o.push(T(240,120,'branch 1','#C0272D',9,'middle',true));o.push(T(240,205,'branch 2','#C0272D',9,'middle',true));
 o.push(T(240,270,'Two branches \u2014 independent paths','#555',10,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Current splitting in parallel circuits',p:'At a junction, current <b>splits</b> between the branches. Further along, where the branches rejoin, the currents add back up to the total.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(arr(60,150,150,100,'#C0272D',2));o.push(T(100,80,'total current','#C0272D',9,'middle',false));
-o.push(arr(150,100,250,60,'#1565C0',2));o.push(arr(150,100,250,140,'#1565C0',2));
-o.push(T(280,60,'branch 1','#1565C0',8,'middle',false));o.push(T(280,150,'branch 2','#1565C0',8,'middle',false));
-o.push(arr(350,100,440,150,'#C0272D',2));o.push(T(410,80,'currents\nadd back up','#C0272D',8,'middle',false));
+wire(o,100,50,380,50,[{t:'battery',at:240}]);wire(o,100,50,100,220,[{t:'ammeter',at:92,c:'#C0272D',lab:[62,96,'0.6 A','#C0272D',10,true]}]);wire(o,380,50,380,220,[]);
+wire(o,100,135,380,135,[{t:'ammeter',at:160,c:'#1565C0',lab:[160,120,'0.4 A','#1565C0',10,true]},{t:'lamp',at:260}]);
+wire(o,100,220,380,220,[{t:'ammeter',at:160,c:'#1565C0',lab:[160,205,'0.2 A','#1565C0',10,true]},{t:'lamp',at:260}]);jn(o,100,135);jn(o,380,135);
+o.push(T(240,262,'Current splits at the junction: 0.6 A = 0.4 A + 0.2 A','#555',10,'middle',true));
+o.push(T(240,280,'(the currents add back up where the branches rejoin)','#888',9,'middle',false));
 s.innerHTML=o.join('');}},
 {sl:'Voltage across parallel branches',p:'Each branch in a parallel circuit has the <b>same voltage</b> across it — equal to the battery\'s voltage — since each branch connects directly across the same two points.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];
-o.push(R(60,60,150,180,'#fff9c4','#C8922A',2,8));o.push(T(135,150,'Branch 1\nsame voltage','#C8922A',10,'middle',true));
-o.push(R(270,60,150,180,'#fff9c4','#C8922A',2,8));o.push(T(345,150,'Branch 2\nsame voltage','#C8922A',10,'middle',true));
+wire(o,60,50,300,50,[{t:'battery',at:180,lab:[180,30,'6 V','#C8922A',11,true]}]);wire(o,60,50,60,220,[]);wire(o,300,50,300,220,[]);
+wire(o,60,135,300,135,[{t:'lamp',at:180}]);wire(o,60,220,300,220,[{t:'lamp',at:180}]);jn(o,60,135);jn(o,300,135);
+[135,220].forEach(function(y){jn(o,150,y);jn(o,210,y);wire(o,150,y,150,y-32,[]);wire(o,210,y,210,y-32,[]);wire(o,150,y-32,210,y-32,[{t:'voltmeter',at:180,c:'#1565C0'}]);o.push(T(230,y-28,'6 V','#1565C0',11,'start',true));});
+o.push(T(390,120,'Each branch gets','#C8922A',10,'middle',true));o.push(T(390,136,'the full 6 V','#C8922A',10,'middle',true));
+o.push(T(240,270,'Voltage across each parallel branch = battery voltage','#555',10,'middle',true));
 s.innerHTML=o.join('');}},
 {sl:'Why homes use parallel wiring',p:'Parallel wiring lets each appliance work <b>independently</b>. Homes use parallel circuits so switching off one light doesn\'t turn off every other light in the house.',
 draw:function(){var s=g();s.setAttribute('viewBox','0 0 480 300');var o=[];

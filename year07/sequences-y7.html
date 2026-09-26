@@ -134,9 +134,11 @@ function buildTry(id,o){
     +' <button class="newq-btn" data-tryid="'+id+'">↻ New</button></div>'
     +'<div class="try-q">'+o.question+'</div>'
     +ex
-    +'<div class="ar">'
-    +'<input type="number" step="any" placeholder="'+ph+'" class="try-inp" data-tryid="'+id+'"/>'
-    +'<button class="ck try-ck" data-tryid="'+id+'">Check</button></div>'
+    +(o.options
+      ? '<div class="ar" style="flex-wrap:wrap;">'+o.options.map(function(t,i){return '<button class="ck try-opt" style="background:#fff;color:var(--ink);border:1px solid var(--gold);" data-tryid="'+id+'" data-i="'+i+'">'+String.fromCharCode(65+i)+'. '+t+'</button>';}).join('')+'</div>'
+      : '<div class="ar">'
+        +'<input type="number" step="any" placeholder="'+ph+'" class="try-inp" data-tryid="'+id+'"/>'
+        +'<button class="ck try-ck" data-tryid="'+id+'">Check</button></div>')
     +'<div class="try-fb" data-tryid="'+id+'"></div>'
     +'<details class="wk"><summary>Show working</summary>'
     +'<div class="wk-b">'+o.working+'</div></details>'
@@ -175,6 +177,11 @@ document.addEventListener('click',function(e){
     newQ(btn.getAttribute('data-tryid'));
   } else if(btn.classList.contains('try-ck')){
     ckById(btn.getAttribute('data-tryid'));
+  } else if(btn.classList.contains('try-opt')){
+    var id=btn.getAttribute('data-tryid'),e2=ST[id];if(!e2)return;
+    var fb=document.querySelector('.try-fb[data-tryid="'+id+'"]');if(!fb)return;
+    if(parseInt(btn.getAttribute('data-i'),10)===e2.o.ans){fb.className='try-fb fb ok';fb.innerHTML='✓ Correct! '+e2.o.working;}
+    else{fb.className='try-fb fb er';fb.textContent='Not quite — try again.';}
   }
 });
 
@@ -198,11 +205,11 @@ function dQ1(p){
   seq.forEach(function(v,i){o+=termBox(30+i*60,90,v,'#C0272D',p>=1&&i<5);});
   o+=termBox(30+5*60,90,'?','#1a7a3a',p>=2);
   o+=termBox(30+6*60,90,'?','#1a7a3a',p>=3);
-  o+=T(240,22,'Term-to-term rule: +3 each time','#C0272D',13,'middle',true);
+  o+=T(240,22,'The rule: add 3 each time','#C0272D',13,'middle',true);
   o+=R(14,10,452,28,'#fff5f0','#C0272D',1.5);
 if(p>=1){
     for(var i=0;i<4;i++){o+=T(64+i*60,80,'+3','#C8922A',11,'middle',false);}
-    o+=T(240,50,'Common difference = +3','#C8922A',13,'middle',true);
+    o+=T(240,50,'Each jump is +3','#C8922A',13,'middle',true);
   }
   if(p>=2){o+=termBox(30+5*60,90,'20','#1a7a3a',true);}
   if(p>=3){o+=termBox(30+6*60,90,'23','#1a7a3a',true);}
@@ -230,26 +237,42 @@ function dQ2(p){
 /* Q3 Matchstick pattern */
 function dQ3(p){
   var s=g();s.setAttribute('viewBox','0 0 480 260');var o=[];
-  o.push(R(14,8,452,44,'#fff5f0','#C0272D',1.5));
-  o.push(T(240,32,'Matchstick squares: how many sticks for n squares?','#C0272D',13,'middle',true));
-  // Draw squares progressively
-  var sq=function(x,y,n,col){
+  o.push(R(14,6,452,32,'#fff5f0','#C0272D',1.5));
+  o.push(T(240,27,'Matchstick squares: how many sticks for n squares?','#C0272D',13,'middle',true));
+  // Bigger squares, drawn progressively (size 32)
+  var Z=32;
+  var sq=function(x,y,n,col,showFirst){
     for(var i=0;i<n;i++){
-      o.push(L(x+i*28,y,x+i*28+28,y,col||'#C0272D',2));
-      o.push(L(x+i*28,y+28,x+i*28+28,y+28,col||'#C0272D',2));
-      o.push(L(x+i*28,y,x+i*28,y+28,col||'#C0272D',2));
+      o.push(L(x+i*Z,y,x+i*Z+Z,y,col,3));
+      o.push(L(x+i*Z,y+Z,x+i*Z+Z,y+Z,col,3));
+      o.push(L(x+i*Z+Z,y,x+i*Z+Z,y+Z,col,3));
     }
-    o.push(L(x+n*28,y,x+n*28,y+28,col||'#C0272D',2));
+    o.push(L(x,y,x,y+Z,showFirst?'#C8922A':col,showFirst?4:3));
   };
-  if(p>=1){sq(40,56,1);o.push(T(54,100,'n=1','#888',10,'middle'));o.push(T(54,114,'4 sticks','#C0272D',10,'middle',true));}
-  if(p>=2){sq(130,56,2,'#1a5a8a');o.push(T(158,100,'n=2','#888',10,'middle'));o.push(T(158,114,'7 sticks','#1a5a8a',10,'middle',true));}
-  if(p>=3){sq(252,56,3,'#1a7a3a');o.push(T(294,100,'n=3','#888',10,'middle'));o.push(T(294,114,'10 sticks','#1a7a3a',10,'middle',true));}
-  if(p>=4){
-    o.push(T(240,140,'Pattern: each new square adds 3 sticks (left side already shared)','#241A17',11,'middle',false));
-    o.push(T(240,158,'n=1: 4   n=2: 4+3=7   n=3: 4+3+3=10','#888',11,'middle',false));
-    o.push(T(240,174,'That is 1 + 3n... but check: n=1 gives 1+3=4 ✓','#888',11,'middle',false));
-    o.push(R(130,182,220,36,'#e8f8ee','#1a7a3a',2));
-    o.push(T(240,204,'nth term = 3n + 1','#1a7a3a',16,'middle',true));
+  var pats=[{x:30,n:1,s:4,c:'#C0272D'},{x:92,n:2,s:7,c:'#1a5a8a'},{x:186,n:3,s:10,c:'#1a7a3a'},{x:310,n:4,s:13,c:'#7A1418'}];
+  var show=p<=0?1:(p===1?3:4);
+  pats.slice(0,show).forEach(function(q){
+    sq(q.x,50,q.n,q.c,p>=3);
+    var mx=q.x+q.n*Z/2;
+    o.push(T(mx,100,'n = '+q.n,'#888',12,'middle'));
+    o.push(T(mx,116,q.s+' sticks','#241A17',13,'middle',true));
+  });
+  if(p>=2){
+    // Table of values with the +3 jumps
+    o.push(R(40,128,70,26,'#f0e8e0','#aaa',1));o.push(T(75,146,'n','#241A17',13,'middle',true));
+    o.push(R(40,154,70,26,'#f0e8e0','#aaa',1));o.push(T(75,172,'sticks','#241A17',13,'middle',true));
+    pats.forEach(function(q,i){
+      o.push(R(110+i*60,128,60,26,'#fff','#ddd',1));o.push(T(140+i*60,146,q.n,'#555',13,'middle',true));
+      o.push(R(110+i*60,154,60,26,'#fff5f0','#ddd',1));o.push(T(140+i*60,172,q.s,'#C0272D',13,'middle',true));
+      if(i>0)o.push(T(110+i*60,194,'+3','#C8922A',12,'middle',true));
+    });
+    o.push(T(400,160,'goes up 3','#C8922A',12,'middle',true));
+    o.push(T(400,176,'each time','#C8922A',12,'middle',true));
+  }
+  if(p>=3){
+    o.push(T(240,214,'1 gold stick + 3 sticks for each square:  1 + 3 \u00d7 n','#241A17',12,'middle',false));
+    o.push(R(150,222,180,32,'#e8f8ee','#1a7a3a',2));
+    o.push(T(240,244,'sticks = 3n + 1','#1a7a3a',16,'middle',true));
   }
   s.innerHTML=o.join('');
 }
@@ -299,7 +322,7 @@ function dQ5(p){
   o.push(T(240,30,'Find the missing term in: 5,  ?,  17,  23,  29','#C0272D',14,'middle',true));
   var terms=[5,null,17,23,29];
   var cx=[80,180,280,370,450];
-  if(p>=1){
+  if(p>=0){
     terms.forEach(function(v,i){
       var filled=(v!==null);
       o.push(R(cx[i]-36,60,72,38,filled?'#fff5f0':'#f0f0f0',filled?'#C0272D':'#888',filled?2:1.5));
@@ -309,17 +332,17 @@ function dQ5(p){
     o.push(L(cx[1]-36,100,cx[1]+36,100,'#C8922A',1));
     o.push(T(cx[1],116,'find this','#C8922A',10,'middle',false));
   }
-  if(p>=2){
-    // Show the common difference from known neighbours
-    o.push(T(240,136,'Common difference: 23−17 = 6, or 29−23 = 6','#1a5a8a',12,'middle',false));
-    o.push(T(240,154,'So d = 6','#1a5a8a',14,'middle',true));
+  if(p>=0){
+    // Show the jump from the numbers next to each other
+    o.push(T(240,136,'The jump: 23 − 17 = 6, and 29 − 23 = 6','#1a5a8a',12,'middle',false));
+    o.push(T(240,154,'So the numbers go up by 6 each time','#1a5a8a',14,'middle',true));
   }
-  if(p>=3){
+  if(p>=1){
     o.push(R(cx[1]-42,60,84,38,'#e8f8ee','#1a7a3a',2));
     o.push(T(cx[1],83,'11','#1a7a3a',20,'middle',true));
-    o.push(T(240,178,'Missing term = 17 − 6 = 11','#1a7a3a',14,'middle',true));
-    o.push(T(240,198,'Check: 5, 11, 17, 23, 29 ✓ (all differ by 6)','#888',11,'middle',false));
-  }
+    o.push(T(240,178,'Missing number = 5 + 6 = 11','#1a7a3a',14,'middle',true));
+      }
+  if(p>=2){o.push(T(240,198,'Check: 5, 11, 17, 23, 29 ✓ (each jump is +6)','#888',11,'middle',false));}
   s.innerHTML=o.join('');
 }
 
@@ -418,7 +441,7 @@ function dQ10(p){
   var seqs=[
     {terms:[2,5,8,11],type:'Arithmetic',note:'d=+3','col':'#C0272D'},
     {terms:[2,4,8,16],type:'Geometric',note:'r=\u00d72','col':'#1a5a8a'},
-    {terms:[1,4,9,16],type:'Square nos',note:'n\u00b2','col':'#C8922A'},
+    {terms:[1,4,9,16],type:'Square numbers',note:'n\u00b2','col':'#C8922A'},
     {terms:[1,1,2,3],type:'Fibonacci',note:'add prev two','col':'#1a7a3a'}
   ];
   seqs.forEach(function(seq,si){
@@ -432,8 +455,8 @@ function dQ10(p){
 
 var QS=[
   {ey:'Q1 \u00b7 Year 7 \u00b7 Sequences',ti:'Continuing an Arithmetic Sequence',su:'Write the next three terms of: 5, 8, 11, 14, 17, \u2026',steps:[
-    {lb:'Finding the pattern',dr:dQ1,ht:'<p>Look at the <b>difference</b> between consecutive terms. If it is the same each time, the sequence is <b>arithmetic</b>.</p>'},
-    {lb:'Common difference',dr:dQ1,ht:'<div class="fm">8\u22125=3,  11\u22128=3,  14\u221211=3</div><p>Common difference d = +3.</p>'},
+    {lb:'Finding the pattern',dr:dQ1,ht:'<p>Look at how much the numbers go up each time.</p>'},
+    {lb:'Find the jump',dr:dQ1,ht:'<div class="fm">8\u22125=3,  11\u22128=3,  14\u221211=3</div><p>The numbers go up by <b>3</b> every time. So the rule is <b>add 3</b>.</p>'},
     {lb:'Next three terms',dr:dQ1,ht:'<div class="fm">17+3=20,  20+3=23,  23+3=26</div>'},
     {lb:'Your turn',dr:dQ1,ht:tryIt(function(){
   var a1 = pick([2,3,4,5,6,7,8]);
@@ -455,32 +478,46 @@ var QS=[
 })}
   ]},
   {ey:'Q2 \u00b7 Year 7 \u00b7 Sequences',ti:'Term-to-Term Rules',su:'Find the rule for three different sequences: \u00d72, \u00f72, and square numbers.',steps:[
-    {lb:'Different rules',dr:dQ2,ht:'<p>Not all sequences add the same number. Some <b>multiply</b> or <b>divide</b>, and some have a changing difference (like square numbers).</p>'},
+    {lb:'Different rules',dr:dQ2,ht:'<p>The <b>rule</b> tells you how to get the next number. Some rules add the same number each time. Other rules <b>multiply (\u00d7)</b> or <b>divide (\u00f7)</b>. Some add a bigger number each time.</p>'},
     {lb:'Sequence 1: \u00d72',dr:dQ2,ht:'<div class="fm">3, 6, 12, 24 \u2026  Rule: multiply by 2</div>'},
     {lb:'Sequence 2: \u00f72',dr:dQ2,ht:'<div class="fm">100, 50, 25, 12.5 \u2026  Rule: divide by 2</div>'},
-    {lb:'Sequence 3: square numbers',dr:dQ2,ht:'<div class="fm">1, 4, 9, 16 \u2026  Differences: +3, +5, +7 (odd numbers)</div>'},
+    {lb:'Sequence 3: square numbers',dr:dQ2,ht:'<div class="fm">1, 4, 9, 16 \u2026  Jumps: +3, +5, +7 (the jump gets 2 bigger each time)</div>'},
     {lb:'Your turn',dr:dQ2,ht:tryIt(function(){
-  var start = pick([2, 3, 4, 5, 6]);
-  var ratio = pick([2, 3, 4, 5]);
-  var t1 = start;
-  var t2 = t1 * ratio;
-  var t3 = t2 * ratio;
-  var t4 = t3 * ratio;
-  var ans = t4 * ratio;
+  var kind = pick(['add','sub','mul','div']);
+  var t = [], ans, rule, working;
+  if(kind === 'add'){
+    var a = pick([2,3,4,5,6,7,8,9]), d = pick([3,4,5,6,7,9,11]);
+    t = [a, a+d, a+2*d, a+3*d]; ans = a+4*d; rule = 'add ' + d;
+    working = t[3] + '+' + d + ' = ' + ans;
+  } else if(kind === 'sub'){
+    var d2 = pick([2,3,4,5,6,7]), a2 = 4*d2 + pick([3,5,8,10,12,20]);
+    t = [a2, a2-d2, a2-2*d2, a2-3*d2]; ans = a2-4*d2; rule = 'subtract ' + d2;
+    working = t[3] + '\u2212' + d2 + ' = ' + ans;
+  } else if(kind === 'mul'){
+    var st = pick([1,2,3,4,5]), r = pick([2,3]);
+    t = [st, st*r, st*r*r, st*r*r*r]; ans = t[3]*r; rule = 'multiply by ' + r;
+    working = t[3] + '\u00d7' + r + ' = ' + ans;
+  } else {
+    var r2 = pick([2,3]), last = pick([1,2,3,5]);
+    var t0 = last*r2*r2*r2*r2;
+    t = [t0, t0/r2, t0/(r2*r2), t0/(r2*r2*r2)]; ans = last; rule = 'divide by ' + r2;
+    working = t[3] + '\u00f7' + r2 + ' = ' + ans;
+  }
   return {
-    question: 'What is the next term in: <b>' + t1 + ', ' + t2 + ', ' + t3 + ', ' + t4 + ', \u2026</b>?',
-    hints: ['Look at the ratio between terms', 'Each term is multiplied by ' + ratio],
+    question: 'What is the next number in: <b>' + t.join(', ') + ', \u2026</b>?',
+    hints: ['Look at how you get from one number to the next: add, subtract, multiply or divide?', 'The rule is: ' + rule],
     ans: ans,
     tol: 0,
     unit: '',
-    working: t4 + '\u00d7' + ratio + ' = ' + ans
+    working: 'Rule: ' + rule + '. ' + working
   };
 })}
   ]},
   {ey:'Q3 \u00b7 Year 7 \u00b7 Sequences',ti:'Sequences from Diagrams',su:'Matchstick squares: how many sticks are needed for n squares?',steps:[
-    {lb:'Pattern 1',dr:dQ3,ht:'<p>Build up the diagram step by step. Count the sticks for each pattern number.</p>'},
-    {lb:'Patterns 1, 2, 3',dr:dQ3,ht:'<div class="fm">n=1: 4 sticks,  n=2: 7 sticks,  n=3: 10 sticks</div>'},
-    {lb:'Where does 3n+1 come from?',dr:dQ3,ht:'<p>Each new square shares its left wall with the previous one, so only needs <b>3</b> new sticks. But the very first left wall is always there — that gives the <b>+1</b>:</p><div class="fm">Sticks = 3n + 1</div><p style="font-size:13px;color:#888;margin-top:6px;">Check: n=3 → 3×3+1 = 10 ✓</p>'},
+    {lb:'Pattern 1',dr:dQ3,ht:'<p>Count the sticks in pattern 1. One square needs <b>4</b> sticks.</p>'},
+    {lb:'Patterns 1, 2, 3',dr:dQ3,ht:'<p>Now count the sticks in patterns 2 and 3.</p><div class="fm">n=1: 4 sticks,  n=2: 7 sticks,  n=3: 10 sticks</div>'},
+    {lb:'Pattern 4 and a table',dr:dQ3,ht:'<p>Put the numbers in a table. Each new square adds <b>3</b> sticks, because it uses the right-hand stick of the square before.</p><div class="fm">4, 7, 10, 13 \u2026 (+3 each time)</div>'},
+    {lb:'From the pattern to algebra',dr:dQ3,ht:'<p>Look at the <b style="color:#C8922A">gold</b> stick on the left. Every square then needs 3 more sticks (top, bottom, right).</p><div class="fm">n=1: 1 + 3\u00d71 = 4<br>n=2: 1 + 3\u00d72 = 7<br>n=3: 1 + 3\u00d73 = 10<br>n squares: 1 + 3\u00d7n</div><div class="fm">Sticks = 3n + 1</div><p style="font-size:13px;color:#888;margin-top:6px;">Check: n=4 \u2192 3\u00d74+1 = 13 \u2713</p>'},
     {lb:'Your turn',dr:dQ3,ht:tryIt(function(){
   var n = pick([5,6,7,8,9,10,11,12,15,20]);
   var ans = 3 * n + 1;
@@ -518,32 +555,35 @@ var QS=[
   };
 })}
   ]},
-  {ey:'Q5 \u00b7 Year 7 \u00b7 Sequences',ti:'Finding Missing Terms',su:'Find the missing terms in: 5, ?, 17, ?, 29.',steps:[
-    {lb:'One gap shown — find d from neighbours',dr:dQ5,ht:'<p>We show just one gap: 5, <b>?</b>, 17, 23, 29. Use consecutive known terms to find d:</p><div class="fm">23 − 17 = 6  →  d = 6</div>'},
-    {lb:'Fill in the gap',dr:dQ5,ht:'<div class="fm">? = 17 − 6 = 11</div><p style="font-size:13px;margin-top:6px;">Check: 5, 11, 17, 23, 29 ✓</p>'},
-    {lb:'Fill in the gaps',dr:dQ5,ht:'<div class="fm">5, 11, 17, 23, 29</div>'},
+  {ey:'Q5 \u00b7 Year 7 \u00b7 Sequences',ti:'Finding Missing Terms',su:'Find the missing number in: 5, ?, 17, 23, 29.',steps:[
+    {lb:'Find the jump',dr:dQ5,ht:'<p>The numbers go up by the same amount each time. Use two numbers that are next to each other:</p><div class="fm">23 \u2212 17 = 6 &nbsp;\u2192&nbsp; the jump is 6</div>'},
+    {lb:'Fill the gap',dr:dQ5,ht:'<div class="fm">? = 5 + 6 = 11</div><p>Or go back from 17: 17 \u2212 6 = 11.</p>'},
+    {lb:'Check',dr:dQ5,ht:'<div class="fm">5, 11, 17, 23, 29</div><p>Every jump is +6 \u2713</p>'},
     {lb:'Your turn',dr:dQ5,ht:tryIt(function(){
   var a = pick([4, 6, 8, 10, 12, 14, 16, 20]);
   var d = pick([4, 5, 6, 7, 8, 10]);
   var c = a + 2 * d;
   var ans = a + d;
   return {
-    question: 'Find the missing term in: <b>' + a + ', ?, ' + c + '</b>.',
+    question: 'The numbers go up by the same amount each time. Find the missing number: <b>' + a + ', ?, ' + c + '</b>.',
     hints: [
-      'Two steps from ' + a + ' to ' + c,
-      c + '\u2212' + a + '=' + (2*d) + ', d=' + d,
+      'There are 2 jumps from ' + a + ' to ' + c,
+      c + '\u2212' + a + '=' + (2*d) + ', so one jump = ' + (2*d) + '\u00f72 = ' + d,
       a + '+' + d + ' = ?'
     ],
     ans: ans,
     tol: 0,
     unit: '',
-    working: 'd=' + d + '. Missing term = ' + a + '+' + d + ' = ' + ans + '.'
+    working: 'One jump = ' + d + '. Missing number = ' + a + '+' + d + ' = ' + ans + '.'
   };
 })}
   ]},
   {ey:'Q6 \u00b7 Year 7 \u00b7 Sequences',ti:'nth Term of an Arithmetic Sequence',su:'Find the nth term of: 4, 7, 10, 13, 16, \u2026',steps:[
     {lb:'Common difference = coefficient of n',dr:dQ6,ht:'<p>Because d = 3, each term goes up by 3 each time — the same as multiples of 3. Compare:</p><div class="fm">Multiples of 3:&nbsp; 3, 6, 9, 12, 15…<br>Sequence: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4, 7, 10, 13, 16…<br>Difference: each term is <b>1 more</b></div>'},
     {lb:'nth term = 3n + 1',dr:dQ6,ht:'<div class="fm">nth term = 3n + 1</div><p>Check: n=1 → 4 ✓&nbsp; n=5 → 16 ✓</p><p style="font-size:13px;margin-top:6px;color:#6b5750;">The common difference always gives the <b>coefficient of n</b>.</p>'},
+    {lb:'Example 2: 5, 9, 13, 17, \u2026',dr:dQ6,ht:'<div class="fm">Difference = 4 &nbsp;\u2192&nbsp; start with 4n<br>4n: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 4, 8, 12, 16<br>Sequence: 5, 9, 13, 17<br>Each term is 1 more &nbsp;\u2192&nbsp; nth term = 4n + 1</div><p>Check: n=3 \u2192 4\u00d73 + 1 = 13 \u2713</p>'},
+    {lb:'Example 3: 7, 9, 11, 13, \u2026',dr:dQ6,ht:'<div class="fm">Difference = 2 &nbsp;\u2192&nbsp; start with 2n<br>2n: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 2, 4, 6, 8<br>Sequence: 7, 9, 11, 13<br>Each term is 5 more &nbsp;\u2192&nbsp; nth term = 2n + 5</div><p>Check: n=4 \u2192 2\u00d74 + 5 = 13 \u2713</p>'},
+    {lb:'Example 4: 2, 7, 12, 17, \u2026',dr:dQ6,ht:'<div class="fm">Difference = 5 &nbsp;\u2192&nbsp; start with 5n<br>5n: &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; 5, 10, 15, 20<br>Sequence: 2, 7, 12, 17<br>Each term is 3 less &nbsp;\u2192&nbsp; nth term = 5n \u2212 3</div><p>Check: n=2 \u2192 5\u00d72 \u2212 3 = 7 \u2713</p>'},
     {lb:'Your turn',dr:dQ6,ht:tryIt(function(){
   var d = pick([2, 3, 4, 5, 6]);
   var a = pick([1, 2, 3, 4, 5, 6, 7, 8, 9, 10]);
@@ -572,8 +612,8 @@ var QS=[
 })}
   ]},
   {ey:'Q7 \u00b7 Year 7 \u00b7 Sequences',ti:'Using nth Term to Find Specific Terms',su:'nth term = 3n + 1. Find the 1st, 5th, 10th, 20th and 100th terms.',steps:[
-    {lb:'Substituting into the formula',dr:dQ7,ht:'<p>To find any term, substitute the term number n into the formula. This is much faster than listing every term.</p>'},
-    {lb:'First few terms',dr:dQ7,ht:'<div class="fm">T(1) = 3(1)+1 = 4</div><div class="fm">T(5) = 3(5)+1 = 16</div>'},
+    {lb:'Substituting into the formula',dr:dQ7,ht:'<p>To find any term, substitute the term number n into the formula. This is much faster than listing every term.</p><p><b>What does T(5) mean?</b> T stands for <b>term</b>. The number in the brackets is the <b>position</b> n. So T(5) means \u201cthe 5th term\u201d, and T(100) means \u201cthe 100th term\u201d. It does <b>not</b> mean T \u00d7 5.</p>'},
+    {lb:'First few terms',dr:dQ7,ht:'<div class="fm">T(1) = 3(1)+1 = 4</div><div class="fm">T(5): put n = 5 into 3n + 1<br>T(5) = 3 \u00d7 5 + 1 = 15 + 1 = 16</div><p style="font-size:13px;color:#6b5750;">3(5) means 3 \u00d7 5.</p>'},
     {lb:'Larger terms',dr:dQ7,ht:'<div class="fm">T(10) = 3(10)+1 = 31</div><div class="fm">T(20) = 3(20)+1 = 61</div>'},
     {lb:'The 100th term',dr:dQ7,ht:'<div class="fm">T(100) = 3(100)+1 = 301</div><p>This would take forever by adding 3 each time \u2014 the formula makes it instant!</p>'},
     {lb:'Your turn',dr:dQ7,ht:tryIt(function(){
@@ -594,9 +634,10 @@ var QS=[
 })}
   ]},
   {ey:'Q8 \u00b7 Year 7 \u00b7 Sequences',ti:'Fibonacci-type Sequences',su:'Each term is the sum of the two before it. Continue: 1, 1, 2, 3, 5, 8, \u2026',steps:[
-    {lb:'The Fibonacci rule',dr:dQ8,ht:'<p>In a <b>Fibonacci-type sequence</b>, each new term is found by adding the two terms before it. The rule is: T(n) = T(n\u22121) + T(n\u22122).</p>'},
+    {lb:'The Fibonacci rule',dr:dQ8,ht:'<p>In a <b>Fibonacci-type sequence</b>, each new term is found by adding the two terms before it.</p><div class="fm">1 + 1 = 2, &nbsp;1 + 2 = 3, &nbsp;2 + 3 = 5, &nbsp;3 + 5 = 8</div><p>Remember: T(5) means the 5th term. So T(n) is the nth term, T(n\u22121) is the term <b>just before</b> it, and T(n\u22122) is the term <b>two places before</b> it. The rule in symbols is:</p><div class="fm">T(n) = T(n\u22121) + T(n\u22122)</div><p style="font-size:13px;color:#6b5750;">Example: T(6) = T(5) + T(4) = 5 + 3 = 8</p>'},
     {lb:'Continue the sequence',dr:dQ8,ht:'<div class="fm">1, 1, 2, 3, 5, 8 \u2026</div><div class="fm">Next: 5+8=13, then 8+13=21</div>'},
-    {lb:'The 7th and 8th terms',dr:dQ8,ht:'<div class="fm">T(7) = 13,  T(8) = 21</div>'},
+    {lb:'The 7th and 8th terms',dr:dQ8,ht:'<div class="fm">T(7) = T(6) + T(5) = 8 + 5 = 13</div><div class="fm">T(8) = T(7) + T(6) = 13 + 8 = 21</div>'},
+    {lb:'Fibonacci in nature and science',dr:dQ8,ht:'<p>Fibonacci numbers appear in many living things:</p><ul class="hl"><li><b>Flowers:</b> many flowers have 3, 5, 8, 13 or 21 petals (lilies have 3, buttercups have 5).</li><li><b>Sunflowers and pine cones:</b> the seeds grow in spirals. Count the spirals each way and you often get two Fibonacci numbers, such as 34 and 55.</li><li><b>Honeybees:</b> a male bee has 1 parent, 2 grandparents, 3 great-grandparents, then 5, 8, 13 \u2026 ancestors going back.</li><li><b>Rabbits:</b> Fibonacci first used the sequence to model how a family of rabbits grows each month.</li></ul>'},
     {lb:'Your turn',dr:dQ8,ht:tryIt(function(){
   var a = pick([1,2,3,4,5]);
   var b = pick([2,3,4,5,6,7]);
@@ -618,7 +659,7 @@ var QS=[
     {lb:'Read the table',dr:dQ9,ht:'<p>A table of values shows input (n) and output (y) pairs. Look for a pattern in how y changes as n increases.</p>'},
     {lb:'Find the difference',dr:dQ9,ht:'<div class="fm">y increases by 2 each time \u2192 the rule involves 2n</div>'},
     {lb:'Adjust for the constant',dr:dQ9,ht:'<div class="fm">2\u00d71=2, but y=3: difference is +1</div><div class="fm">Rule: y = 2n + 1</div>'},
-    {lb:'Verify',dr:dQ9,ht:'<div class="fm">n=3: 2(3)+1=7 \u2713  n=5: 2(5)+1=11 \u2713</div>'},
+    {lb:'Verify',dr:dQ9,ht:'<p>Check the rule with values from the table, writing each line as you would on paper:</p><div class="fm">When n = 3:<br>y = 2n + 1<br>y = 2 \u00d7 3 + 1<br>y = 6 + 1<br>y = 7 &nbsp;\u2713 (the table says 7)</div><div class="fm">When n = 5:<br>y = 2n + 1<br>y = 2 \u00d7 5 + 1<br>y = 10 + 1<br>y = 11 &nbsp;\u2713 (the table says 11)</div>'},
     {lb:'Your turn',dr:dQ9,ht:tryIt(function(){
   var d = pick([2,3,4,5,6,7,8]);
   var c = pick([1,2,3,4,5,6,7,8,9,10]);
@@ -644,21 +685,46 @@ var QS=[
     {lb:'Sequence 2: 2, 4, 8, 16',dr:dQ10,ht:'<div class="fm">Ratios: \u00d72, \u00d72, \u00d72  \u2192  Geometric (r=2)</div>'},
     {lb:'Sequences 3 and 4',dr:dQ10,ht:'<div class="fm">1, 4, 9, 16  \u2192  Square numbers (n\u00b2)</div><div class="fm">1, 1, 2, 3  \u2192  Fibonacci</div>'},
     {lb:'Your turn',dr:dQ10,ht:tryIt(function(){
-  var r = pick([2, 3, 4, 5]);
-  var a = pick([1, 2, 3, 4, 5]);
-  var t2 = a * r;
-  var t3 = t2 * r;
-  var t4 = t3 * r;
+  var TYPES = ['Arithmetic', 'Geometric', 'Square numbers', 'Fibonacci-type'];
+  var k = rInt(0, 3), t, why, next;
+  if(k === 0){
+    var a = rInt(1, 12), d = rInt(2, 9);
+    t = [a, a+d, a+2*d, a+3*d, a+4*d]; next = a+5*d;
+    why = 'The difference is +' + d + ' every time, so it is arithmetic.';
+  } else if(k === 1){
+    var b = rInt(1, 4), r = pick([2, 3]);
+    t = [b, b*r, b*r*r, b*r*r*r, b*r*r*r*r]; next = t[4]*r;
+    why = 'Each term is multiplied by ' + r + ', so it is geometric (ratio \u00d7' + r + ').';
+  } else if(k === 2){
+    var s0 = rInt(1, 4);
+    t = [s0*s0, (s0+1)*(s0+1), (s0+2)*(s0+2), (s0+3)*(s0+3), (s0+4)*(s0+4)]; next = (s0+5)*(s0+5);
+    why = 'These are ' + s0 + '\u00b2, ' + (s0+1) + '\u00b2, ' + (s0+2) + '\u00b2 \u2026 so they are square numbers. The jumps go up by 2 each time.';
+  } else {
+    var f1 = rInt(1, 4), f2 = rInt(2, 6);
+    t = [f1, f2, f1+f2]; t.push(t[1]+t[2]); t.push(t[2]+t[3]); next = t[3]+t[4];
+    why = 'Each term is the sum of the two before it (' + t[0] + '+' + t[1] + '=' + t[2] + '), so it is Fibonacci-type.';
+  }
+  if(Math.random() < 0.5){
+    return {
+      question: 'What type of sequence is <b>' + t.join(', ') + ', \u2026</b>?',
+      options: TYPES,
+      hints: ['Look at the differences and the ratios'],
+      ans: k,
+      working: why
+    };
+  }
+  // Next-term multiple choice: one correct answer and three distractors
+  var dists = [next + 1, next - 1, t[4] + (t[4] - t[3]), t[4] * 2, next + 2];
+  var opts = [next];
+  dists.forEach(function(v){ if(opts.length < 4 && v > 0 && opts.indexOf(v) < 0) opts.push(v); });
+  while(opts.length < 4){ var v2 = next + opts.length + 2; if(opts.indexOf(v2) < 0) opts.push(v2); }
+  opts.sort(function(x, y){ return x - y; });
   return {
-    question: 'The sequence ' + a + ', ' + t2 + ', ' + t3 + ', ' + t4 + ' is geometric. What is the common ratio?',
-    hints: [
-      'Divide each term by the one before',
-      t2 + '\u00f7' + a + ' = ?'
-    ],
-    ans: r,
-    tol: 0,
-    unit: '',
-    working: t2 + '\u00f7' + a + '=' + r + '. Common ratio = ' + r + '.'
+    question: 'What is the next term of <b>' + t.join(', ') + ', \u2026</b>?',
+    options: opts.map(String),
+    hints: ['First decide what type of sequence it is'],
+    ans: opts.indexOf(next),
+    working: why + ' Next term = ' + next + '.'
   };
 })}
   ]}
