@@ -178,7 +178,7 @@ header{background:linear-gradient(120deg,var(--dark) 0%,var(--red) 45%,var(--gol
 var ST={};
 function rnd(a,b){return Math.floor(Math.random()*(b-a+1))+a;}
 function pick(arr){return arr[Math.floor(Math.random()*arr.length)];}
-function shuffleMC(o){var idxs=o.options.map(function(_,i){return i;});for(var i=idxs.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=idxs[i];idxs[i]=idxs[j];idxs[j]=t;}var newOptions=idxs.map(function(i){return o.options[i];});return{question:o.question,options:newOptions,correct:idxs.indexOf(o.correct),working:o.working};}
+function shuffleMC(o){var seen={},opts=[],corr=0;o.options.forEach(function(op,i){var k=String(op);if(seen[k]){if(i===o.correct)corr=seen[k]-1;return;}seen[k]=opts.length+1;if(i===o.correct)corr=opts.length;opts.push(op);});o={question:o.question,options:opts,correct:corr,working:o.working};var idxs=o.options.map(function(_,i){return i;});for(var i=idxs.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=idxs[i];idxs[i]=idxs[j];idxs[j]=t;}var newOptions=idxs.map(function(i){return o.options[i];});return{question:o.question,options:newOptions,correct:idxs.indexOf(o.correct),working:o.working};}
 function tryItMC(genFn){var id='t'+Math.random().toString(36).slice(2);var o=shuffleMC(genFn());ST[id]={o:o,genFn:genFn};return buildTryMC(id,o);}
 function buildTryMC(id,o){
   var opts=(o.options||[]).map(function(opt,i){return '<button class="mc-opt" data-tryid="'+id+'" data-idx="'+i+'">'+opt+'</button>';}).join('');
@@ -504,7 +504,7 @@ var Q=[
     speak:'Substituting this triangle\u2019s sides gives the quotient identity.'},
    {d:dQ3,p:4,html:'<p>This is exactly why tan\u03b8 is undefined wherever cos\u03b8=0.</p>'
      +tryItMC(function(){
-       var s_=pick([0.6,0.8,0.5]),c_=pick([0.8,0.6,0.5]);
+       var pr=pick([[0.6,0.8],[0.8,0.6],[0.28,0.96],[0.96,0.28]]),s_=pr[0],c_=pr[1];
        var t=(s_/c_).toFixed(2);
        return {question:'If sin\u03b8='+s_+' and cos\u03b8='+c_+', what is tan\u03b8?',
          options:[t, (s_*c_).toFixed(2), (s_+c_).toFixed(2), (c_/s_).toFixed(2)],
@@ -675,7 +675,7 @@ function render(){
   var pn=document.getElementById('pn');
   pn.innerHTML=pp.html;
   if (qi===Q.length-1 && pi===qq.panels.length-1) {
-    pn.innerHTML += '<div class="test-link-row"><a class="test-link-btn" href="test.html?topic='+(window.__testTopicId||758)+'">\ud83d\udcdd Optional: take the test on this topic</a></div>';
+    pn.innerHTML += '<div class="test-link-row"><a class="test-link-btn" href="../../test.html?topic='+(window.__testTopicId||758)+'">\ud83d\udcdd Optional: take the test on this topic</a></div>';
   }
   pn.classList.remove('fi');void pn.offsetWidth;pn.classList.add('fi');
   document.getElementById('pb').disabled=(qi===0&&pi===0);
