@@ -375,7 +375,7 @@
   <div class="nav-tab" onclick="showTab('topics')">Browse Topics</div>
   <div class="nav-tab" onclick="showTab('users')">Users</div>
   <div class="nav-tab" onclick="showTab('diagnostic')">Diagnostic</div>
-  <div class="nav-tab" id="nav-tab-reviews" onclick="showTab('reviews')">Review Walkthroughs</div>
+  <div class="nav-tab" id="nav-tab-reviews" style="display:none" onclick="showTab('reviews')">Review Walkthroughs</div>
   <div class="nav-tab" id="nav-tab-import" onclick="showTab('import')">Import Users</div>
   <div class="nav-tab" id="nav-tab-schools" onclick="showTab('schools')">Schools</div>
   <div class="nav-tab" onclick="showTab('deepdive')">Deep Dive Progress</div>
@@ -1289,6 +1289,9 @@
 
   let isAbcSchool = true; // default true; set precisely once branding loads
   let isSuperAdmin = false;
+  // Walkthrough reviews are closed: no new or edited reviews are accepted (also enforced by RLS).
+  const REVIEWS_CLOSED = true;
+  const canSeeReviews = () => isAbcSchool && isSuperAdmin;
 
   async function applySchoolBranding(schoolId) {
     try {
@@ -1323,9 +1326,8 @@
 
       // Review Walkthroughs (and its per-question payment tracking) is an
       // ABC-only internal process — hide entirely for other schools.
+      // Visibility for ABC is finalised in init() once isSuperAdmin is known.
       isAbcSchool = isAbc;
-      const reviewsTab = document.getElementById('nav-tab-reviews');
-      if (reviewsTab) reviewsTab.style.display = isAbc ? '' : 'none';
     } catch (e) {
       console.warn('Branding load failed, using defaults', e);
     }
@@ -1361,6 +1363,9 @@
     if (importTab)  importTab.style.display  = isSuperAdmin ? '' : 'none';
     if (schoolsTab) schoolsTab.style.display = isSuperAdmin ? '' : 'none';
     if (isSuperAdmin) await loadSchoolsForPickers();
+    // Review Walkthroughs is restricted to the super admin.
+    const reviewsTab = document.getElementById('nav-tab-reviews');
+    if (reviewsTab) reviewsTab.style.display = canSeeReviews() ? '' : 'none';
 
     document.getElementById('header-name').textContent = profile.full_name;
     if (profile.role === 'admin' || profile.role === 'teacher') {
@@ -1451,7 +1456,7 @@
     window.renderProgressTable();
     await loadUsersWithEmail();
     await loadTestResults();
-    await loadReviews();
+    if (canSeeReviews()) await loadReviews();
 
     document.getElementById('loading').style.display = 'none';
     document.getElementById('content').style.display = 'block';
@@ -1855,7 +1860,7 @@
 
 
   window.showTab = function(name) {
-    if (name === 'reviews' && !isAbcSchool) { name = 'overview'; }
+    if (name === 'reviews' && !canSeeReviews()) { name = 'overview'; }
     if ((name === 'import' || name === 'schools') && !isSuperAdmin) { name = 'overview'; }
     if (name === 'schools') { renderSchoolsTable(); }
     const names = ['overview','progress','tests','topics','users','diagnostic','reviews','import','schools','deepdive','games','leaderboard'];
@@ -3184,9 +3189,11 @@
           ? `<button class="btn-outline" style="font-size:0.8rem;padding:5px 14px" onclick="exportReviewComments(${t.id},'${escAttr(t.topic_name)}','${t.topic_code}','${subj}')">📋 Export Comments</button>
              <button class="btn-outline" style="font-size:0.8rem;padding:5px 14px;color:#1565C0;border-color:#1565C0" onclick="markUpdatedByClaude(${t.id})">🤖 Mark Updated by Claude</button>
              <button class="btn-outline" style="font-size:0.8rem;padding:5px 14px;color:#888;border-color:#ccc" onclick="unlockTopicReview(${t.id})">🔓 Unlock</button>`
-          : `<button class="btn-outline" style="font-size:0.8rem;padding:5px 14px" onclick="openReviewModal(${t.id},'${t.topic_code}','${t.topic_name}','${subj}')">
+          : (REVIEWS_CLOSED
+            ? `<span style="font-size:0.78rem;color:#aaa;font-style:italic">Reviews closed</span>`
+            : `<button class="btn-outline" style="font-size:0.8rem;padding:5px 14px" onclick="openReviewModal(${t.id},'${t.topic_code}','${t.topic_name}','${subj}')">
                ${rm ? 'Add/Edit Review' : 'Review'}
-             </button>`);
+             </button>`));
       return `<div style="display:flex;align-items:center;gap:12px;padding:12px;border-bottom:1px solid #f0f0f0;flex-wrap:wrap">
         <div style="flex:1;min-width:200px">
           <div style="font-weight:600;font-size:0.88rem;color:#333">${t.topic_name}</div>
@@ -3216,6 +3223,7 @@
   }
 
   window.openReviewModal = async function(topicId, topicCode, topicName, subject) {
+    if (REVIEWS_CLOSED) return;
     subject = subject || 'maths';
     currentReviewTopicId = topicId;
     window._reviewModalOpenedAt = Date.now();
@@ -3354,6 +3362,7 @@
     const btn = document.getElementById('review-submit-btn');
     const msg = document.getElementById('review-submit-msg');
     const ratings = window._reviewRatings || {};
+    if (REVIEWS_CLOSED) { msg.style.color = '#C0272D'; msg.textContent = 'Walkthrough reviews are closed.'; return; }
 
     // Validate all questions rated and commented
     let valid = true;
