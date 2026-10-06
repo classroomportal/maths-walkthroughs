@@ -15,6 +15,23 @@
     .user-name { font-size: 0.9rem; opacity: 0.9; }
     .btn-signout { background: rgba(255,255,255,0.2); color: white; border: 1px solid rgba(255,255,255,0.4); border-radius: 4px; padding: 5px 12px; font-size: 0.82rem; cursor: pointer; }
     .btn-signout:hover { background: rgba(255,255,255,0.3); }
+    .btn-chpwd { background: none; color: white; border: none; font-size: 0.82rem; cursor: pointer; opacity: 0.8; text-decoration: underline; white-space: nowrap; }
+    .btn-chpwd:hover { opacity: 1; }
+    /* Change password modal */
+    .cp-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.4); z-index: 200; align-items: center; justify-content: center; font-family: 'Segoe UI', Arial, sans-serif; }
+    .cp-overlay.open { display: flex; }
+    .cp-modal { background: white; border-radius: 10px; width: 90%; max-width: 380px; padding: 28px; box-shadow: 0 8px 40px rgba(0,0,0,0.2); }
+    .cp-modal h2 { font-size: 1.1rem; font-weight: 700; color: #333; margin-bottom: 20px; }
+    .cp-modal label { display: block; font-size: 0.8rem; font-weight: 600; color: #555; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.4px; }
+    .cp-modal input { width: 100%; padding: 10px 12px; border: 1.5px solid #ddd; border-radius: 5px; font-size: 0.9rem; margin-bottom: 14px; box-sizing: border-box; font-family: inherit; }
+    .cp-modal input:focus { outline: none; border-color: #C0272D; }
+    .cp-btns { display: flex; gap: 10px; margin-top: 4px; }
+    .cp-submit { background: #C0272D; color: white; border: none; border-radius: 5px; padding: 10px 20px; font-size: 0.9rem; font-weight: 700; cursor: pointer; font-family: inherit; }
+    .cp-submit:disabled { background: #ccc; cursor: not-allowed; }
+    .cp-cancel { background: none; border: 1.5px solid #ddd; border-radius: 5px; padding: 10px 14px; font-size: 0.9rem; color: #888; cursor: pointer; font-family: inherit; }
+    .cp-msg { margin-top: 12px; padding: 10px 14px; border-radius: 5px; font-size: 0.85rem; display: none; }
+    .cp-msg.error   { background: #fde8e8; color: #a01f24; display: block; }
+    .cp-msg.success { background: #e8f5e9; color: #2e7d32; display: block; }
     .nav-tabs { background: white; border-bottom: 2px solid #eee; display: flex; padding: 0 24px; }
     .nav-tab { padding: 14px 20px; font-size: 0.9rem; font-weight: 600; color: #888; cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -2px; transition: all 0.2s; }
     .nav-tab.active { color: #C0272D; border-bottom-color: #C0272D; }
@@ -364,9 +381,26 @@
       </div>
     </div>
     <a class="btn-outline" href="test.html" target="_blank" style="text-decoration:none;font-size:0.82rem;padding:6px 12px;margin-right:8px">📝 Take a Test</a>
+    <button class="btn-chpwd" onclick="openChangePwd()">Change Password</button>
     <button class="btn-signout" onclick="signOut()">Sign out</button>
   </div>
 </header>
+
+<!-- Change Password Modal -->
+<div class="cp-overlay" id="cp-overlay">
+  <div class="cp-modal">
+    <h2>Change Password</h2>
+    <label>New Password</label>
+    <input type="password" id="cp-new" placeholder="At least 6 characters">
+    <label>Confirm New Password</label>
+    <input type="password" id="cp-confirm" placeholder="Repeat new password">
+    <div class="cp-btns">
+      <button class="cp-submit" id="cp-submit-btn" onclick="submitChangePwd()">Update Password</button>
+      <button class="cp-cancel" onclick="closeChangePwd()">Cancel</button>
+    </div>
+    <div class="cp-msg" id="cp-msg"></div>
+  </div>
+</div>
 
 <div class="nav-tabs">
   <div class="nav-tab active" onclick="showTab('overview')">Overview</div>
@@ -4490,6 +4524,55 @@
     const m = document.getElementById('view-as-menu');
     if (m) m.classList.remove('open');
   });
+
+  window.openChangePwd = function() {
+    document.getElementById('cp-new').value     = '';
+    document.getElementById('cp-confirm').value = '';
+    document.getElementById('cp-msg').className = 'cp-msg';
+    document.getElementById('cp-msg').textContent = '';
+    document.getElementById('cp-overlay').classList.add('open');
+  };
+
+  window.closeChangePwd = function() {
+    document.getElementById('cp-overlay').classList.remove('open');
+  };
+
+  window.submitChangePwd = async function() {
+    const newPwd     = document.getElementById('cp-new').value;
+    const confirmPwd = document.getElementById('cp-confirm').value;
+    const msg        = document.getElementById('cp-msg');
+    const btn        = document.getElementById('cp-submit-btn');
+
+    if (newPwd.length < 6) {
+      msg.className = 'cp-msg error';
+      msg.textContent = 'Password must be at least 6 characters.';
+      return;
+    }
+    if (newPwd !== confirmPwd) {
+      msg.className = 'cp-msg error';
+      msg.textContent = 'Passwords do not match.';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Updating…';
+
+    const { error } = await supabase.auth.updateUser({ password: newPwd });
+
+    if (error) {
+      msg.className = 'cp-msg error';
+      msg.textContent = 'Error: ' + error.message;
+      btn.disabled = false;
+      btn.textContent = 'Update Password';
+      return;
+    }
+
+    msg.className = 'cp-msg success';
+    msg.textContent = '✓ Password updated successfully!';
+    btn.disabled = false;
+    btn.textContent = 'Update Password';
+    setTimeout(closeChangePwd, 2000);
+  };
 
   window.signOut = async function() {
     await supabase.auth.signOut();
