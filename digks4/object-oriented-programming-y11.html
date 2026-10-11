@@ -8,7 +8,7 @@
   if(!session) window.location.href='../login.html';
 </script>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Object-Oriented Programming — Digital Technologies | Adorable Portal</title>
+<title>Object-Oriented Programming — Digital Technologies | ABC Learning Portal</title>
 <style>
 :root{--red:#37474F;--dark:#263238;--cream:#ECEFF1;--ink:#0d1b2a;--line:#CFD8DC;--gold:#00ACC1;}
 *{box-sizing:border-box;margin:0;padding:0;}
@@ -60,6 +60,7 @@ header{background:var(--red);color:#fff;height:56px;display:flex;align-items:cen
 .wk-b{margin-top:8px;font-size:14px;line-height:1.6;color:#1a2a3a;}
 .ck{font-size:14px;font-weight:600;padding:8px 16px;background:var(--gold);color:#fff;border:none;border-radius:3px;cursor:pointer;white-space:nowrap;}
 .ck:hover{background:#00838f;}
+.an{background:#E0F7FA;border-left:4px solid var(--gold);border-radius:4px;padding:12px 14px;margin:12px 0 4px;}.an-t{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:#00838f;font-weight:700;margin-bottom:4px;}.an p{font-size:14.5px;line-height:1.55;margin:0;color:#1a2a3a;}
 @media(max-width:640px){.layout{flex-direction:column;}.sb{width:100%;flex-direction:row;flex-wrap:wrap;}.qb{flex:1;min-width:80px;}}
 </style>
 <script src="../notation.js" defer></script>
@@ -157,7 +158,7 @@ var dQ10=makeDiagram('Building an OOP Project',['Applying OOP to a real project 
 
 var QS=[
 {ey:'Q1 \u2022 Digital Technologies \u2022 Programming & Software',ti:'OOP Concepts Revisited',su:'Learn about OOP Concepts Revisited and test your understanding.',steps:[
-  {lb:'The basics',dr:dQ1,ht:'<p>Object-oriented programming (OOP) organises code around objects that bundle data and behaviour together.</p>'},
+  {lb:'The basics',dr:dQ1,ht:'<p>Object-oriented programming (OOP) organises code around objects that bundle data and behaviour together.</p><div class="an"><div class="an-t">&#128161; Think of it like this</div><p>Think of a school. It is not run from one giant list of every fact. It is organised into people (students, teachers, cooks), each with their own information and their own jobs. OOP organises code the same way, into objects.</p></div>'},
   {lb:'Key details',dr:dQ1,ht:'<p>The four pillars of OOP are encapsulation, abstraction, inheritance, and polymorphism.</p>'},
   {lb:'How it works',dr:dQ1,ht:'<p>OOP helps manage complexity in large software projects.</p>'},
   {lb:'Why it matters',dr:dQ1,ht:'<p>This unit builds on the SS1 introduction to classes and objects.</p>'},
@@ -169,7 +170,7 @@ var QS=[
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q2 \u2022 Digital Technologies \u2022 Programming & Software',ti:'Encapsulation',su:'Learn about Encapsulation and test your understanding.',steps:[
-  {lb:'The basics',dr:dQ2,ht:'<p>Encapsulation bundles data and the methods that operate on it within a single object.</p>'},
+  {lb:'The basics',dr:dQ2,ht:'<p>Encapsulation bundles data and the methods that operate on it within a single object.</p><div class="an"><div class="an-t">&#128161; Think of it like this</div><p>Encapsulation is like an ATM. You cannot reach inside and take cash from the machine\'s drawers. You must use the screen and buttons (the methods), which check your PIN and your balance first.</p></div>'},
   {lb:'Key details',dr:dQ2,ht:'<p>It restricts direct access to some of an object\'s internal details, protecting data integrity.</p>'},
   {lb:'How it works',dr:dQ2,ht:'<p>"Private" attributes can only be accessed through defined methods, not directly.</p>'},
   {lb:'Why it matters',dr:dQ2,ht:'<p>Encapsulation makes code more modular and easier to maintain safely.</p>'},
@@ -181,7 +182,7 @@ var QS=[
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q3 \u2022 Digital Technologies \u2022 Programming & Software',ti:'Inheritance',su:'Learn about Inheritance and test your understanding.',steps:[
-  {lb:'The basics',dr:dQ3,ht:'<p>Inheritance allows a new class (child) to inherit attributes and methods from an existing class (parent).</p>'},
+  {lb:'The basics',dr:dQ3,ht:'<p>Inheritance allows a new class (child) to inherit attributes and methods from an existing class (parent).</p><div class="an"><div class="an-t">&#128161; Think of it like this</div><p>Inheritance is like a family resemblance. A child inherits features from a parent but can also have features of their own. A Car class inherits wheels and an engine from Vehicle, then adds its own extras, such as a boot.</p></div>'},
   {lb:'Key details',dr:dQ3,ht:'<p>This promotes code reuse, avoiding rewriting shared functionality repeatedly.</p>'},
   {lb:'How it works',dr:dQ3,ht:'<p>A child class can override or extend inherited behaviour as needed.</p>'},
   {lb:'Why it matters',dr:dQ3,ht:'<p>Inheritance models "is-a" relationships, like a "Car" being a type of "Vehicle".</p>'},
@@ -193,7 +194,7 @@ var QS=[
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q4 \u2022 Digital Technologies \u2022 Programming & Software',ti:'Polymorphism',su:'Learn about Polymorphism and test your understanding.',steps:[
-  {lb:'The basics',dr:dQ4,ht:'<p>Polymorphism allows different classes to be treated through a common interface.</p>'},
+  {lb:'The basics',dr:dQ4,ht:'<p>Polymorphism allows different classes to be treated through a common interface.</p><div class="an"><div class="an-t">&#128161; Think of it like this</div><p>When a teacher tells a room full of animals, "Make your sound!", the dog barks, the cat meows and the goat bleats. One instruction, different behaviour for each animal: that is polymorphism.</p></div>'},
   {lb:'Key details',dr:dQ4,ht:'<p>The same method name can behave differently depending on the object calling it.</p>'},
   {lb:'How it works',dr:dQ4,ht:'<p>This allows flexible, general code that works with multiple related object types.</p>'},
   {lb:'Why it matters',dr:dQ4,ht:'<p>Polymorphism is especially useful when working with collections of related objects.</p>'},
@@ -205,7 +206,7 @@ var QS=[
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q5 \u2022 Digital Technologies \u2022 Programming & Software',ti:'Abstraction in OOP',su:'Learn about Abstraction in OOP and test your understanding.',steps:[
-  {lb:'The basics',dr:dQ5,ht:'<p>Abstraction hides complex implementation details behind a simpler interface.</p>'},
+  {lb:'The basics',dr:dQ5,ht:'<p>Abstraction hides complex implementation details behind a simpler interface.</p><div class="an"><div class="an-t">&#128161; Think of it like this</div><p>Abstraction is like driving a car. You use the steering wheel, pedals and gear stick without knowing how the engine burns fuel. The complicated parts are hidden behind a simple set of controls.</p></div>'},
   {lb:'Key details',dr:dQ5,ht:'<p>Users of a class interact with its public methods, without needing to know internal workings.</p>'},
   {lb:'How it works',dr:dQ5,ht:'<p>Abstract classes can define a template that other classes must follow.</p>'},
   {lb:'Why it matters',dr:dQ5,ht:'<p>Good abstraction makes complex systems easier to use correctly.</p>'},
@@ -217,7 +218,7 @@ var QS=[
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q6 \u2022 Digital Technologies \u2022 Programming & Software',ti:'Designing Classes',su:'Learn about Designing Classes and test your understanding.',steps:[
-  {lb:'The basics',dr:dQ6,ht:'<p>Good class design groups related data and behaviour logically together.</p>'},
+  {lb:'The basics',dr:dQ6,ht:'<p>Good class design groups related data and behaviour logically together.</p><div class="an"><div class="an-t">&#128161; Think of it like this</div><p>Designing classes is like organising a kitchen: pots go with pots, spices with spices. You would not keep the clothes iron in the fridge, and you should not put an unrelated method in a class.</p></div>'},
   {lb:'Key details',dr:dQ6,ht:'<p>Class diagrams (like UML) help visually plan classes before coding them.</p>'},
   {lb:'How it works',dr:dQ6,ht:'<p>Naming conventions (like capitalising class names) improve code readability.</p>'},
   {lb:'Why it matters',dr:dQ6,ht:'<p>Well-designed classes are reusable across different parts of a program or project.</p>'},
@@ -229,7 +230,7 @@ var QS=[
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q7 \u2022 Digital Technologies \u2022 Programming & Software',ti:'Constructors',su:'Learn about Constructors and test your understanding.',steps:[
-  {lb:'The basics',dr:dQ7,ht:'<p>A constructor initialises a new object\'s attributes when it is created.</p>'},
+  {lb:'The basics',dr:dQ7,ht:'<p>A constructor initialises a new object\'s attributes when it is created.</p><div class="an"><div class="an-t">&#128161; Think of it like this</div><p>A constructor is like the registration desk on a new student\'s first day. It records their name, class and house, so they start school with everything they need.</p></div>'},
   {lb:'Key details',dr:dQ7,ht:'<p>In Python, the constructor method is named __init__.</p>'},
   {lb:'How it works',dr:dQ7,ht:'<p>Constructors often accept parameters to set initial attribute values.</p>'},
   {lb:'Why it matters',dr:dQ7,ht:'<p>Well-designed constructors ensure objects start in a valid, usable state.</p>'},
@@ -241,7 +242,7 @@ var QS=[
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q8 \u2022 Digital Technologies \u2022 Programming & Software',ti:'Composition vs Inheritance',su:'Learn about Composition vs Inheritance and test your understanding.',steps:[
-  {lb:'The basics',dr:dQ8,ht:'<p>Composition builds complex objects by combining simpler objects ("has-a" relationships).</p>'},
+  {lb:'The basics',dr:dQ8,ht:'<p>Composition builds complex objects by combining simpler objects ("has-a" relationships).</p><div class="an"><div class="an-t">&#128161; Think of it like this</div><p>A bicycle IS a vehicle (inheritance). A bicycle HAS wheels, a chain and a bell (composition). You can swap a worn tyre without the bicycle turning into a different kind of thing.</p></div>'},
   {lb:'Key details',dr:dQ8,ht:'<p>Inheritance builds new classes from existing ones ("is-a" relationships).</p>'},
   {lb:'How it works',dr:dQ8,ht:'<p>Choosing composition over inheritance can sometimes lead to more flexible designs.</p>'},
   {lb:'Why it matters',dr:dQ8,ht:'<p>Understanding both approaches helps choose the most appropriate design for a problem.</p>'},
@@ -253,7 +254,7 @@ var QS=[
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q9 \u2022 Digital Technologies \u2022 Programming & Software',ti:'OOP in Real Software',su:'Learn about OOP in Real Software and test your understanding.',steps:[
-  {lb:'The basics',dr:dQ9,ht:'<p>Most modern software (games, apps, websites) uses OOP principles extensively.</p>'},
+  {lb:'The basics',dr:dQ9,ht:'<p>Most modern software (games, apps, websites) uses OOP principles extensively.</p><div class="an"><div class="an-t">&#128161; Think of it like this</div><p>In a football video game, every player is an object built from one Player class. They all have the same attributes (name, speed, position) but different values: twenty-two objects from one blueprint.</p></div>'},
   {lb:'Key details',dr:dQ9,ht:'<p>OOP supports building large, maintainable codebases with many collaborating developers.</p>'},
   {lb:'How it works',dr:dQ9,ht:'<p>Popular languages supporting OOP include Python, Java, C++, and C#.</p>'},
   {lb:'Why it matters',dr:dQ9,ht:'<p>Understanding OOP is essential for many professional software development roles.</p>'},
@@ -265,7 +266,7 @@ var QS=[
     ];var q=qs[Math.floor(Math.random()*qs.length)];return{question:q.q,options:q.o,correct:q.a,working:q.w};})}
 ]},
 {ey:'Q10 \u2022 Digital Technologies \u2022 Programming & Software',ti:'Building an OOP Project',su:'Learn about Building an OOP Project and test your understanding.',steps:[
-  {lb:'The basics',dr:dQ10,ht:'<p>Applying OOP to a real project (like a simple game or booking system) builds practical skill.</p>'},
+  {lb:'The basics',dr:dQ10,ht:'<p>Applying OOP to a real project (like a simple game or booking system) builds practical skill.</p><div class="an"><div class="an-t">&#128161; Think of it like this</div><p>Building an OOP project is like building with LEGO. Plan what you are making, build and check each section on its own, then click the tested sections together.</p></div>'},
   {lb:'Key details',dr:dQ10,ht:'<p>Planning classes and their relationships before coding avoids messy, tangled code later.</p>'},
   {lb:'How it works',dr:dQ10,ht:'<p>Testing individual classes separately makes debugging more manageable.</p>'},
   {lb:'Why it matters',dr:dQ10,ht:'<p>This foundation prepares students for larger software development projects in SS3.</p>'},
